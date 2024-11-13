@@ -1,0 +1,56 @@
+"use client";
+
+import { toast } from '@/hooks/use-toast';
+import type { StatisticsResponse } from '@/types/statistics/statistics-response';
+import React, { useEffect, useState } from 'react'
+import StatisticsCard from './statistics-card';
+import { FileIcon, HardDrive } from 'lucide-react';
+import { formatBytes } from '@/lib/helpers';
+
+const InitialStatistics: StatisticsResponse = {
+    totalFiles: 0,
+    totalStorage: 0
+}
+
+const StatisticsView = () => {
+    const [statistics, setStatistics] = useState<StatisticsResponse>(InitialStatistics);
+
+    useEffect(() => {
+        fetch(`/api/statistics`, {
+            next: { revalidate: 60 },
+            method: "GET"
+        })
+            .then((response) => response.json())
+            .then((response) => {
+                if (response.success) {
+                    setStatistics(response.data)
+                }
+                else {
+                    toast({
+                        title: "Fetch Error",
+                        description: "Could not fetch user statistics!"
+                    })
+                }
+            })
+    }, [])
+
+    return (
+        <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
+            <StatisticsCard
+                title={"Total Files"}
+                description={"All files in your account"}
+                icon={<FileIcon className='size-5' />}
+                value={statistics?.totalFiles.toString()}
+            />
+
+            <StatisticsCard
+                title={"Total Storage"}
+                description={"The sum of all bytes stored in your account"}
+                icon={<HardDrive className='size-5' />}
+                value={formatBytes(statistics?.totalStorage)}
+            />
+        </div>
+    )
+}
+
+export default StatisticsView
