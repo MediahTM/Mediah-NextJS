@@ -31,6 +31,7 @@ const ShareForm = ({ open, setOpen, file }: { open: boolean, setOpen: (open: boo
 
     const handleClose = () => {
         setOpen(!open)
+        form.reset();
     }
 
     return (
@@ -78,8 +79,22 @@ const ShareForm = ({ open, setOpen, file }: { open: boolean, setOpen: (open: boo
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Share</Button>
-                <Button type="submit" variant={"secondary"} onClick={() => handleClose()}>Cancel</Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        type="submit"
+                    >
+                        Share
+                    </Button>
+                    <Button
+                        variant={"secondary"}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            handleClose()
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                </div>
             </form>
         </Form>
     );
