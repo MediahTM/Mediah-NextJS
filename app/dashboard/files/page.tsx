@@ -133,7 +133,7 @@ const FilesPage = () => {
                 return (
                     <div className="flex items-center gap-2 h-8">
                         <Switch
-                            defaultChecked={Boolean(endDate != null)}
+                            checked={Boolean(endDate != null || useOpen)}
                             onCheckedChange={handleSwitchChange}
                         />
 
@@ -143,7 +143,7 @@ const FilesPage = () => {
                             file={row.original}
                         />
 
-                        {Boolean(row.original.endDate != null) && (
+                        {Boolean(endDate != null) && (
                             <Button variant="ghost" size="sm" className="w-8">
                                 <Settings />
                             </Button>

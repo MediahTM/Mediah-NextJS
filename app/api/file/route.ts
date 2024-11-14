@@ -85,3 +85,52 @@ export async function GET() {
         return NextResponse.json({ success: false, message: "An error occurred while fetching files.", data: null });
     }
 }
+
+export async function PUT(request: NextRequest) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
+    }
+
+    try {
+        const file = await request.json();
+
+        if (!file || !file.filename || !file.email) {
+            return NextResponse.json({ success: false, message: "Missing required file data", data: null });
+        }
+
+        const fileExists = await db.file.findFirst({
+            where: {
+                filename: file.filename,
+                email: file.email,
+            },
+        });
+
+        if (!fileExists) {
+            return NextResponse.json({ success: false, message: "File does not exist!", data: null });
+        }
+
+        const updatedFile = await db.file.update({
+            where: {
+                id: fileExists.id,
+            },
+            data: {
+                filename: file.filename,
+                email: file.email,
+                uploadedSize: file.uploadedSize || fileExists.uploadedSize,
+                updatedAt: new Date(),
+                isActive: file.isActive ?? fileExists.isActive,
+                shareDate: file.shareDate ? new Date(file.shareDate) : fileExists.shareDate,
+                endDate: file.endDate ? new Date(file.endDate) : fileExists.endDate,
+                neverExpire: file.neverExpire ? true : false,
+                parts: file.parts || fileExists.parts,
+            },
+        });
+
+        return NextResponse.json({ success: true, message: "File updated successfully!", data: updatedFile });
+    }
+    catch {
+        return NextResponse.json({ success: false, message: "An error occurred while processing the file.", data: null });
+    }
+}
