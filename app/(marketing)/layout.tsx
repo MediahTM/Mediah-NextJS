@@ -1,3 +1,5 @@
+"use client"
+
 import Navbar from '@/components/ui/navbar'
 
 function MarketingLayout({ children }: { children: React.ReactNode }) {

@@ -15,6 +15,8 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import ExportDialog from './export-dialog';
+import RenameDialog from './rename-dialog';
+import DeleteDialog from './delete-dialog';
 
 const FilesPage = () => {
     const [files, setFiles] = useState<[] | File[]>([]);
@@ -83,6 +85,7 @@ const FilesPage = () => {
             enableHiding: false
         },
         {
+            meta: "File Size",
             accessorKey: "uploadedsize",
             header: ({ column }) => {
                 return (
@@ -103,6 +106,7 @@ const FilesPage = () => {
             }
         },
         {
+            meta: "Parts",
             accessorKey: "parts",
             header: "Parts",
             cell: ({ row }) => {
@@ -213,6 +217,7 @@ const FilesPage = () => {
             enableHiding: false
         },
         {
+            meta: "Updated At",
             accessorKey: "updatedAt",
             header: ({ column }) => {
                 return (
@@ -242,6 +247,8 @@ const FilesPage = () => {
             header: " ",
             cell: ({ row }) => {
                 const [exportDialog, setExportDialog] = useState<boolean>(false);
+                const [renameDialog, setRenameDialog] = useState<boolean>(false);
+                const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
 
                 return (
                     <div className="flex justify-end">
@@ -256,11 +263,11 @@ const FilesPage = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
                                 <DropdownMenuItem>Download</DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => setExportDialog(true)}>Export</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setRenameDialog(true)}>Rename</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>Rename</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setDeleteDialog(true)}>Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
@@ -269,6 +276,23 @@ const FilesPage = () => {
                             setOpen={setExportDialog}
                             file={row.original}
                         />
+
+                        <RenameDialog
+                            open={renameDialog}
+                            setOpen={setRenameDialog}
+                            file={row.original}
+                            setReload={setReload}
+                            reload={reload}
+                        />
+
+                        <DeleteDialog
+                            open={deleteDialog}
+                            setOpen={setDeleteDialog}
+                            file={row.original}
+                            setReload={setReload}
+                            reload={reload}
+                        />
+
                     </div>
                 )
             },

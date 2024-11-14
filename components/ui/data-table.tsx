@@ -44,7 +44,7 @@ export function DataTable<TData, TValue>({
                     onChange={(event) =>
                         table.getColumn(filterBy)?.setFilterValue(event.target.value)
                     }
-                    className="max-w-sm"
+                    className="max-w-[250px] w-full h-8"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -70,7 +70,7 @@ export function DataTable<TData, TValue>({
                                                 column.toggleVisibility(!!value)
                                             }
                                         >
-                                            {column.id}
+                                            {column.columnDef.meta?.toString()}
                                         </DropdownMenuCheckboxItem>
                                     )
                                 })}

@@ -94,7 +94,7 @@ export async function PUT(request: NextRequest) {
 
         const fileExists = await db.file.findFirst({
             where: {
-                filename: file.filename,
+                id: file.id,
                 email: file.email,
             },
         });
@@ -124,5 +124,38 @@ export async function PUT(request: NextRequest) {
     }
     catch {
         return NextResponse.json({ success: false, message: "An error occurred while processing the file.", data: null });
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
+    }
+
+    try {
+        const { fileId } = await request.json();
+
+        if (!fileId) {
+            return NextResponse.json({ success: false, message: "File ID is required.", data: null });
+        }
+
+        const deletedFile = await db.file.delete({
+            where: {
+                id: fileId,
+                email: session.user?.email || '',
+            },
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: "File deleted successfully.",
+            data: deletedFile,
+        });
+    }
+    catch (error) {
+        console.error("Error deleting file:", error);
+        return NextResponse.json({ success: false, message: "An error occurred while deleting the file.", data: null });
     }
 }

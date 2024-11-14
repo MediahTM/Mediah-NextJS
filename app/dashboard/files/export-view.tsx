@@ -40,6 +40,7 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
         link.download = filename;
         link.click();
         URL.revokeObjectURL(link.href);
+        link.remove();
     };
 
     return (
@@ -74,7 +75,7 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
                     </Select>
                 </div>
             </div>
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center mt-2 justify-end gap-2">
                 <Button type="submit">
                     Export
                 </Button>
