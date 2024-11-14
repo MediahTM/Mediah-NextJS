@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import ShareForm from './share-form';
 import { File } from '@prisma/client';
 
-const ShareDialog = ({ open, setOpen, file }: { open: boolean, setOpen: (open: boolean) => void, file: File }) => {
+const ShareDialog = ({ open, setOpen, file, update, setReload, reload }: { open: boolean, setOpen: (open: boolean) => void, file: File, update?: boolean, reload: boolean, setReload: (open: boolean) => void }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px]">
@@ -14,7 +14,7 @@ const ShareDialog = ({ open, setOpen, file }: { open: boolean, setOpen: (open: b
                         Select the duration to share your file for and copy a public link to access it
                     </DialogDescription>
                 </DialogHeader>
-                <ShareForm file={file} open={open} setOpen={setOpen} />
+                <ShareForm file={file} update={update} open={open} setOpen={setOpen} reload={reload} setReload={setReload} />
             </DialogContent>
         </Dialog>
     )

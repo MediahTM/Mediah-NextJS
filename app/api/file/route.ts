@@ -59,19 +59,9 @@ export async function GET() {
     }
 
     try {
-        const email = session.user?.email
-
-        if (!email) {
-            return NextResponse.json({
-                success: false,
-                message: "Email query parameter is required.",
-                data: null
-            });
-        }
-
         const files = await db.file.findMany({
             where: {
-                email: email,
+                email: session.user?.email || '',
             },
         });
 
@@ -80,7 +70,9 @@ export async function GET() {
             message: "Files fetched successfully.",
             data: files,
         });
-    } catch (error) {
+
+    }
+    catch (error) {
         console.error("Error fetching files:", error);
         return NextResponse.json({ success: false, message: "An error occurred while fetching files.", data: null });
     }
@@ -121,8 +113,8 @@ export async function PUT(request: NextRequest) {
                 uploadedSize: file.uploadedSize || fileExists.uploadedSize,
                 updatedAt: new Date(),
                 isActive: file.isActive ?? fileExists.isActive,
-                shareDate: file.shareDate ? new Date(file.shareDate) : fileExists.shareDate,
-                endDate: file.endDate ? new Date(file.endDate) : fileExists.endDate,
+                shareDate: file.shareDate ? new Date(file.shareDate) : null,
+                endDate: file.endDate ? new Date(file.endDate) : null,
                 neverExpire: file.neverExpire ? true : false,
                 parts: file.parts || fileExists.parts,
             },

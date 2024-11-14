@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Container from '@/components/ui/container'
 import PageTitle from '@/components/ui/page-title'
 import { formatBytes, formatRelativeTime } from '@/lib/helpers';
-import { ArrowUpDown, Settings } from 'lucide-react';
+import { ArrowUpDown, EllipsisVerticalIcon, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import ShareDialog from './share-dialog';
 import { File } from '@prisma/client';
@@ -13,9 +13,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/components/ui/data-table';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import ExportDialog from './export-dialog';
 
 const FilesPage = () => {
     const [files, setFiles] = useState<[] | File[]>([]);
+    const [reload, setReload] = useState<boolean>(false);
 
     useEffect(() => {
         fetch(`/api/file`, {
@@ -33,7 +36,7 @@ const FilesPage = () => {
                     })
                 }
             })
-    }, [])
+    }, [reload])
 
     const columns: ColumnDef<File>[] = [
         {
@@ -109,7 +112,7 @@ const FilesPage = () => {
             }
         },
         {
-            accessorKey: "globalexpiry",
+            accessorKey: "neverExpire",
             header: ({ column }) => {
                 return (
                     <Button
@@ -125,15 +128,60 @@ const FilesPage = () => {
             cell: ({ row }) => {
                 const { endDate } = row.original;
                 const [useOpen, setUseOpen] = useState<boolean>(false);
+                const [isUpdate, setIsUpdate] = useState<boolean>(false);
+
+                const checked = Boolean(
+                    row.original.neverExpire ||
+                    (row.original.shareDate && row.original.endDate) ||
+                    endDate != null ||
+                    useOpen
+                )
 
                 const handleSwitchChange = (checked: boolean) => {
-                    setUseOpen(checked);
+                    if (checked) {
+                        setIsUpdate(false)
+                        setUseOpen(checked);
+                    }
+                    else {
+                        const file = files.find((file) => file.id === row.original.id);
+
+                        if (!file) {
+                            toast({
+                                title: "File Not Found",
+                                description: "Unable to locate the file for update.",
+                            });
+
+                            return;
+                        }
+
+                        fetch(`/api/file`, {
+                            method: "PUT",
+                            body: JSON.stringify({
+                                ...file,
+                                neverExpire: false,
+                                shareDate: null,
+                                endDate: null
+                            })
+                        })
+                            .then((response) => response.json())
+                            .then((response) => {
+                                if (response.success) {
+                                    setReload(!reload);
+                                }
+                                else {
+                                    toast({
+                                        title: "Update Error",
+                                        description: response.message || "Could not update file!"
+                                    })
+                                }
+                            })
+                    }
                 };
 
                 return (
                     <div className="flex items-center gap-2 h-8">
                         <Switch
-                            checked={Boolean(endDate != null || useOpen)}
+                            checked={checked}
                             onCheckedChange={handleSwitchChange}
                         />
 
@@ -141,10 +189,21 @@ const FilesPage = () => {
                             open={useOpen}
                             setOpen={setUseOpen}
                             file={row.original}
+                            update={isUpdate}
+                            setReload={setReload}
+                            reload={reload}
                         />
 
-                        {Boolean(endDate != null) && (
-                            <Button variant="ghost" size="sm" className="w-8">
+                        {checked && (
+                            <Button
+                                onClick={() => {
+                                    setIsUpdate(true)
+                                    setUseOpen(true)
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                className="w-8"
+                            >
                                 <Settings />
                             </Button>
                         )}
@@ -168,16 +227,52 @@ const FilesPage = () => {
                 )
             },
             cell: ({ row }) => {
-                const [uploadedAt, setUploadedAt] = useState<string>(formatRelativeTime(new Date(row.original.uploadedAt.toString())));
+                const [updatedAt, setUpdatedAt] = useState<string>(formatRelativeTime(new Date(row.original.updatedAt.toString())));
 
                 setInterval(() => {
-                    setUploadedAt(formatRelativeTime(new Date(row.original.uploadedAt.toString())))
+                    setUpdatedAt(formatRelativeTime(new Date(row.original.updatedAt.toString())))
                 }, 1000);
 
                 return (
-                    <p>{uploadedAt}</p>
+                    <p>{updatedAt}</p>
                 )
             }
+        },
+        {
+            header: " ",
+            cell: ({ row }) => {
+                const [exportDialog, setExportDialog] = useState<boolean>(false);
+
+                return (
+                    <div className="flex justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    size={"icon"}
+                                    variant={"ghost"}
+                                >
+                                    <EllipsisVerticalIcon />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                                <DropdownMenuItem>Download</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setExportDialog(true)}>Export</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>Rename</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <ExportDialog
+                            open={exportDialog}
+                            setOpen={setExportDialog}
+                            file={row.original}
+                        />
+                    </div>
+                )
+            },
+            enableHiding: false
         }
     ]
 
