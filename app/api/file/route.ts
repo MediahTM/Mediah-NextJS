@@ -51,17 +51,21 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
+    const url = new URL(request.url)
+    const isActive = url.searchParams.get("isActive") === "true" ? true : false
+
     try {
         const files = await db.file.findMany({
             where: {
                 email: session.user?.email || '',
+                isActive: isActive
             },
         });
 

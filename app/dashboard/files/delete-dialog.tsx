@@ -12,9 +12,10 @@ const DeleteDialog = ({ open, setOpen, file, reload, setReload }: { open: boolea
 
     const handleDelete = () => {
         fetch(`/api/file`, {
-            method: "DELETE",
+            method: "PUT",
             body: JSON.stringify({
-                fileId: file.id
+                ...file,
+                isActive: false
             })
         })
             .then((response) => response.json())

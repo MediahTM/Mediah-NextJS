@@ -23,7 +23,7 @@ const FilesPage = () => {
     const [reload, setReload] = useState<boolean>(false);
 
     useEffect(() => {
-        fetch(`/api/file`, {
+        fetch(`/api/file?isActive=true`, {
             method: "GET"
         })
             .then((response) => response.json())
