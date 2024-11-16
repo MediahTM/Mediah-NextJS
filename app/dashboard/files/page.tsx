@@ -17,6 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import ExportDialog from './export-dialog';
 import RenameDialog from './rename-dialog';
 import DeleteDialog from './delete-dialog';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const FilesPage = () => {
     const [files, setFiles] = useState<[] | File[]>([]);
@@ -304,7 +305,10 @@ const FilesPage = () => {
         <Container>
             <PageTitle title="My Files" />
             <div className="space-y-4">
-                <DataTable filterBy='filename' columns={columns} data={files} />
+                <ScrollArea className='w-full'>
+                    <DataTable filterBy='filename' columns={columns} data={files} />
+                    <ScrollBar orientation='horizontal' />
+                </ScrollArea>
             </div>
         </Container>
     )

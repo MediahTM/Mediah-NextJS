@@ -38,7 +38,7 @@ const DeleteDialog = ({ open, setOpen, file, reload, setReload }: { open: boolea
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Temporarily Delete &apos;{file.filename}&apos;</DialogTitle>
+                    <DialogTitle>Move &apos;{file.filename}&apos; to the bin?</DialogTitle>
                     <DialogDescription>
                         Are you sure you want to move this file to the bin?
                     </DialogDescription>

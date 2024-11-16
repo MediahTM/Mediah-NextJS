@@ -10,6 +10,7 @@ import { SidebarLinks } from "@/lib/menu";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
+import UploadDialog from "./dialogs/upload-dialog";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
@@ -63,6 +64,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                             <Separator orientation="vertical" className="mr-2 h-4" />
                         </div>
                         <div className="flex items-center gap-3">
+                            <UploadDialog />
                             <ModeToggle />
                         </div>
                     </Container>

@@ -4,10 +4,9 @@ import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginat
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "./button"
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger } from "./dropdown-menu"
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./dropdown-menu"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Settings2 } from "lucide-react"
 import { Input } from "./input"
-import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from "@/lib/constants"
 
