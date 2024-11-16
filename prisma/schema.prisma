@@ -14,22 +14,22 @@ datasource db {
 }
 
 model File {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
   filename     String
   email        String
   uploadedSize Int
-
-  uploadedAt DateTime @default(now())
-  updatedAt  DateTime @default(now())
-
-  isActive Boolean @default(true)
-
-  shareDate   DateTime?
-  endDate     DateTime?
-  neverExpire Boolean   @default(false)
-
-  parts Json
+  uploadedAt   DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
+  isActive     Boolean   @default(true)
+  shareDate    DateTime?
+  endDate      DateTime?
+  neverExpire  Boolean   @default(false)
+  parts        Json
 
   @@index([isActive])
+}
+
+model User {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  username String
 }
