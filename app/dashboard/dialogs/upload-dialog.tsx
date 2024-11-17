@@ -1,9 +1,9 @@
 import { buttonVariants } from '@/components/ui/button'
-import { Dialog, DialogHeader, DialogTrigger, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogHeader, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { motion } from 'framer-motion'
 import { UploadIcon } from 'lucide-react'
 import React from 'react'
+import UploadDialogTabs from './upload-tabs'
 
 const UploadDialog = () => {
     return (
@@ -20,17 +20,10 @@ const UploadDialog = () => {
             </DialogTrigger>
             <DialogContent className='max-w-xl'>
                 <DialogHeader>
-                    <DialogTitle>Upload a File</DialogTitle>
+                    <DialogTitle>Upload Files</DialogTitle>
+                    <DialogDescription>Add files, edit and upload to Mediah</DialogDescription>
                 </DialogHeader>
-                <Tabs orientation='vertical' className='w-full flex gap-4'>
-                    <TabsList defaultValue={'files'} className='w-2/6' aria-orientation='vertical'>
-                        <TabsTrigger value='files' className='w-full'>Files</TabsTrigger>
-                        <TabsTrigger value='sharing' className='w-full'>Sharing</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value='files' className='w-4/6'>
-                        <h1>hi</h1>
-                    </TabsContent>
-                </Tabs>
+                <UploadDialogTabs />
             </DialogContent>
         </Dialog>
     )
