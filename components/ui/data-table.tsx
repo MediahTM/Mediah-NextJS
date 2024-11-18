@@ -21,7 +21,7 @@ export function DataTable<TData, TValue>({
     columns,
     data,
 }: { filterBy: string } & DataTableProps<TData, TValue>) {
-    const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+    const [pageSize, setPageSize] = useState<number | null>(null);
 
     const table = useReactTable({
         data,
@@ -38,14 +38,21 @@ export function DataTable<TData, TValue>({
     })
 
     useEffect(() => {
-        const size = Number(window.localStorage.getItem("pageSize"))
-        setPageSize(size)
-        table.initialState.pagination.pageSize = size;
-    }, [])
+        const storedSize = Number(window.localStorage.getItem("pageSize") || `${DEFAULT_PAGE_SIZE}`);
+        setPageSize(storedSize)
+    }, []);
 
     useEffect(() => {
-        window.localStorage.setItem("pageSize", pageSize.toString())
-    }, [pageSize])
+        if (pageSize) {
+            window.localStorage.setItem("pageSize", pageSize.toString());
+        }
+    }, [pageSize]);
+
+    useEffect(() => {
+        if (pageSize != null) {
+            table.setPageSize(pageSize);
+        }
+    }, [pageSize, table]);
 
     return (
         <div>
