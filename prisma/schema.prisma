@@ -43,7 +43,9 @@ model User {
   referral  Boolean  @default(false)
 
   File    File[]
-  Webhook Webhook[]
+  Webhook Webhook? @relation(fields: [webhookId], references: [id])
+
+  webhookId String? @db.ObjectId
 }
 
 model Webhook {
@@ -54,7 +56,7 @@ model Webhook {
   updatedAt DateTime @updatedAt
 
   userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
+  User   User[]
 
   @@index([userId])
 }
