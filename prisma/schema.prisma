@@ -16,7 +16,6 @@ datasource db {
 model File {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
   filename     String
-  email        String
   uploadedSize Int
   uploadedAt   DateTime  @default(now())
   updatedAt    DateTime  @default(now())
@@ -26,10 +25,20 @@ model File {
   neverExpire  Boolean   @default(false)
   parts        Json
 
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
   @@index([isActive])
 }
 
 model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  username String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  image     String?
+  discordId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  File File[]
 }
