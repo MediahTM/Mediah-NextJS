@@ -1,10 +1,15 @@
 import React from 'react'
 
-const PageTitle = ({ title }: { title: string }) => {
+const PageTitle = ({ title, description }: { title: string, description?: string }) => {
     return (
-        <h1 className='font-black text-3xl py-6'>
-            {title}
-        </h1>
+        <div className="space-y-1 py-6">
+            <h1 className='font-black text-3xl'>
+                {title}
+            </h1>
+            {description && (
+                <p className='text-muted-foreground text-sm font-medium'>{description}</p>
+            )}
+        </div>
     )
 }
 

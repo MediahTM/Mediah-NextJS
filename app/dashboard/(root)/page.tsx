@@ -7,7 +7,7 @@ import DetailsView from "./statistics-view";
 const Dashboard = () => {
     return (
         <Container>
-            <PageTitle title="Dashboard" />
+            <PageTitle title="Dashboard" description='An overview of your statistics' />
             <div className="space-y-4">
                 <DetailsView />
             </div>

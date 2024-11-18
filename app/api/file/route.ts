@@ -140,7 +140,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     try {
-        const { fileId } = await request.json();
+        const { searchParams } = new URL(request.url);
+        const fileId = searchParams.get("id");
 
         if (!fileId) {
             return NextResponse.json({ success: false, message: "File ID is required.", data: null });
@@ -159,8 +160,7 @@ export async function DELETE(request: NextRequest) {
             data: deletedFile,
         });
     }
-    catch (error) {
-        console.error("Error deleting file:", error);
-        return NextResponse.json({ success: false, message: "An error occurred while deleting the file.", data: null });
+    catch (error: any) {
+        return NextResponse.json({ success: false, message: error.message || "An error occurred while deleting the file.", data: null });
     }
 }

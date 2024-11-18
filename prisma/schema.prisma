@@ -40,6 +40,21 @@ model User {
   discordId String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  referral  Boolean  @default(false)
 
-  File File[]
+  File    File[]
+  Webhook Webhook[]
+}
+
+model Webhook {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
