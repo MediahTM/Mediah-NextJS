@@ -32,14 +32,15 @@ export function DataTable<TData, TValue>({
         getPaginationRowModel: getPaginationRowModel(),
         initialState: {
             pagination: {
-                pageSize: pageSize
+                pageSize: pageSize || DEFAULT_PAGE_SIZE
             }
         }
     })
 
-
     useEffect(() => {
-        setPageSize(Number(window.localStorage.getItem("pageSize")))
+        const size = Number(window.localStorage.getItem("pageSize"))
+        setPageSize(size)
+        table.initialState.pagination.pageSize = size;
     }, [])
 
     useEffect(() => {
