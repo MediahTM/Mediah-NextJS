@@ -1,16 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Upload, Share2 } from 'lucide-react'
+import { Upload, Share2, XIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { Webhook } from '@prisma/client'
+import { toast } from '@/hooks/use-toast'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const schema = z.object({
     location: z.string().min(1, 'Save Location is required'),
@@ -20,18 +23,36 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const UploadDialogTabs = () => {
+const UploadDialogTabs = ({ open }: { open: boolean }) => {
     const [activeTab, setActiveTab] = useState('upload')
+    const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
-    const {
-        register,
-        handleSubmit,
-        control,
-        setValue,
-        watch,
-        trigger,
-        formState: { errors }
-    } = useForm<FormData>({
+    useEffect(() => {
+        if (open && activeTab === "info") {
+            fetch(`/api/webhooks`, {
+                method: "GET"
+            })
+                .then((response) => response.json())
+                .then((response) => {
+                    if (response.success) {
+                        setWebhooks(response.data)
+                    } else {
+                        toast({
+                            title: "Fetch Error",
+                            description: "Could not fetch user webhooks!"
+                        })
+                    }
+                })
+                .catch(() => {
+                    toast({
+                        title: "Network Error",
+                        description: "Failed to fetch webhooks."
+                    })
+                })
+        }
+    }, [open, activeTab])
+
+    const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
         defaultValues: {
             files: [],
@@ -75,7 +96,6 @@ const UploadDialogTabs = () => {
     }
 
     const handleUpload = async (data: FormData) => {
-        // Run validation before submission
         const isValid = await trigger()
 
         if (!isValid) {
@@ -90,6 +110,11 @@ const UploadDialogTabs = () => {
 
     const handleShare = () => {
         console.log('Sharing files:', files)
+    }
+
+    const handleRemove = (index: number) => {
+        const updatedFiles = files.filter((_, i) => i !== index);
+        setValue('files', updatedFiles as [File, ...File[]]);
     }
 
     return (
@@ -124,16 +149,30 @@ const UploadDialogTabs = () => {
                         </label>
                     </div>
                     {errors.files && (
-                        <p className="text-red-500 text-sm mt-2">{errors.files.message}</p>
+                        <p className="text-destruction text-sm mt-2">{errors.files.message}</p>
                     )}
                     {files.length > 0 && (
                         <div className="mt-4">
                             <h4 className="font-semibold mb-2">Selected Files:</h4>
-                            <ul className="list-disc pl-5">
-                                {files.map((file, index) => (
-                                    <li key={index}>{file.name}</li>
-                                ))}
-                            </ul>
+                            <ScrollArea className='h-[200px] pr-4'>
+                                <ul className="list-disc pl-5 flex flex-col gap-1">
+                                    {files.map((file, index) => (
+                                        <li key={index}>
+                                            <div className="flex w-full flex-1 items-center justify-between">
+                                                <p>{file.name}</p>
+                                                <Button
+                                                    onClick={() => handleRemove(index)}
+                                                    variant='outline'
+                                                    size='icon'
+                                                    className='ml-auto size-8'
+                                                >
+                                                    <XIcon />
+                                                </Button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </ScrollArea>
                         </div>
                     )}
                 </TabsContent>
@@ -148,7 +187,7 @@ const UploadDialogTabs = () => {
                                 {...register('location')}
                             />
                             {errors.location && (
-                                <p className="text-red-500 text-sm">{errors.location.message}</p>
+                                <p className="text-destruction text-sm">{errors.location.message}</p>
                             )}
                         </div>
                         <div className="space-y-2">
@@ -159,17 +198,18 @@ const UploadDialogTabs = () => {
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <SelectTrigger id='webhook'>
-                                            <SelectValue placeholder='Select webhook' />
+                                            <SelectValue placeholder='Select Webhook' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value='discord.com'>Discord</SelectItem>
-                                            <SelectItem value='slack.com'>Slack</SelectItem>
+                                            {webhooks.map((webhook, index) => (
+                                                <SelectItem key={index} value={webhook.id}>{webhook.name}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 )}
                             />
                             {errors.webhook && (
-                                <p className="text-red-500 text-sm">{errors.webhook.message}</p>
+                                <p className="text-destruction text-sm">{errors.webhook.message}</p>
                             )}
                         </div>
                     </div>
@@ -178,10 +218,12 @@ const UploadDialogTabs = () => {
                 <TabsContent value="share">
                     <div className="space-y-2">
                         <Button type="submit" onClick={() => goToFirstErrorTab()} className="w-full">
-                            <Upload className="mr-2 h-4 w-4" /> Upload Files
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Files
                         </Button>
                         <Button onClick={handleShare} variant="outline" className="w-full">
-                            <Share2 className="mr-2 h-4 w-4" /> Share Files
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Share Files
                         </Button>
                     </div>
                 </TabsContent>

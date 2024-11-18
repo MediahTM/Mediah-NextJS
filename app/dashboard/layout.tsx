@@ -1,23 +1,27 @@
 "use client";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarGroup, SidebarHeader, SidebarInset, SidebarTrigger, SidebarMenu, SidebarMenuItem, SidebarGroupLabel, SidebarGroupContent, SidebarMenuButton } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarGroup, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuItem, SidebarGroupLabel, SidebarGroupContent, SidebarMenuButton } from "@/components/ui/sidebar"
 import { ModeToggle } from "@/components/ui/theme-toggler";
 import { Separator } from "@/components/ui/separator";
 import Container from "@/components/ui/container";
 import { usePathname } from "next/navigation";
-import { GalleryVerticalEnd } from "lucide-react";
+import { GalleryVerticalEnd, PanelLeftOpen, PanelRightOpen } from "lucide-react";
 import { SidebarLinks } from "@/lib/menu";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import UploadDialog from "./dialogs/upload/upload-dialog";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-    const pathname = usePathname();
     const { data: session } = useSession();
 
+    const pathname = usePathname();
+    const [collapsed, setCollapsed] = useState<boolean>(false);
+
     return (
-        <SidebarProvider>
+        <SidebarProvider open={collapsed} onOpenChange={setCollapsed}>
             <Sidebar >
                 <SidebarHeader>
                     <SidebarMenu>
@@ -60,7 +64,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 <div className="border-b px-6">
                     <Container className="flex h-16 shrink-0 items-center gap-2 justify-between">
                         <div className="flex items-center gap-2">
-                            <SidebarTrigger className="-ml-1" />
+                            <Button
+                                variant='ghost'
+                                size='icon'
+                                onClick={() => setCollapsed(!collapsed)}
+                            >
+                                {collapsed ? (
+                                    <PanelRightOpen />
+                                ) : (
+                                    <PanelLeftOpen />
+                                )}
+                            </Button>
                             <Separator orientation="vertical" className="mr-2 h-4" />
                         </div>
                         <div className="flex items-center gap-3">
