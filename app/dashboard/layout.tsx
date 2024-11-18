@@ -10,7 +10,7 @@ import { SidebarLinks } from "@/lib/menu";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
-import UploadDialog from "./dialogs/upload-dialog";
+import UploadDialog from "./dialogs/upload/upload-dialog";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
