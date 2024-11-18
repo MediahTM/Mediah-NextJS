@@ -8,15 +8,13 @@ import db from "@/lib/prisma";
 export async function GET() {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
-    const email = session.user?.email
-
     const files = await db.file.findMany({
         where: {
-            email: email!
+            userId: session.user.id
         }
     })
 

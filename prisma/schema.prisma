@@ -21,6 +21,7 @@ model File {
   updatedAt    DateTime  @default(now())
   isActive     Boolean   @default(true)
   shareDate    DateTime?
+  path         String    @default("/")
   endDate      DateTime?
   neverExpire  Boolean   @default(false)
   parts        Json
