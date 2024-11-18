@@ -8,7 +8,7 @@ import db from "@/lib/prisma";
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         const fileExists = await db.file.findFirst({
             where: {
                 filename: file.filename,
-                email: file.email,
+                userId: session.user.id
             },
         });
 
@@ -32,15 +32,15 @@ export async function POST(request: NextRequest) {
 
         const createdFile = await db.file.create({
             data: {
-                filename: file.filename,
-                email: file.email,
+                filename: file.filename as string,
+                userId: session.user.id!,
                 uploadedSize: file.uploadedSize || 0,
                 uploadedAt: new Date(),
                 updatedAt: new Date(),
                 isActive: file.isActive ?? true,
                 shareDate: file.shareDate ? new Date(file.shareDate) : null,
                 endDate: file.endDate ? new Date(file.endDate) : null,
-                parts: file.parts || []
+                parts: file.parts || [],
             },
         });
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     try {
         const files = await db.file.findMany({
             where: {
-                email: session.user?.email || '',
+                userId: session.user.id || '',
                 isActive: isActive
             },
         });
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest) {
         const fileExists = await db.file.findFirst({
             where: {
                 id: file.id,
-                email: file.email,
+                userId: session.user.id
             },
         });
 
@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest) {
             },
             data: {
                 filename: file.filename,
-                email: file.email,
+                userId: session.user.id,
                 uploadedSize: file.uploadedSize || fileExists.uploadedSize,
                 updatedAt: new Date(),
                 isActive: file.isActive ?? fileExists.isActive,
@@ -134,7 +134,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
@@ -148,7 +148,7 @@ export async function DELETE(request: NextRequest) {
         const deletedFile = await db.file.delete({
             where: {
                 id: fileId,
-                email: session.user?.email || '',
+                userId: session.user.id
             },
         });
 
