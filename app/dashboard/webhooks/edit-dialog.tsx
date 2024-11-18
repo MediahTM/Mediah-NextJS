@@ -36,15 +36,24 @@ const EditWebhook = ({ open, setOpen, webhook, reload, setReload }: { open: bool
     const [loading, setLoading] = useState<boolean>(false);
 
     const onSubmit = (data: WebhookFormData) => {
+        const updatedWebhook = {
+            ...webhook,
+            name: data.name,
+            url: data.url
+        }
+
+        const hasChanged = webhook.name !== updatedWebhook.name || webhook.url !== updatedWebhook.url;
+
+        if (!hasChanged) {
+            setOpen(false)
+            return;
+        }
+
         setLoading(true)
 
         fetch(`/api/webhooks`, {
             method: "PUT",
-            body: JSON.stringify({
-                ...webhook,
-                name: data.name,
-                url: data.url
-            })
+            body: JSON.stringify(updatedWebhook)
         })
             .then((response) => response.json())
             .then((response) => {

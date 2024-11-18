@@ -30,6 +30,12 @@ const RenameForm = ({ file, setOpen, setReload, reload }: { file: File, setOpen:
     })
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
+        if (file.filename == values.fileName) {
+            setOpen(false);
+
+            return;
+        }
+
         setLoading(true);
 
         fetch(`/api/file`, {
