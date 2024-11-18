@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     try {
         const file = await request.json();
 
-        if (!file || !file.filename || !file.email) {
+        if (!file || !file.filename || !file.email || !file.path || !file.isActive) {
             return NextResponse.json({ success: false, message: "Missing required file data", data: null });
         }
 
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
                 uploadedSize: file.uploadedSize || 0,
                 uploadedAt: new Date(),
                 updatedAt: new Date(),
+                path: file.path || '/',
                 isActive: file.isActive ?? true,
                 shareDate: file.shareDate ? new Date(file.shareDate) : null,
                 endDate: file.endDate ? new Date(file.endDate) : null,
