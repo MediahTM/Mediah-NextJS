@@ -6,13 +6,14 @@ import React, { useEffect, useState } from 'react'
 import StatisticsCard from './statistics-card';
 import { FileIcon, HardDrive } from 'lucide-react';
 import { formatBytes } from '@/lib/helpers';
+import { Session } from 'next-auth';
 
 const InitialStatistics: StatisticsResponse = {
     totalFiles: 0,
     totalStorage: 0
 }
 
-const StatisticsView = () => {
+const StatisticsView = ({ session }: { session: Session | null }) => {
     const [statistics, setStatistics] = useState<StatisticsResponse>(InitialStatistics);
 
     useEffect(() => {
@@ -47,7 +48,7 @@ const StatisticsView = () => {
                 title={"Total Storage"}
                 description={"The sum of all bytes stored in your account"}
                 icon={<HardDrive className='size-5' />}
-                value={formatBytes(statistics?.totalStorage)}
+                value={`${formatBytes(statistics?.totalStorage)}${session?.user?.isReferral ? '' : ' / 25 GB'}`}
             />
         </div>
     )

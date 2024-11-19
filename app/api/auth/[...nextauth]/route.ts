@@ -17,10 +17,15 @@ export const authOptions: NextAuthOptions = {
                         ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
                         : null,
                     banner_color: profile.banner_color || null,
+                    isReferral: false,
                 };
             },
         }),
     ],
+    session: {
+        strategy: "jwt",
+        maxAge: 24 * 60 * 60,
+    },
     callbacks: {
         async jwt({ token, user, account, profile }) {
             if (account && user) {
@@ -43,6 +48,7 @@ export const authOptions: NextAuthOptions = {
                 token.email = dbUser.email;
                 token.name = dbUser.name;
                 token.image = dbUser.image;
+                token.referral = dbUser.referral ?? false;
             }
             return token;
         },
@@ -53,8 +59,10 @@ export const authOptions: NextAuthOptions = {
                     email: token.email as string,
                     name: token.name as string,
                     image: token.image as string,
-                    id: token.id
+                    id: token.id,
+                    isReferral: token.referral ?? false
                 };
+                console.log("Session Callback - Modified session:", session);
             }
             return session;
         },

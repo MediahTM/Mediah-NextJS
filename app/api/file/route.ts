@@ -59,8 +59,9 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
     }
 
-    const url = new URL(request.url)
-    const isActive = url.searchParams.get("isActive") === "true" ? true : false
+    const { searchParams } = new URL(request.url)
+    console.log(searchParams.get("isActive"))
+    const isActive = searchParams.get("isActive") === "true" ? true : false
 
     try {
         const files = await db.file.findMany({
@@ -77,9 +78,8 @@ export async function GET(request: NextRequest) {
         });
 
     }
-    catch (error) {
-        console.error("Error fetching files:", error);
-        return NextResponse.json({ success: false, message: "An error occurred while fetching files.", data: null });
+    catch (error: any) {
+        return NextResponse.json({ success: false, message: error.message || "An error occurred while fetching files.", data: null });
     }
 }
 

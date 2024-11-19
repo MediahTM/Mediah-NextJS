@@ -91,4 +91,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  .mask-circle {
+    mask-image: radial-gradient(circle, transparent 70%, black 70%);
+  }
 }
