@@ -1,12 +1,16 @@
+"use client"
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './dropdown-menu'
 import { ChevronsUpDown, LogOutIcon, Settings2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 import { SidebarMenuButton } from './sidebar'
 import { Session } from 'next-auth'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import { getInitials } from '@/lib/helpers'
 
-const AvatarDropdown = ({ session }: { session: Session | null }) => {
+const AvatarDropdown = () => {
+    const { data: session } = useSession();
+    
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -57,8 +61,7 @@ const DetailsView = ({ session }: { session: Session | null }) => {
     return (
         <>
             <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={session?.user?.image || ''} />
-                <AvatarFallback className="rounded-lg">{getInitials(session?.user?.name || '')}</AvatarFallback>
+                {session?.user?.image ? <AvatarImage src={session?.user?.image} /> : <AvatarFallback className="rounded-lg">{getInitials(session?.user?.name || '')}</AvatarFallback>}
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
