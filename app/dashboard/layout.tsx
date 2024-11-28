@@ -8,15 +8,12 @@ import { usePathname } from "next/navigation";
 import { GalleryVerticalEnd } from "lucide-react";
 import { SidebarLinks } from "@/lib/menu";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import UploadDialog from "./dialogs/upload/upload-dialog";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
 
-    const { data: session } = useSession();
-    
     return (
         <SidebarProvider>
             <Sidebar >
@@ -54,10 +51,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                     ))}
                 </SidebarContent>
                 <SidebarFooter>
-                    <AvatarDropdown session={session} />
+                    <AvatarDropdown />
                 </SidebarFooter>
             </Sidebar>
-            <SidebarInset>
+            <SidebarInset className="flex-1 flex-">
                 <div className="border-b px-6">
                     <Container className="flex h-16 shrink-0 items-center gap-2 justify-between">
                         <div className="flex items-center gap-2">
@@ -70,7 +67,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                         </div>
                     </Container>
                 </div>
-                <main className="px-6 pb-12">
+                <main className="px-6 pb-12 max-h-full h-full flex-1 overflow-y-auto">
                     {children}
                 </main>
             </SidebarInset>

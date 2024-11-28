@@ -197,13 +197,13 @@ const UploadDialogTabs = ({ open }: { open: boolean }) => {
                                 name="webhook"
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger id='webhook' defaultValue=''>
+                                        <SelectTrigger id='webhook' value={'placeholder'}>
                                             <SelectValue placeholder='Select Webhook' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value=''>Select Webhook</SelectItem>
+                                            <SelectItem value={'placeholder'}>Select Webhook</SelectItem>
                                             {webhooks.map((webhook, index) => (
-                                                <SelectItem key={index} value={webhook.id}>{webhook.name}</SelectItem>
+                                                <SelectItem key={index} value={webhook.url}>{webhook.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
