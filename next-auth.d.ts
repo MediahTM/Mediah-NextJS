@@ -9,6 +9,8 @@ declare module 'next-auth' {
         user?: {
             id: string;
             isReferral: boolean,
+            discordId: string,
+            createdAt: string
         } & DefaultSession['user'];
     }
 }
