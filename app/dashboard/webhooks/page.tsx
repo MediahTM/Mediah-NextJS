@@ -1,22 +1,15 @@
-"use client"
+import type { Metadata } from "next/types";
+import WebhooksView from "./view";
 
-import Container from '@/components/ui/container'
-import PageTitle from '@/components/ui/page-title'
-import React, { useState } from 'react'
-import NewWebhook from './create-dialog'
-import WebhooksTable from './data-table'
+export const metadata: Metadata = {
+    title: "Webhooks",
+}
 
 const WebhooksPage = () => {
-    const [reload, setReload] = useState<boolean>(false);
-
     return (
-        <Container>
-            <PageTitle title='Webhooks' description='Manage your file part endpoints' />
-            <div className="space-y-4">
-                <NewWebhook reload={reload} setReload={setReload} />
-                <WebhooksTable reload={reload} setReload={setReload} />
-            </div>
-        </Container>
+        <>
+            <WebhooksView />
+        </>
     )
 }
 

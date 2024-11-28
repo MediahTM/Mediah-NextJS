@@ -54,7 +54,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                     <AvatarDropdown />
                 </SidebarFooter>
             </Sidebar>
-            <SidebarInset>
+            <SidebarInset className="flex-1 flex-">
                 <div className="border-b px-6">
                     <Container className="flex h-16 shrink-0 items-center gap-2 justify-between">
                         <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                         </div>
                     </Container>
                 </div>
-                <main className="px-6 pb-12">
+                <main className="px-6 pb-12 max-h-full h-full flex-1 overflow-y-auto">
                     {children}
                 </main>
             </SidebarInset>

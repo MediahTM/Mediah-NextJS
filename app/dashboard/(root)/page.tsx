@@ -1,12 +1,18 @@
-"use client"
+import type { Metadata } from "next/types";
 
 import Container from "@/components/ui/container";
 import PageTitle from "@/components/ui/page-title";
 import DetailsView from "./statistics-view";
-import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/utils/authOptions";
 
-const Dashboard = () => {
-    const { data: session } = useSession();
+
+export const metadata: Metadata = {
+    title: "Dashboard",
+};
+
+const Dashboard = async () => {
+    const session = await getServerSession(authOptions);
 
     return (
         <Container>
