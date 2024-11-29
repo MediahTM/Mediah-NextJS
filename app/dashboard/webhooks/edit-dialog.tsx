@@ -11,13 +11,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Webhook } from '@prisma/client'
 import { toast } from '@/hooks/use-toast'
 import { Loader2Icon } from 'lucide-react'
+import { DISCORD_WEBHOOK_REGEX } from '@/lib/constants'
 
 const webhookSchema = z.object({
     name: z.string().min(1, { message: 'Name is required' }).max(50, { message: 'Name cannot exceed 50 characters' }),
     url: z
         .string()
         .url({ message: 'Invalid URL format' })
-        .regex(/^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/, {
+        .regex(DISCORD_WEBHOOK_REGEX, {
             message: 'Must be a valid Discord webhook URL',
         }),
 })
