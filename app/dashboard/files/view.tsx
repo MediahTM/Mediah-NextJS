@@ -12,15 +12,15 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/components/ui/data-table';
 import { Switch } from '@/components/ui/switch';
-import { toast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import ExportDialog from './export-dialog';
 import RenameDialog from './rename-dialog';
 import DeleteDialog from './delete-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 
 const FilesView = () => {
-    const [files, setFiles] = useState<[] | File[]>([]);
+    const [files, setFiles] = useState<[] | File[] | null>(null);
     const [reload, setReload] = useState<boolean>(false);
 
     useEffect(() => {
@@ -33,10 +33,7 @@ const FilesView = () => {
                     setFiles(response.data)
                 }
                 else {
-                    toast({
-                        title: "Fetch Error",
-                        description: "Could not fetch user files!"
-                    })
+                    toast.error("Could not fetch user files!");
                 }
             })
     }, [reload])
@@ -150,13 +147,14 @@ const FilesView = () => {
                         setUseOpen(checked);
                     }
                     else {
+                        if (!files) {
+                            return;
+                        }
+
                         const file = files.find((file) => file.id === row.original.id);
 
                         if (!file) {
-                            toast({
-                                title: "File Not Found",
-                                description: "Unable to locate the file for update.",
-                            });
+                            toast.error("Unable to locate the file for update.");
 
                             return;
                         }
@@ -176,10 +174,7 @@ const FilesView = () => {
                                     setReload(!reload);
                                 }
                                 else {
-                                    toast({
-                                        title: "Update Error",
-                                        description: response.message || "Could not update file!"
-                                    })
+                                    toast.error("Could not update file!");
                                 }
                             })
                     }
@@ -308,7 +303,7 @@ const FilesView = () => {
             <PageTitle title="My Files" />
             <div className="space-y-4">
                 <ScrollArea className='w-full'>
-                    <DataTable filterBy='filename' columns={columns} data={files} />
+                    <DataTable filterBy='filename' columns={columns} data={files || []} loading={!files} />
                     <ScrollBar orientation='horizontal' />
                 </ScrollArea>
             </div>

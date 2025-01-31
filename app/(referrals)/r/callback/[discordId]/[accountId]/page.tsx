@@ -1,14 +1,14 @@
-import { authOptions } from "@/utils/authOptions";
+import { authOptions } from "@/utils/auth-options";
 import { getServerSession } from 'next-auth'
 import db from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 
-type Params = { 
+type Params = {
     accountId: string
     discordId: string
 }
 
-const ReferralCallback = async ({ params }: { params: Promise<Params> } ) => {
+const ReferralCallback = async ({ params }: { params: Promise<Params> }) => {
     const { accountId, discordId } = await params;
     const session = await getServerSession(authOptions);
     const creationTimestamp = Date.parse(session?.user?.createdAt as string)

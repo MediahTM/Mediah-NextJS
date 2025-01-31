@@ -10,11 +10,17 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion } from 'framer-motion';
-import { toast } from '@/hooks/use-toast';
+import { DISCORD_WEBHOOK_REGEX } from '@/lib/constants';
+import { toast } from 'sonner';
 
 const webhookSchema = z.object({
     name: z.string().min(1, { message: 'Webhook name is required' }),
-    url: z.string().url({ message: 'Please enter a valid URL' }).min(1, { message: 'Webhook URL is required' })
+    url: z
+        .string()
+        .url({ message: 'Invalid URL format' })
+        .regex(DISCORD_WEBHOOK_REGEX, {
+            message: 'Must be a valid Discord webhook URL',
+        }),
 })
 
 type WebhookFormData = z.infer<typeof webhookSchema>
@@ -32,20 +38,14 @@ const NewWebhook = ({ reload, setReload }: { reload: boolean, setReload: (open: 
             .then((response) => response.json())
             .then((response) => {
                 if (response.success) {
-                    toast({
-                        title: "Webhook Created!",
-                        description: response.message || "Successfully created a webhook!"
-                    })
+                    toast.success("Successfully created a webhook!");
 
                     reset();
 
                     setReload(!reload);
                 }
                 else {
-                    toast({
-                        title: "Webhook Error",
-                        description: response.message || "Could not create a webhook!"
-                    })
+                    toast.error("Could not create a webhook!");
                 }
             })
     }

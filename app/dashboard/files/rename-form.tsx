@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { FileIcon, Loader2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const RenameForm = ({ file, setOpen, setReload, reload }: { file: File, setOpen: (open: boolean) => void, setReload: (open: boolean) => void, reload: boolean }) => {
     const formSchema = z.object({
@@ -52,10 +52,7 @@ const RenameForm = ({ file, setOpen, setReload, reload }: { file: File, setOpen:
                     setOpen(false);
                 }
                 else {
-                    toast({
-                        title: "Update Error",
-                        description: response.message || "Could not update the file!"
-                    })
+                    toast.success("Could not update the file!")
                 }
                 setLoading(false);
             })

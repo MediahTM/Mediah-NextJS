@@ -13,8 +13,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { File } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: boolean; setOpen: (open: boolean) => void; file: File, update?: boolean, setReload: (open: boolean) => void, reload: boolean }) => {
     const DynamicFormSchema = z.object({
@@ -73,10 +73,7 @@ const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: b
                     setOpen(false);
                 }
                 else {
-                    toast({
-                        title: "Update Error",
-                        description: response.message || "Could not update file!"
-                    })
+                    toast.error("Could not update file!");
                 }
                 setLoading(false);
             })
@@ -104,7 +101,7 @@ const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: b
                                                 <Button
                                                     variant="outline"
                                                     className={cn(
-                                                        "w-[240px] pl-3 text-left font-normal",
+                                                        "w-full pl-3 text-left font-normal",
                                                         !field.value && "text-muted-foreground"
                                                     )}
                                                     disabled={neverExpireChecked}

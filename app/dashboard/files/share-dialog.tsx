@@ -14,7 +14,14 @@ const ShareDialog = ({ open, setOpen, file, update, setReload, reload }: { open:
                         Select the duration to share your file for and copy a public link to access it
                     </DialogDescription>
                 </DialogHeader>
-                <ShareForm file={file} update={update} open={open} setOpen={setOpen} reload={reload} setReload={setReload} />
+                <ShareForm
+                    file={file} 
+                    update={update} 
+                    open={open}
+                    setOpen={setOpen} 
+                    reload={reload}
+                    setReload={setReload} 
+                />
             </DialogContent>
         </Dialog>
     )
