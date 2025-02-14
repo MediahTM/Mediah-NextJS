@@ -1,6 +1,6 @@
 "use client";
 
-import { buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,6 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { motion } from 'framer-motion';
 import { DISCORD_WEBHOOK_REGEX } from '@/lib/constants';
 import { toast } from 'sonner';
 
@@ -78,14 +77,13 @@ const NewWebhook = ({ reload, setReload }: { reload: boolean, setReload: (open: 
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <motion.button
-                        className={buttonVariants({ variant: "secondary", className: "flex items-center gap-2" })}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    <Button
+                        variant='secondary'
+                        className="flex items-center gap-2"
                     >
                         <PlusIcon />
                         Add Webhook
-                    </motion.button>
+                    </Button>
                 </CardFooter>
             </Card>
         </form>

@@ -5,7 +5,7 @@ import { StatusBarProps } from "@/components/status-bar/status-bar";
 import { createJob } from "../status-bar-jobs";
 import { Upload } from "lucide-react";
 
-export const uploadFiles = async (files: File[], webhook: string, location: string = "/", statusBar: StatusBarProps, setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>) => {
+export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>) => {
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 5000;
     const CHUNK_SIZE = 1024 * 1024 * 3;
@@ -20,7 +20,7 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                     setStatusBar(prev => ({ ...prev, title: "Uploading " + file.name, progress: 0, onCancel: () => {
                         controller.abort();
                     } }));
-                    const encryptedFileName: string = btoa(file.name.substring(0, file.name.lastIndexOf('.'))).slice(0, 56) + ".mediah"; // might change this later
+                    const encryptedFileName: string = btoa(file.name.replace(/[^A-Za-z0-9+/=]/g, "_").substring(0, file.name.lastIndexOf('.'))).slice(0, 56) + ".mediah"; // might change this later
 
                     let offset: number = 0;
                     let currentChunk: number = 0;

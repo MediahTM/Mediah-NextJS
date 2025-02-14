@@ -1,9 +1,10 @@
+import { cn } from '@/lib/utils'
 import React from 'react'
 
-const PageTitle = ({ title, description }: { title: string, description?: string }) => {
+const PageTitle = ({ title, description, className }: { title: string, description?: string, className?: string }) => {
     return (
         <div className="space-y-1 py-6">
-            <h1 className='font-black text-3xl'>
+            <h1 className={cn('font-black text-3xl', className)}>
                 {title}
             </h1>
             {description && (

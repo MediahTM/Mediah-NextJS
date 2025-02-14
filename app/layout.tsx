@@ -21,13 +21,19 @@ export const metadata: Metadata = {
         {
             rel: "icon",
             type: "image/x-icon",
-            url: "https://avatars.githubusercontent.com/u/165603488?s=200&v=4",
+            url: "https://avatars.githubusercontent.com/u/165603488?s=32&v=4",
             sizes: "32x32",
+        },
+        {
+            rel: "icon",
+            type: "image/x-icon",
+            url: "https://avatars.githubusercontent.com/u/165603488?s=64&v=4",
+            sizes: "64x64",
         }
     ]
 };
 
-export default async function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
     const session = await getServerSession(authOptions);
 
     return (

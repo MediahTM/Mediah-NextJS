@@ -15,8 +15,9 @@ import { File } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import axios from "axios";
 
-const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: boolean; setOpen: (open: boolean) => void; file: File, update?: boolean, setReload: (open: boolean) => void, reload: boolean }) => {
+const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: React.Dispatch<React.SetStateAction<boolean>>; file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const DynamicFormSchema = z.object({
         never_expire: z.boolean(),
         end_date: z.date().nullable().optional(),
@@ -59,24 +60,26 @@ const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: b
 
         setLoading(true);
 
-        fetch(`/api/file`, {
-            method: "PUT",
-            body: JSON.stringify({
-                ...file,
-                shareDate: file.endDate ? new Date() : null
-            })
+        const response = await axios.put(`/api/file`, {
+            ...file,
+            shareDate: file.endDate ? new Date(new Date().getTime() - 1 * 1000) : null
         })
-            .then((response) => response.json())
-            .then((response) => {
-                if (response.success) {
-                    setReload(!reload);
-                    setOpen(false);
+        if (response.data.success) {
+            setFiles(files => files.map((fileItem) => {
+                if (fileItem.id === file.id) {
+                    return {
+                        ...response.data.data,
+                        updatedAt: new Date(new Date().getTime() - 1 * 1000)
+                    };
                 }
-                else {
-                    toast.error("Could not update file!");
-                }
-                setLoading(false);
-            })
+                return fileItem;
+            }));
+            setOpen(false);
+            toast.success('Shared file successfully!');
+        }
+        else {
+            toast.error("Could not update file!");
+        }
     };
 
     const handleClose = () => {
@@ -122,8 +125,7 @@ const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: b
                                                         setValue("never_expire", false);
                                                     }
                                                 }}
-                                                disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
-                                                initialFocus
+                                                disabled={(date) => date < new Date(new Date().getTime() - 1 * 1000) || date < new Date("1900-01-01")}
                                             />
                                         </PopoverContent>
                                     </Popover>
@@ -164,7 +166,7 @@ const ShareForm = ({ open, setOpen, file, update, setReload, reload }: { open: b
                     <Button type="submit">
                         {!loading ? (
                             <>
-                                {update ? 'Update' : 'Share'}
+                                {(file.neverExpire || (file.endDate && file.shareDate)) ? 'Update' : 'Share'}
                             </>
                         ) : (
                             <Loader2Icon className="animate-spin relative size-5" />

@@ -6,29 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Loader2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import axios from 'axios';
 
-const DeleteDialog = ({ open, setOpen, file, reload, setReload }: { open: boolean, setOpen: (open: boolean) => void, file: File, reload: boolean, setReload: (open: boolean) => void }) => {
+const DeleteDialog = ({ open, setOpen, file, setFiles }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>>, file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const [loading, setLoading] = useState<boolean>(false);
 
-    const handleDelete = () => {
-        fetch(`/api/file`, {
-            method: "PUT",
-            body: JSON.stringify({
-                ...file,
-                isActive: false
-            })
+    const handleDelete = async () => {
+        const response = await axios.put(`/api/file`, {
+            ...file,
+            isActive: false
         })
-            .then((response) => response.json())
-            .then((response) => {
-                if (response.success) {
-                    setReload(!reload);
-                    setOpen(false);
-                }
-                else {
-                    toast.error("Could not delete the file!");
-                }
-                setLoading(false);
-            })
+        if (response.data.success) {
+            setFiles(prev => prev.filter((file) => file.id !== response.data.data.id));
+            setOpen(false);
+        }
+        else {
+            toast.success("Could not update the file!")
+        }
     }
 
     return (

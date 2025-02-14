@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import ShareForm from './share-form';
 import { File } from '@prisma/client';
 
-const ShareDialog = ({ open, setOpen, file, update, setReload, reload }: { open: boolean, setOpen: (open: boolean) => void, file: File, update?: boolean, reload: boolean, setReload: (open: boolean) => void }) => {
+const ShareDialog = ({ open, setOpen, file, setFiles }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>>, file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px]">
@@ -15,12 +15,10 @@ const ShareDialog = ({ open, setOpen, file, update, setReload, reload }: { open:
                     </DialogDescription>
                 </DialogHeader>
                 <ShareForm
-                    file={file} 
-                    update={update} 
+                    file={file}
                     open={open}
                     setOpen={setOpen} 
-                    reload={reload}
-                    setReload={setReload} 
+                    setFiles={setFiles}
                 />
             </DialogContent>
         </Dialog>

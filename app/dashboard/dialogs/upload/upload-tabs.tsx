@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 const schema = z.object({
     location: z.string().min(1, 'Save Location is required'),
     webhook: z.string().min(1, 'Webhook is required'),
-    files: z.array(z.instanceof(File)).nonempty('At least one file is required'),
+    files: z.array(z.instanceof(File)).nonempty('At least one file is required')
 })
 
 type FormData = z.infer<typeof schema>
@@ -32,7 +32,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
     useEffect(() => {
-        if (open && activeTab === "info") {
+        if (open) {
             fetch(`/api/webhooks`, {
                 method: "GET"
             })
@@ -48,7 +48,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     toast.error("Could not fetch the data!")
                 })
         }
-    }, [open, activeTab])
+    }, [open])
 
     const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -104,7 +104,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
         }
 
         setOpen(false);
-        uploadFiles(data.files, data.webhook, data.location, statusBar, setStatusBar);
+        uploadFiles(data.files, data.webhook, data.location, setStatusBar);
     }
 
     const handleShare = () => {
@@ -114,6 +114,11 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
     const handleRemove = (index: number) => {
         const updatedFiles = files.filter((_, i) => i !== index);
         setValue('files', updatedFiles as [File, ...File[]]);
+    }
+
+    const handleClear = () => {
+        // @ts-ignore
+        setValue('files', [] as [File, ...File[]]);
     }
 
     return (
@@ -152,7 +157,16 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     )}
                     {files.length > 0 && (
                         <div className="mt-4">
-                            <h4 className="font-semibold mb-2">Selected Files:</h4>
+                            <div className="flex items-center justify-between">
+                                <h4 className="font-semibold mb-2">Selected Files:</h4>
+                                <Button
+                                    className='p-0'
+                                    variant='link'
+                                    onClick={handleClear}
+                                >
+                                    Clear All
+                                </Button>
+                            </div>
                             <ScrollArea className={cn('max-w-full overflow-y-auto overflow-x-clip pr-4', files.length >= 6 && 'h-[200px]')}>
                                 <div className="max-w-full pl-5 flex flex-col gap-1">
                                     {files.map((file, index) => (
