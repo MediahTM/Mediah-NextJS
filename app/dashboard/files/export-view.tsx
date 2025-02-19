@@ -15,7 +15,7 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
         event.preventDefault();
 
         if (fileFormat === "json") {
-            const jsonData = JSON.stringify(file, null, 2);
+            const jsonData = JSON.stringify(file, null, 4);
             exportFile(jsonData, `${fileName}.json`, "application/json");
         }
         else if (fileFormat === "csv") {

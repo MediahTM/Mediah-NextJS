@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { toast } from '@/hooks/use-toast';
 import { formatRelativeTime } from '@/lib/helpers';
 import { Webhook } from '@prisma/client';
 import { ColumnDef } from '@tanstack/react-table';
@@ -13,9 +12,10 @@ import { ArrowUpDown, EllipsisVerticalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import EditWebhook from './edit-dialog';
 import DeleteDialog from './delete-dialog';
+import { toast } from 'sonner';
 
 const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (open: boolean) => void }) => {
-    const [webhooks, setWebhooks] = useState<[] | Webhook[]>([]);
+    const [webhooks, setWebhooks] = useState<[] | Webhook[] | null>(null);
 
     useEffect(() => {
         fetch(`/api/webhooks`, {
@@ -27,10 +27,7 @@ const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (ope
                     setWebhooks(response.data)
                 }
                 else {
-                    toast({
-                        title: "Fetch Error",
-                        description: "Could not fetch user files!"
-                    })
+                    toast.error("Could not fetch user files!")
                 }
             })
     }, [reload])
@@ -155,7 +152,7 @@ const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (ope
                 <CardDescription>View, edit and create new endpoints for your files</CardDescription>
             </CardHeader>
             <CardContent>
-                <DataTable filterBy='name' columns={columns} data={webhooks} />
+                <DataTable filterBy='name' columns={columns} data={webhooks || []} loading={!webhooks} />
             </CardContent>
         </Card>
     )

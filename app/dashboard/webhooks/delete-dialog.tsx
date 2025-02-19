@@ -5,7 +5,7 @@ import { Webhook } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { Loader2Icon } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const DeleteDialog = ({ open, setOpen, webhook, reload, setReload }: { open: boolean, setOpen: (open: boolean) => void, webhook: Webhook, reload: boolean, setReload: (open: boolean) => void }) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -24,10 +24,7 @@ const DeleteDialog = ({ open, setOpen, webhook, reload, setReload }: { open: boo
                     setOpen(false);
                 }
                 else {
-                    toast({
-                        title: "Delete Error",
-                        description: response.message || "Could not delete the webhook!"
-                    })
+                    toast.error("Could not delete the webhook!")
                 }
                 setLoading(false);  
             })

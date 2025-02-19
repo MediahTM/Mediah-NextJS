@@ -1,6 +1,6 @@
 "use server";
 
-import { authOptions } from "@/utils/authOptions";
+import { authOptions } from "@/utils/auth-options";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import db from "@/lib/prisma";
@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     try {
         const file = await request.json();
 
-        if (!file || !file.filename || !file.email || !file.path || !file.isActive) {
+
+        if (!file || !file.filename || !file.userId || !file.path || !file.isActive) {
             return NextResponse.json({ success: false, message: "Missing required file data", data: null });
         }
 
@@ -93,7 +94,7 @@ export async function PUT(request: NextRequest) {
     try {
         const file = await request.json();
 
-        if (!file || !file.filename || !file.email) {
+        if (!file || !file.filename || !file.userId) {
             return NextResponse.json({ success: false, message: "Missing required file data", data: null });
         }
 

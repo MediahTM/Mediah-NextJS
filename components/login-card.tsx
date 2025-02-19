@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardTitle, CardDescription, CardContent, CardHeader } from './ui/card'
-import SignUpButton from './signup-button'
+import SignUpButton from './status-bar/signup-button'
 import { FaDiscord } from "react-icons/fa";
 
 const LoginCard = ({ callback = process.env.BASEPATH!, title = "Login", description = "Chose a provider and login to your Mediah account" }: { callback: string, title?: string, description?: string }) => {

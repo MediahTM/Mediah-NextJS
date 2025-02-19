@@ -25,7 +25,9 @@ const UploadDialog = () => {
                     <DialogTitle>Upload Files</DialogTitle>
                     <DialogDescription>Add files, edit and upload to Mediah</DialogDescription>
                 </DialogHeader>
-                <UploadDialogTabs open={open} />
+                <div className='max-w-xl overflow-hidden'>
+                    <UploadDialogTabs open={open} setOpen={setOpen} />
+                </div>
             </DialogContent>
         </Dialog>
     )

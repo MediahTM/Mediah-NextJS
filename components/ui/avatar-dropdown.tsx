@@ -1,16 +1,18 @@
 "use client"
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './dropdown-menu'
-import { ChevronsUpDown, LogOutIcon, Settings2 } from 'lucide-react'
+import { ChevronsUpDown, LogOutIcon, SettingsIcon } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 import { SidebarMenuButton } from './sidebar'
 import { Session } from 'next-auth'
 import { signOut, useSession } from 'next-auth/react'
 import { getInitials } from '@/lib/helpers'
+import { useRouter } from 'next/navigation'
 
 const AvatarDropdown = () => {
+    const router = useRouter();
     const { data: session } = useSession();
-    
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -36,9 +38,10 @@ const AvatarDropdown = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem
+                        onClick={() => router.push(process.env.BASEPATH + "/settings")}
                         className='flex items-center gap-2'
                     >
-                        <Settings2 className='size-4' />
+                        <SettingsIcon className='size-4' />
                         Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

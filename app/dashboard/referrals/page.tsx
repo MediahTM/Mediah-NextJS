@@ -1,7 +1,7 @@
 import type { Metadata } from "next/types";
 import ReferralsView from "./view";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/utils/authOptions";
+import { authOptions } from "@/utils/auth-options";
 
 export const metadata: Metadata = {
     title: "Referrals",

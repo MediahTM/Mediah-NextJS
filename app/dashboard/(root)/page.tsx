@@ -4,8 +4,7 @@ import Container from "@/components/ui/container";
 import PageTitle from "@/components/ui/page-title";
 import DetailsView from "./statistics-view";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/utils/authOptions";
-
+import { authOptions } from "@/utils/auth-options";
 
 export const metadata: Metadata = {
     title: "Dashboard",

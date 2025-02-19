@@ -16,7 +16,7 @@ export const formatBytes = (bytes: number): string => {
     const sizeInUnit = bytes / Math.pow(1024, i);
 
     const formattedSize = new Intl.NumberFormat("en-US", {
-        maximumFractionDigits: 2,
+        maximumFractionDigits: i >= 3 ? 2 : 0,
     }).format(sizeInUnit);
 
     return `${formattedSize} ${sizes[i]}`;
@@ -88,4 +88,17 @@ export function formatRelativeTime(date: Date): string {
 
     const diffInYears = Math.floor(diffInMonths / 12);
     return rtf.format(-diffInYears, 'year');
+}
+
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+}
+
+export function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

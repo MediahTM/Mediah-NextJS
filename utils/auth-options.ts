@@ -43,6 +43,17 @@ export const authOptions: NextAuthOptions = {
                         },
                     });
                 }
+                else {
+                    dbUser = await db.user.update({
+                        where: { id: dbUser.id },
+                        data: {
+                            email: user.email!,
+                            name: user.name ?? profile?.name ?? "Unknown User",
+                            image: user.image,
+                            discordId: account.providerAccountId,
+                        },
+                    });
+                }
                 token.id = dbUser.id;
                 token.email = dbUser.email;
                 token.name = dbUser.name;
@@ -87,7 +98,7 @@ export const authOptions: NextAuthOptions = {
         },
     },
     pages: {
-        signIn: '/auth/signin',
+        signIn: '/login',
         error: '/auth/error'
     }
   };

@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from '@/hooks/use-toast';
 import type { StatisticsResponse } from '@/types/statistics/statistics-response';
 import React, { useEffect, useState } from 'react'
 import StatisticsCard from './statistics-card';
@@ -10,7 +9,9 @@ import { Session } from 'next-auth';
 import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
+import { useStatusBar } from '@/utils/status-bar-context';
+import { toast } from 'sonner';
+import PageTitle from '@/components/ui/page-title';
 
 const InitialStatistics: StatisticsResponse = {
     totalFiles: 0,
@@ -18,6 +19,7 @@ const InitialStatistics: StatisticsResponse = {
 }
 
 const StatisticsView = ({ session }: { session: Session | null }) => {
+    const { setStatusBar } = useStatusBar();
     const [statistics, setStatistics] = useState<StatisticsResponse>(InitialStatistics);
 
     useEffect(() => {
@@ -31,34 +33,39 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     setStatistics(response.data)
                 }
                 else {
-                    toast({
-                        title: "Fetch Error",
-                        description: "Could not fetch user statistics!"
-                    })
+                    toast.error("Could not fetch user statistics!")
                 }
             })
     }, [])
 
     return (
-        <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
-            <StatisticsCard
-                title={"Total Files"}
-                description={"All files in your account"}
-                icon={<FileIcon className='size-5' />}
-                valueCallback={(percent: number) => `${Math.floor(percent * statistics?.totalFiles / 100)}`}
-            />
+        <>
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
+                <StatisticsCard
+                    title={"Total Files"}
+                    description={"All files in your account"}
+                    icon={<FileIcon className='size-5' />}
+                    valueCallback={(percent: number) => `${Math.floor(percent * statistics?.totalFiles / 100)}`}
+                />
 
-            <StatisticsCard
-                title={"Total Storage"}
-                description={"The sum of all bytes stored in your account"}
-                icon={<HardDrive className='size-5' />}
-                valueCallback={(percent: number) => `${formatBytes(Math.floor(percent * statistics?.totalStorage / 100))}${session?.user?.isReferral ? '' : ' / 25 GB'}`}
-            >
-                {!session?.user?.isReferral && <div className='flex justify-end'>
-                    <Link href='/dashboard/referrals' className={cn(buttonVariants({ variant: "link", size: "sm" }), "text-destructive")}>Remove this limit</Link>
-                </div>}
-            </StatisticsCard>
-        </div>
+                <StatisticsCard
+                    title={"Total Storage"}
+                    description={"The sum of all bytes stored in your account"}
+                    icon={<HardDrive className='size-5' />}
+                    valueCallback={(percent: number) => `${formatBytes(Math.floor(percent * statistics?.totalStorage / 100))}${session?.user?.isReferral ? '' : ' / 25 GB'}`}
+                >
+                    {!session?.user?.isReferral && <div className='flex justify-end'>
+                        <Link href='/dashboard/referrals' className={cn(buttonVariants({ variant: "link", size: "sm" }), "text-destructive")}>Remove this limit</Link>
+                    </div>}
+                </StatisticsCard>
+            </div>
+            <div className="flex flex-col">
+                <PageTitle title='Latest Files' />
+                <div className="flex gap-2">
+                    
+                </div>
+            </div>
+        </>
     )
 }
 

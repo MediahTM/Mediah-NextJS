@@ -9,9 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { FileIcon, Loader2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import axios from "axios";
 
-const RenameForm = ({ file, setOpen, setReload, reload }: { file: File, setOpen: (open: boolean) => void, setReload: (open: boolean) => void, reload: boolean }) => {
+const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: React.Dispatch<React.SetStateAction<boolean>>, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const formSchema = z.object({
         fileName: z
             .string()
@@ -29,7 +30,7 @@ const RenameForm = ({ file, setOpen, setReload, reload }: { file: File, setOpen:
         },
     })
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (file.filename == values.fileName) {
             setOpen(false);
 
@@ -38,27 +39,18 @@ const RenameForm = ({ file, setOpen, setReload, reload }: { file: File, setOpen:
 
         setLoading(true);
 
-        fetch(`/api/file`, {
-            method: "PUT",
-            body: JSON.stringify({
-                ...file,
-                filename: values.fileName
-            })
-        })
-            .then((response) => response.json())
-            .then((response) => {
-                if (response.success) {
-                    setReload(!reload)
-                    setOpen(false);
-                }
-                else {
-                    toast({
-                        title: "Update Error",
-                        description: response.message || "Could not update the file!"
-                    })
-                }
-                setLoading(false);
-            })
+        const response = await axios.put(`/api/file`, {
+            ...file,
+            filename: values.fileName
+        });
+        if (response.data.success) {
+            setFiles((prev) => prev.map((file) => file.id == response.data.data.id ? {...response.data.data, updatedAt: new Date(new Date().getTime() - 1 * 1000)} : file));
+            setOpen(false);
+        }
+        else {
+            toast.success("Could not update the file!")
+        }
+        setLoading(false);
     }
 
     return (
