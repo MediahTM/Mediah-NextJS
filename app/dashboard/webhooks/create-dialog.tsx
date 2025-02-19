@@ -86,7 +86,7 @@ const NewWebhook = ({ reload, setReload }: { reload: boolean, setReload: (open: 
                     </Button>
                 </CardFooter>
             </Card>
-        </form>
+        </form >
     )
 }
 
