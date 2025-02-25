@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext, useState } from 'react';
 import type { StatusBarProps } from '@/components/status-bar/status-bar';
 
 const StatusBarContext = createContext<{

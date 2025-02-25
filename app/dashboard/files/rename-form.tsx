@@ -1,16 +1,16 @@
 "use client";
 
-import { Input } from "@/components/ui/input"
-import { File } from '@prisma/client'
-import React, { useState } from 'react'
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { FileIcon, Loader2Icon } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import axios from "axios";
+import * as z from 'zod';
+import axios from 'axios';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { File } from '@prisma/client';
+import { FileIcon, Loader2Icon } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: React.Dispatch<React.SetStateAction<boolean>>, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const formSchema = z.object({
@@ -44,7 +44,7 @@ const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: React.Di
             filename: values.fileName
         });
         if (response.data.success) {
-            setFiles((prev) => prev.map((file) => file.id == response.data.data.id ? {...response.data.data, updatedAt: new Date(new Date().getTime() - 1 * 1000)} : file));
+            setFiles((prev) => prev.map((file) => file.id == response.data.data.id ? { ...response.data.data, updatedAt: new Date(new Date().getTime() - 1 * 1000) } : file));
             setOpen(false);
         }
         else {

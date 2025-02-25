@@ -1,8 +1,8 @@
 "use client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1, children }: { title: string, description: string, icon: React.ReactNode, valueCallback: (percent: number) => string, duration?: number, children?: React.ReactNode }) => {
+const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1, loading = false, children }: { title: string, description: string, icon: React.ReactNode, valueCallback: (percent: number) => string, duration?: number, loading?: boolean, children?: React.ReactNode }) => {
     const [value, setValue] = useState(valueCallback(0));
     const current = useRef(0);
 
@@ -12,6 +12,7 @@ const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1,
         const steps = duration * 1000 / stepTime;
 
         const interval = setInterval(() => {
+            if (loading) return;
             current.current += 1 / steps;
             if (current.current >= 1) current.current = 1;
 

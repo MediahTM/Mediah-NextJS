@@ -1,22 +1,23 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Upload, Share2, XIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { Webhook } from '@prisma/client'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { getFileIcon } from '@/utils/file-types'
-import { uploadFiles } from '@/utils/file-store/upload'
-import { useStatusBar } from '@/utils/status-bar-context'
-import { toast } from 'sonner'
+import * as z from 'zod';
+import React, { useEffect, useState } from 'react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Controller, useForm } from 'react-hook-form';
+import { getFileIcon } from '@/utils/file-types';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Share2, Upload, XIcon } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import { uploadFiles } from '@/utils/file-store/upload';
+import { useStatusBar } from '@/utils/status-bar-context';
+import { Webhook } from '@prisma/client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useFiles } from '@/utils/files-context';
 
 const schema = z.object({
     location: z.string().min(1, 'Save Location is required'),
@@ -27,9 +28,19 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    const { setFiles } = useFiles();
     const { statusBar, setStatusBar } = useStatusBar();
     const [activeTab, setActiveTab] = useState('upload')
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+
+    const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            files: [],
+            location: '/',
+            webhook: ''
+        }
+    })
 
     useEffect(() => {
         if (open) {
@@ -40,6 +51,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                 .then((response) => {
                     if (response.success) {
                         setWebhooks(response.data)
+                        setValue('webhook', response.data[0].url)
                     } else {
                         toast.error("Could not fetch user webhooks!")
                     }
@@ -49,15 +61,6 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                 })
         }
     }, [open])
-
-    const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm<FormData>({
-        resolver: zodResolver(schema),
-        defaultValues: {
-            files: [],
-            location: '/',
-            webhook: ''
-        }
-    })
 
     const files = watch('files')
 
@@ -104,7 +107,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
         }
 
         setOpen(false);
-        uploadFiles(data.files, data.webhook, data.location, setStatusBar);
+        uploadFiles(data.files, data.webhook, data.location, setStatusBar, setFiles);
     }
 
     const handleShare = () => {

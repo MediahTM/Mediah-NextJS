@@ -1,11 +1,11 @@
-import { ThemeProvider } from "@/providers/theme-provider";
-import SessionWrapper from "@/providers/session-provider";
-import { getServerSession } from "next-auth";
-import { Inter } from 'next/font/google'
-import type { Metadata } from "next";
-import "./globals.css";
-import { authOptions } from "@/utils/auth-options";
-import { Toaster } from "@/components/ui/sonner"
+import SessionWrapper from '@/providers/session-provider';
+import { authOptions } from '@/utils/auth-options';
+import { getServerSession } from 'next-auth';
+import { Inter } from 'next/font/google';
+import type { Metadata } from 'next';
+import { ThemeProvider } from '@/providers/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
+import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,7 +29,22 @@ export const metadata: Metadata = {
             type: "image/x-icon",
             url: "https://avatars.githubusercontent.com/u/165603488?s=64&v=4",
             sizes: "64x64",
+        },
+        {
+            rel: "icon",
+            type: "image/x-icon",
+            url: "https://avatars.githubusercontent.com/u/165603488?s=128&v=4",
+            sizes: "128x128",
         }
+    ],
+    keywords: [
+        "mediah",
+        "files",
+        "upload",
+        "share",
+        "discord",
+        "discord webhook",
+        "file sharing"
     ]
 };
 

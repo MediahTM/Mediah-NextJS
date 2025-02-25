@@ -1,21 +1,21 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { CalendarIcon, Loader2Icon } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon, FileSpreadsheet, Loader2Icon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
+import { File } from '@prisma/client';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { File } from "@prisma/client";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import axios from "axios";
 
 const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: React.Dispatch<React.SetStateAction<boolean>>; file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const DynamicFormSchema = z.object({
@@ -28,6 +28,8 @@ const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: 
             path: ["end_date"],
         }
     );
+
+    const isExisting = (file.neverExpire || (file.endDate && file.shareDate))
 
     const form = useForm<z.infer<typeof DynamicFormSchema>>({
         resolver: zodResolver(DynamicFormSchema),
@@ -55,31 +57,36 @@ const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: 
     const neverExpireChecked = watch("never_expire");
 
     const onSubmit = async (data: z.infer<typeof DynamicFormSchema>) => {
-        file.neverExpire = data.never_expire
-        file.endDate = data.end_date as Date
-
         setLoading(true);
 
         const response = await axios.put(`/api/file`, {
             ...file,
-            shareDate: file.endDate ? new Date(new Date().getTime() - 1 * 1000) : null
+            neverExpire: data.never_expire,
+            endDate: data.end_date as Date,
+            shareDate: data.end_date ? new Date(new Date().getTime() - 1 * 1000) : null
         })
+
         if (response.data.success) {
-            setFiles(files => files.map((fileItem) => {
-                if (fileItem.id === file.id) {
-                    return {
-                        ...response.data.data,
-                        updatedAt: new Date(new Date().getTime() - 1 * 1000)
-                    };
-                }
-                return fileItem;
-            }));
-            setOpen(false);
-            toast.success('Shared file successfully!');
+            setFiles(files => {
+                return files.map((fileItem) => {
+                    if ((fileItem as any).previousFile) delete (fileItem as any).previousFile;
+                    if (fileItem.id === file.id) {
+                        return {
+                            ...response.data.data,
+                            updatedAt: new Date(new Date().getTime() - 1 * 1000)
+                        };
+                    }
+                    return fileItem;
+                })
+            });
+            toast.success(isExisting ? 'Updated share expiration successfully!' : 'Shared file successfully!');
         }
         else {
             toast.error("Could not update file!");
         }
+
+        setLoading(false);
+        setOpen(false);
     };
 
     const handleClose = () => {
@@ -166,7 +173,7 @@ const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: 
                     <Button type="submit">
                         {!loading ? (
                             <>
-                                {(file.neverExpire || (file.endDate && file.shareDate)) ? 'Update' : 'Share'}
+                                {isExisting ? 'Update' : 'Share'}
                             </>
                         ) : (
                             <Loader2Icon className="animate-spin relative size-5" />

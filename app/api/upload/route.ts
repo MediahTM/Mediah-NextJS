@@ -1,7 +1,7 @@
-import db from "@/lib/prisma";
-import { authOptions } from "@/utils/auth-options";
-import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import db from '@/lib/prisma';
+import { authOptions } from '@/utils/auth-options';
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const uploadSchema = z.object({
@@ -26,13 +26,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: error.errors || 'An error occurred parsing the request.' });
     }
     try {
-        await db.file.create({
+        const newFile = await db.file.create({
             data: {
                 userId: session.user.id,
                 ...data
             }
         });
-        return NextResponse.json({ success: true, message: 'File uploaded successfully.', data });
+        return NextResponse.json({ success: true, message: 'File uploaded successfully.', data: newFile });
     } catch {
         return NextResponse.json({ success: false, message: 'An error occurred uploading the file.' });
     }

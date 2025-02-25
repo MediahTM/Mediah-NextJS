@@ -1,19 +1,19 @@
 "use client";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarGroup, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuItem, SidebarGroupLabel, SidebarGroupContent, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar"
-import { ModeToggle } from "@/components/ui/theme-toggler";
-import { Separator } from "@/components/ui/separator";
-import Container from "@/components/ui/container";
-import { usePathname } from "next/navigation";
-import { GalleryVerticalEnd } from "lucide-react";
-import { SidebarLinks } from "@/lib/menu";
-import Link from "next/link";
-import AvatarDropdown from "@/components/ui/avatar-dropdown";
-import UploadDialog from "./dialogs/upload/upload-dialog";
-import StatusBar from "@/components/status-bar/status-bar";
-import { StatusBarProvider } from "@/utils/status-bar-context";
-import { FilesProvider } from "@/utils/files-context";
-import { cn } from "@/lib/utils";
+import AvatarDropdown from '@/components/ui/avatar-dropdown';
+import Container from '@/components/ui/container';
+import Link from 'next/link';
+import StatusBar from '@/components/status-bar/status-bar';
+import UploadDialog from './dialogs/upload/upload-dialog';
+import { cn } from '@/lib/utils';
+import { FilesProvider } from '@/utils/files-context';
+import { GalleryVerticalEnd } from 'lucide-react';
+import { ModeToggle } from '@/components/ui/theme-toggler';
+import { Separator } from '@/components/ui/separator';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarLinks } from '@/lib/menu';
+import { StatusBarProvider } from '@/utils/status-bar-context';
+import { usePathname } from 'next/navigation';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
@@ -81,7 +81,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                                 </div>
                             </Container>
                         </div>
-                        <main className="px-6 pb-12 relative h-full flex-1 overflow-y-auto">
+                        <main className="px-6 relative h-full flex-1 overflow-y-auto">
                             {children}
                         </main>
                         <div className="container px-4 pb-4 pt-6 overflow-hidden mx-auto w-full sticky bottom-0 flex min-h-[100px]">

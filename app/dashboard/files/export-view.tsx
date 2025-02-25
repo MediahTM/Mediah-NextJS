@@ -26,12 +26,39 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
         setOpen(false);
     }
 
-    const objectCSV = (data: object) => {
-        const keys = Object.keys(data);
-        const values = Object.values(data);
-        const csvContent = `${keys.join(",")}\n${values.join(",")}`;
-        return csvContent;
-    };
+    const objectCSV = (data: any): string => {
+        const headers = [
+            "id",
+            "filename",
+            "uploadedSize",
+            "uploadedAt",
+            "updatedAt",
+            "isActive",
+            "shareDate",
+            "path",
+            "endDate",
+            "neverExpire",
+            "userId",
+            "parts"
+        ];
+    
+        const row = [
+            data.id,
+            data.filename,
+            data.uploadedSize,
+            data.uploadedAt,
+            data.updatedAt,
+            data.isActive,
+            data.shareDate ?? "",
+            data.path,
+            data.endDate ?? "",
+            data.neverExpire,
+            data.userId,
+            data.parts.map((part: any) => `${part.url} (${part.size})`).join(" | ")
+        ];
+    
+        return `${headers.join(",")}\n${row.map(value => `"${value}"`).join(",")}`;
+    }
 
     const exportFile = (data: string, filename: string, type: string) => {
         const blob = new Blob([data], { type });

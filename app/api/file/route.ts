@@ -1,9 +1,9 @@
 "use server";
 
-import { authOptions } from "@/utils/auth-options";
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import db from "@/lib/prisma";
+import db from '@/lib/prisma';
+import { authOptions } from '@/utils/auth-options';
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
 
     try {
         const file = await request.json();
-
 
         if (!file || !file.filename || !file.userId || !file.path || !file.isActive) {
             return NextResponse.json({ success: false, message: "Missing required file data", data: null });
@@ -61,7 +60,6 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    console.log(searchParams.get("isActive"))
     const isActive = searchParams.get("isActive") === "true" ? true : false
 
     try {

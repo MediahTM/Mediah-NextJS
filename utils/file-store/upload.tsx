@@ -1,11 +1,12 @@
 "use client";
-import axios from "axios";
-import { arrayBufferToBase64, formatBytes, sleep } from "@/lib/helpers";
-import { StatusBarProps } from "@/components/status-bar/status-bar";
-import { createJob } from "../status-bar-jobs";
-import { Upload } from "lucide-react";
 
-export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>) => {
+import axios from 'axios';
+import { arrayBufferToBase64, formatBytes, sleep } from '@/lib/helpers';
+import { createJob } from '../status-bar-jobs';
+import { StatusBarProps } from '@/components/status-bar/status-bar';
+import { Upload } from 'lucide-react';
+
+export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, setFiles: React.Dispatch<React.SetStateAction<File[]>>) => {
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 5000;
     const CHUNK_SIZE = 1024 * 1024 * 3;
@@ -17,9 +18,11 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                     const controller = new AbortController();
                     const signal = controller.signal;
                     console.log(`Uploading ${file.name}`);
-                    setStatusBar(prev => ({ ...prev, title: "Uploading " + file.name, progress: 0, onCancel: () => {
-                        controller.abort();
-                    } }));
+                    setStatusBar(prev => ({
+                        ...prev, title: "Uploading " + file.name, progress: 0, onCancel: () => {
+                            controller.abort();
+                        }
+                    }));
                     const encryptedFileName: string = btoa(file.name.replace(/[^A-Za-z0-9+/=]/g, "_").substring(0, file.name.lastIndexOf('.'))).slice(0, 56) + ".mediah"; // might change this later
 
                     let offset: number = 0;
@@ -53,13 +56,14 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                     if (offset / CHUNK_SIZE < numChunks) {
                                         reader.readAsArrayBuffer(file.slice(offset, offset + CHUNK_SIZE));
                                     } else {
-                                        setStatusBar(prev => ({...prev, description: "Uploading to database..." }));
-                                        await axios.post("/api/upload", { 
+                                        setStatusBar(prev => ({ ...prev, description: "Uploading to database..." }));
+                                        const response = await axios.post("/api/upload", {
                                             parts,
                                             filename: file.name,
                                             uploadedSize: file.size,
                                             path: location
                                         }, { headers: { 'Content-Type': 'application/json' }, signal });
+                                        setFiles(prev => [...prev, response.data.data]);
                                         resolve();
                                     }
                                     break;

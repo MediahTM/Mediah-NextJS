@@ -1,39 +1,54 @@
 "use client";
 
-import { Button } from '@/components/ui/button';
-import Container from '@/components/ui/container'
-import PageTitle from '@/components/ui/page-title'
-import { formatBytes, formatRelativeTime } from '@/lib/helpers';
-import { EllipsisVerticalIcon, Settings } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react'
-import ShareDialog from './share-dialog';
-import { Switch } from '@/components/ui/switch';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import ExportDialog from './export-dialog';
-import RenameDialog from './rename-dialog';
+import axios from 'axios';
+import Container from '@/components/ui/container';
 import DeleteDialog from './delete-dialog';
-import { toast } from 'sonner';
+import ExportDialog from './export-dialog';
+import PageTitle from '@/components/ui/page-title';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import RenameDialog from './rename-dialog';
+import ShareDialog from './share-dialog';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, ModuleRegistry, themeQuartz } from 'ag-grid-community';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { ChevronFirstIcon, ChevronLastIcon, ChevronLeft, ChevronLeftIcon, ChevronRight, ChevronRightIcon, EllipsisVerticalIcon, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/constants';
 import { downloadFiles } from '@/utils/file-store/download';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { formatBytes, formatRelativeTime } from '@/lib/helpers';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
+import { useFiles } from '@/utils/files-context';
 import { useStatusBar } from '@/utils/status-bar-context';
-import { fetchFiles, useFiles } from '@/utils/files-context';
-import axios from 'axios';
 
 const FilesView = () => {
-    const { files, setFiles } = useFiles();
+    const { files, setFiles, fetchFiles } = useFiles();
     const [gridReady, setGridReady] = useState<boolean>(false);
     const gridRef = useRef<AgGridReact>(null);
 
     const { setStatusBar } = useStatusBar();
 
-    const pageSizes: number[] = [10, 20, 30, 40, 50, 100];
-    const pageSize: number = pageSizes[1];
+    const [pageSize, setPageSize] = useState<number | null>(null);
+
+    const [fitPage, setFitPage] = useState(true);
 
     useEffect(() => {
-        setTimeout(() => {       
+        if (fitPage) localStorage.setItem("pageSize", "Fit");
+    }, [fitPage])
+
+    useEffect(() => {
+        if (localStorage.getItem("pageSize") !== "Fit") setFitPage(false);
+        setPageSize(Number(localStorage.getItem("pageSize")) || DEFAULT_PAGE_SIZE);
+        fetchFiles();
+    }, [])
+
+    const pageSizes: number[] = PAGE_SIZES;
+
+    useEffect(() => {
+        setTimeout(() => {
             if (gridRef?.current?.api) {
                 gridRef.current.api.redrawRows();
                 gridRef.current.api.refreshCells();
@@ -41,10 +56,6 @@ const FilesView = () => {
             }
         }, 100)
     }, [gridReady])
-
-    useEffect(() => {
-        fetchFiles(setFiles);
-    }, [])
 
     ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -71,6 +82,7 @@ const FilesView = () => {
             field: "filename",
             headerName: "Filename",
             flex: 1,
+            suppressMovable: true,
             filter: true,
             filterParams: {
                 filterOptions: ['contains', 'notContains', 'startsWith', 'endsWith'],
@@ -79,6 +91,8 @@ const FilesView = () => {
         {
             field: "uploadedSize",
             headerName: "File Size",
+            suppressMovable: true,
+            width: 140,
             cellRenderer: ({ data }: CustomCellRendererProps) => {
                 return (
                     <p>{formatBytes(data.uploadedSize)}</p>
@@ -113,58 +127,91 @@ const FilesView = () => {
             },
         },
         {
+            headerName: "Updated At",
+            field: "updatedAt",
+            suppressMovable: true,
+            filter: true,
+            width: 150,
+            filterParams: {
+                filterOptions: ['inRange'],
+            },
+            cellRenderer: ({ data }: CustomCellRendererProps) => {
+                const [updatedAt, setUpdatedAt] = useState<string>(formatRelativeTime(new Date(data.updatedAt.toString())));
+
+                setInterval(() => {
+                    setUpdatedAt(formatRelativeTime(new Date(data.updatedAt.toString())))
+                }, 1000);
+
+                return (
+                    <p>{updatedAt[0].toUpperCase() + updatedAt.slice(1)}</p>
+                )
+            },
+        },
+        {
             field: "neverExpire",
             headerName: "Shared",
+            suppressMovable: true,
+            resizable: false,
+            width: 100,
             cellRenderer: ({ data }: CustomCellRendererProps) => {
                 const [useOpen, setUseOpen] = useState<boolean>(false);
 
-                const checked = Boolean(
-                    data.neverExpire ||
-                    (data.shareDate && data.endDate) ||
-                    data.endDate != null ||
-                    useOpen
-                )
-
                 const handleSwitchChange = async (checked: boolean) => {
-                    const file = files.find((file) => file.id === data.id);
-
                     if (checked) {
                         setUseOpen(true);
                         return;
                     }
 
-                    if (!file) {
+                    if (!data) {
                         toast.error("Unable to locate the file for update.");
                         return;
                     }
 
-                    const response = await axios.put(`/api/file`, {
-                        ...file,
-                        neverExpire: false,
-                        shareDate: null,
-                        endDate: null
-                    })
+                    let previousFiles;
 
-                    if (response.data.success) {
-                        setFiles(files => files.map((file) => {
+                    setFiles((files) => {
+                        previousFiles = files;
+                        return files.map((file) => {
                             if (file.id === data.id) {
                                 return {
                                     ...file,
                                     updatedAt: new Date(new Date().getTime() - 1 * 1000),
                                     neverExpire: false,
                                     shareDate: null,
-                                    endDate: null
+                                    endDate: null,
+                                    previousFile: file
                                 };
                             }
+                            if ((file as any).previousFile) delete (file as any).previousFile;
                             return file;
-                       }))
+                        })
+                    })
+
+                    const response = await axios.put(`/api/file`, {
+                        ...data,
+                        neverExpire: false,
+                        shareDate: null,
+                        endDate: null
+                    })
+
+                    if (!response.data.success && previousFiles) {
+                        toast.error("Could not update file!");
+                        setFiles(previousFiles);
                     }
                 };
+
+                const [fileState, setFileState] = useState(data.previousFile || data);
+
+                useLayoutEffect(() => {
+                    if (data.previousFile) setTimeout(() => setFileState(data), 100);
+                }, [])
 
                 return (
                     <div className="flex items-center gap-2 h-full">
                         <Switch
-                            checked={checked}
+                            checked={fileState.neverExpire ||
+                                (fileState.shareData && fileState.endDate) ||
+                                fileState.endDate != null || useOpen}
                             onCheckedChange={handleSwitchChange}
                         />
 
@@ -175,18 +222,20 @@ const FilesView = () => {
                             setFiles={setFiles}
                         />
 
-                        {checked && (
-                            <Button
-                                onClick={() => {
-                                    setUseOpen(true)
-                                }}
-                                variant="ghost"
-                                size="sm"
-                                className="w-8"
-                            >
-                                <Settings />
-                            </Button>
-                        )}
+                        {(fileState.neverExpire ||
+                            (fileState.shareData && fileState.endDate) ||
+                            fileState.endDate != null || useOpen) && (
+                                <Button
+                                    onClick={() => {
+                                        setUseOpen(true)
+                                    }}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-8"
+                                >
+                                    <Settings />
+                                </Button>
+                            )}
                     </div>
                 );
             },
@@ -205,28 +254,10 @@ const FilesView = () => {
             },
         },
         {
-            headerName: "Updated At",
-            field: "updatedAt",
-            filter: true,
-            filterParams: {
-                filterOptions: ['inRange'],
-            },
-            cellRenderer: ({ data }: CustomCellRendererProps) => {
-                const [updatedAt, setUpdatedAt] = useState<string>(formatRelativeTime(new Date(data.updatedAt.toString())));
-
-                setInterval(() => {
-                    setUpdatedAt(formatRelativeTime(new Date(data.updatedAt.toString())))
-                }, 1000);
-
-                return (
-                    <p>{updatedAt[0].toUpperCase() + updatedAt.slice(1)}</p>
-                )
-            },
-        },
-        {
             headerName: " ",
             resizable: false,
             width: 70,
+            suppressMovable: true,
             sortable: false,
             cellRenderer: ({ data }: CustomCellRendererProps) => {
                 const [exportDialog, setExportDialog] = useState<boolean>(false);
@@ -273,22 +304,33 @@ const FilesView = () => {
                             file={data}
                             setFiles={setFiles}
                         />
-
                     </div>
                 )
             }
         }
     ]);
 
+
+    function toggleColumns() {
+        gridRef.current?.api.setColumnsVisible(['updatedAt', 'uploadedSize', 'neverExpire'], !(window.innerWidth < 1024)); // lg
+    }
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('resize', toggleColumns)
+    };
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
     return (
         <Container className="h-full flex flex-col">
             <PageTitle title="My Files" />
             <div className="flex-1 flex flex-col h-full">
                 <div className="h-full flex flex-col">
-                    {!gridReady && (
+                    {!gridReady && pageSize && (
                         <div className="h-full border divide-y rounded-lg flex flex-col">
-                            <div className="grid bg-border/15 grid-cols-5 gap-4 p-4 h-[48px]">
-                                {Array.from({ length: columnsDefs.length }).map((_, index) => (
+                            <div style={{ gridTemplateColumns: `repeat(${columnsDefs.length - (window.innerWidth < 1024 ? 4 : 1)}, minmax(0, 1fr))` }} className="grid bg-border/15 grid-cols-5 gap-4 p-4 h-[48px]">
+                                {Array.from({ length: columnsDefs.length - (window.innerWidth < 1024 ? 4 : 1) }).map((_, index) => (
                                     <div key={index} className="flex items-center gap-2 justify-between">
                                         <Skeleton className="h-[19px] w-4/6" />
                                         <div className="h-[14px] w-[2px] bg-border" />
@@ -297,12 +339,13 @@ const FilesView = () => {
                             </div>
                             <div className="flex flex-col flex-[1_1_0] overflow-hidden">
                                 <div className="flex-1 flex flex-col overflow-y-auto">
-                                    {Array.from({ length: pageSize }).map((_, rowIndex) => (
+                                    {Array.from({ length: Number(pageSize) }).map((_, rowIndex) => (
                                         <div
                                             key={rowIndex}
-                                            className="grid bg-border/15 grid-cols-5 gap-4 p-4 h-[48px]"
+                                            style={{ gridTemplateColumns: `repeat(${columnsDefs.length - (window.innerWidth < 1024 ? 4 : 1)}, minmax(0, 1fr))` }}
+                                            className="grid bg-border/15 gap-4 px-4 shrink-0 border-b h-[41px]"
                                         >
-                                            {Array.from({ length: columnsDefs.length }).map((_, colIndex) => (
+                                            {Array.from({ length: columnsDefs.length - (window.innerWidth < 1024 ? 4 : 1) }).map((_, colIndex) => (
                                                 <div key={colIndex} className="flex items-center gap-2 justify-between">
                                                     <Skeleton className="h-[19px] w-full" />
                                                 </div>
@@ -311,27 +354,84 @@ const FilesView = () => {
                                     ))}
                                 </div>
                             </div>
-                            <div className="h-[42px] px-1 border-t flex items-center justify-end">
+                            <div className="h-[41px] px-1 border-t flex items-center justify-end">
                                 <Skeleton className="md:w-[38%] w-full h-[32px]" />
                             </div>
                         </div>
                     )}
                     <div className={cn(!gridReady && 'hidden', "flex-1 overflow-hidden")}>
-                        {(files && files.length > 0) && (
+                        {(files && files.length > 0) && pageSize && (
                             <AgGridReact
                                 columnDefs={columnsDefs}
                                 rowData={files || []}
                                 className="ag-theme h-full"
                                 theme={theme}
+                                animateRows={false}
+                                paginationPageSizeSelector={pageSizes}
                                 pagination={true}
                                 paginationPageSize={pageSize}
+                                paginationAutoPageSize={fitPage}
+                                suppressPaginationPanel={true}
+                                onPaginationChanged={(event) => {
+                                    const pageSize = Number(event.api.paginationGetPageSize());
+                                    window.localStorage.setItem('pageSize', String(pageSize));
+                                    setCurrentPage(event.api.paginationGetCurrentPage());
+                                    setTotalPages(event.api.paginationGetTotalPages());
+                                }}
                                 ref={gridRef}
                                 onGridReady={() => {
+                                    toggleColumns();
                                     setGridReady(true);
+                                    setCurrentPage(gridRef.current?.api.paginationGetCurrentPage() || 0);
+                                    setTotalPages(gridRef.current?.api.paginationGetTotalPages() || 0);
                                 }}
                             />
                         )}
                     </div>
+                    {(files && files.length > 0) && pageSize && gridReady && (
+                        <div className="flex items-center justify-between p-2">
+                            <div className="flex items-center justify-center gap-2">
+                                <p className='text-sm text-nowrap'>Page size:</p>
+                                <Select value={fitPage ? 'Fit' : pageSize.toString()} onValueChange={(value) => {
+                                    if (value === 'Fit') setFitPage(true)
+                                    else {
+                                        setFitPage(false)
+                                        setPageSize(Number(value))
+                                    }
+                                }
+                                }>
+                                    <SelectTrigger>
+                                        <SelectValue className="text-sm" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Fit" className="text-sm">
+                                            <span className='pr-1.5'>Fit</span>
+                                        </SelectItem>
+                                        {pageSizes.map((size) => (
+                                            <SelectItem key={size} value={size.toString()} className="text-sm">
+                                                {size}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <p className='text-sm text-nowrap md:block hidden'>Page {currentPage + 1}/{totalPages}</p>
+                            <div className="flex items-center justify-center gap-2">
+                                <Button size="icon" variant="outline" onClick={() => gridRef.current?.api.paginationGoToFirstPage()} disabled={currentPage <= 0 || totalPages <= 1}>
+                                    <ChevronFirstIcon className="size-4" />
+                                </Button>
+                                <Button size="icon" variant="outline" onClick={() => gridRef.current?.api.paginationGoToPreviousPage()} disabled={currentPage <= 0 || totalPages <= 1}>
+                                    <ChevronLeftIcon className="size-4" />
+                                </Button>
+                                <Button size="icon" variant="outline" onClick={() => gridRef.current?.api.paginationGoToNextPage()} disabled={currentPage >= (totalPages - 1) || totalPages <= 1}>
+                                    <ChevronRightIcon className="size-4" />
+                                </Button>
+                                <Button size="icon" variant="outline" onClick={() => gridRef.current?.api.paginationGoToLastPage()} disabled={currentPage >= (totalPages - 1) || totalPages <= 1}>
+                                    <ChevronLastIcon className="size-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </Container>
