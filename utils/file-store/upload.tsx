@@ -27,7 +27,7 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
 
                     let offset: number = 0;
                     let currentChunk: number = 0;
-                    const parts: { url: string, size: number }[] = [];
+                    const parts: string[] = [];
                     let totalBytesUploaded: number = 0;
                     const reader: FileReader = new FileReader();
                     reader.onload = async () => {
@@ -49,7 +49,7 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                 if (request.status >= 200 && request.status < 300) {
                                     const responseJSON: any = request.data;
                                     const attachmentURL: string = responseJSON.attachments[0].url.split("?")[0];
-                                    parts.push({ url: attachmentURL, size: chunk.length });
+                                    parts.push(attachmentURL.split("/").at(-2)!);
                                     totalBytesUploaded += (chunk.length * 3) / 4;
                                     console.log(`Uploaded ${file.name} (${currentChunk}/${numChunks})`);
                                     offset += CHUNK_SIZE;
@@ -60,7 +60,10 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                         const response = await axios.post("/api/upload", {
                                             parts,
                                             filename: file.name,
+                                            encryptedFilename: attachmentURL.split("/").at(-1),
+                                            channelID: attachmentURL.split("/").at(-3),
                                             uploadedSize: file.size,
+                                            chunkSize: CHUNK_SIZE,
                                             path: location
                                         }, { headers: { 'Content-Type': 'application/json' }, signal });
                                         setFiles(prev => [...prev, response.data.data]);

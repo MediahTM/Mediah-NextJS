@@ -5,58 +5,61 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
 }
 
 model File {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  filename     String
-  uploadedSize Int
-  uploadedAt   DateTime  @default(now())
-  updatedAt    DateTime  @default(now())
-  isActive     Boolean   @default(true)
-  shareDate    DateTime?
-  path         String    @default("/")
-  endDate      DateTime?
-  neverExpire  Boolean   @default(false)
-  parts        Json[]
+    id                String    @id @default(auto()) @map("_id") @db.ObjectId
+    filename          String
+    uploadedSize      Int
+    uploadedAt        DateTime  @default(now())
+    updatedAt         DateTime  @default(now())
+    isActive          Boolean   @default(true)
+    shareDate         DateTime?
+    path              String    @default("/")
+    endDate           DateTime?
+    neverExpire       Boolean   @default(false)
+    parts             BigInt[]
+    encryptedFilename String
+    channelID         BigInt
+    chunkSize         Int
 
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
+    userId String @db.ObjectId
+    user   User   @relation(fields: [userId], references: [id])
 
-  @@index([isActive])
+    @@index([isActive])
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  name      String?
-  image     String?
-  discordId String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  referral  Boolean  @default(false)
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    email     String   @unique
+    name      String?
+    image     String?
+    discordId String?  @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    referral  Boolean  @default(false)
 
-  File    File[]
-  Webhook Webhook? @relation(fields: [webhookId], references: [id])
+    File    File[]
+    Webhook Webhook? @relation(fields: [webhookId], references: [id])
 
-  webhookId String? @db.ObjectId
+    webhookId String? @db.ObjectId
 }
 
 model Webhook {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  url       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    name      String
+    url       String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  userId String @db.ObjectId
-  User   User[]
+    userId String @db.ObjectId
+    User   User[]
 
-  @@index([userId])
+    @@index([userId])
 }

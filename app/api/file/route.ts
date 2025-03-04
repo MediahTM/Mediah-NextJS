@@ -4,53 +4,8 @@ import db from '@/lib/prisma';
 import { authOptions } from '@/utils/auth-options';
 import { getServerSession } from 'next-auth/next';
 import { NextRequest, NextResponse } from 'next/server';
-
-export async function POST(request: NextRequest) {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-        return NextResponse.json({ success: false, message: "User is not authenticated.", data: null });
-    }
-
-    try {
-        const file = await request.json();
-
-        if (!file || !file.filename || !file.userId || !file.path || !file.isActive) {
-            return NextResponse.json({ success: false, message: "Missing required file data", data: null });
-        }
-
-        const fileExists = await db.file.findFirst({
-            where: {
-                filename: file.filename,
-                userId: session.user.id
-            },
-        });
-
-        if (fileExists) {
-            return NextResponse.json({ success: false, message: "File already exists!", data: fileExists });
-        }
-
-        const createdFile = await db.file.create({
-            data: {
-                filename: file.filename as string,
-                userId: session.user.id!,
-                uploadedSize: file.uploadedSize || 0,
-                uploadedAt: new Date(),
-                updatedAt: new Date(),
-                path: file.path || '/',
-                isActive: file.isActive ?? true,
-                shareDate: file.shareDate ? new Date(file.shareDate) : null,
-                endDate: file.endDate ? new Date(file.endDate) : null,
-                parts: file.parts || [],
-            },
-        });
-
-        return NextResponse.json({ success: true, message: "File created successfully!", data: createdFile });
-    }
-    catch {
-        return NextResponse.json({ success: false, message: "An error occurred while processing the file.", data: null });
-    }
-}
+import { uploadSchema } from '../upload/route';
+import { z } from 'zod';
 
 export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -73,7 +28,13 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: "Files fetched successfully.",
-            data: files,
+            data: files.map((file) => {
+                return {
+                    ...file,
+                    channelID: String(file.channelID).padStart(19, '0'),
+                    parts: file.parts.map((part) => String(part).padStart(19, '0'))
+                }
+            }),
         });
 
     }
@@ -90,10 +51,22 @@ export async function PUT(request: NextRequest) {
     }
 
     try {
-        const file = await request.json();
-
-        if (!file || !file.filename || !file.userId) {
-            return NextResponse.json({ success: false, message: "Missing required file data", data: null });
+        let file;
+        try {
+            const json = await request.json();
+            json.parts = json.parts.map((part: string) => BigInt(part));
+            json.channelID = BigInt(json.channelID);
+            file = uploadSchema.extend({
+                id: z.string(),
+                isActive: z.boolean(),
+                shareDate: z.preprocess((value) => new Date(value as string), z.date()).nullable(), 
+                endDate: z.preprocess((value) => new Date(value as string), z.date()).nullable(),
+                neverExpire: z.boolean(), 
+                parts: z.array(z.bigint()),
+                channelID: z.bigint()
+            }).parse(json);
+        } catch (error: any) {
+            return NextResponse.json({ success: false, error: error.errors || 'An error occurred parsing the request.' });
         }
 
         const fileExists = await db.file.findFirst({
@@ -107,7 +80,7 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ success: false, message: "File does not exist!", data: null });
         }
 
-        const updatedFile = await db.file.update({
+        let updatedFile: any = await db.file.update({
             where: {
                 id: fileExists.id,
             },
@@ -123,7 +96,8 @@ export async function PUT(request: NextRequest) {
                 parts: file.parts || fileExists.parts,
             },
         });
-
+        updatedFile.parts = updatedFile.parts.map((part: BigInt) => String(part).padStart(19, '0'));
+        updatedFile.channelID = String(updatedFile.channelID).padStart(19, '0');
         return NextResponse.json({ success: true, message: "File updated successfully!", data: updatedFile });
     }
     catch {

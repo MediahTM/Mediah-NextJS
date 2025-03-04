@@ -5,17 +5,15 @@ import Container from '@/components/ui/container';
 import DeleteDialog from './delete-dialog';
 import ExportDialog from './export-dialog';
 import PageTitle from '@/components/ui/page-title';
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import RenameDialog from './rename-dialog';
 import ShareDialog from './share-dialog';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, ModuleRegistry, themeQuartz } from 'ag-grid-community';
 import { Button } from '@/components/ui/button';
-import { ChevronFirstIcon, ChevronLastIcon, ChevronLeft, ChevronLeftIcon, ChevronRight, ChevronRightIcon, EllipsisVerticalIcon, Settings } from 'lucide-react';
+import { ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/constants';
-import { downloadFiles } from '@/utils/file-store/download';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatBytes, formatRelativeTime } from '@/lib/helpers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,6 +21,16 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useFiles } from '@/utils/files-context';
 import { useStatusBar } from '@/utils/status-bar-context';
+import { Dropdown } from "@/types/dropdown";
+
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import FileContextMenu from '@/components/file-context-menu';
 
 const FilesView = () => {
     const { files, setFiles, fetchFiles } = useFiles();
@@ -266,24 +274,14 @@ const FilesView = () => {
 
                 return (
                     <div className="flex justify-end h-full items-center">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    size={"icon"}
-                                    variant={"ghost"}
-                                >
-                                    <EllipsisVerticalIcon />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align='end'>
-                                <DropdownMenuItem onClick={() => downloadFiles([data], setStatusBar)}>Download</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setExportDialog(true)}>Export</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setRenameDialog(true)}>Rename</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setDeleteDialog(true)}>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <FileContextMenu files={[data]} dialogTriggers={{ export: () => setExportDialog(true), rename: () => setRenameDialog(true), delete: () => setDeleteDialog(true) }} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef}>
+                            <Button
+                                size={"icon"}
+                                variant={"ghost"}
+                            >
+                                <EllipsisVerticalIcon />
+                            </Button>
+                        </FileContextMenu>
 
                         <ExportDialog
                             open={exportDialog}
@@ -322,9 +320,33 @@ const FilesView = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
+    const [dropdownMenu, setDropdownMenu] = useState<Dropdown>({
+        open: false,
+        position: { x: 0, y: 0 },
+        files: [],
+        exportDialogOpen: false,
+        renameDialogOpen: false,
+        deleteDialogOpen: false
+    });
+
     return (
         <Container className="h-full flex flex-col">
             <PageTitle title="My Files" />
+            <Breadcrumb className='py-2'>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        Home
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        Components
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
             <div className="flex-1 flex flex-col h-full">
                 <div className="h-full flex flex-col">
                     {!gridReady && pageSize && (
@@ -372,11 +394,21 @@ const FilesView = () => {
                                 paginationPageSize={pageSize}
                                 paginationAutoPageSize={fitPage}
                                 suppressPaginationPanel={true}
+                                suppressCellFocus={true}
+                                rowSelection={{
+                                    mode: 'multiRow',
+                                    checkboxes: true,
+                                    enableClickSelection: true
+                                }}
                                 onPaginationChanged={(event) => {
                                     const pageSize = Number(event.api.paginationGetPageSize());
                                     window.localStorage.setItem('pageSize', String(pageSize));
                                     setCurrentPage(event.api.paginationGetCurrentPage());
                                     setTotalPages(event.api.paginationGetTotalPages());
+                                    if (event.newPage && !event.newData) setFiles(files => files.map((file, index) => {
+                                        if ((file as any).previousFile) delete (file as any).previousFile
+                                        return file;
+                                    }));
                                 }}
                                 ref={gridRef}
                                 onGridReady={() => {
@@ -385,6 +417,22 @@ const FilesView = () => {
                                     setCurrentPage(gridRef.current?.api.paginationGetCurrentPage() || 0);
                                     setTotalPages(gridRef.current?.api.paginationGetTotalPages() || 0);
                                 }}
+                                onCellContextMenu={(event) => {
+                                    setDropdownMenu(menu => ({ ...menu, open: false }));
+                                    if (!event.node.isSelected()) {
+                                        (event.event?.target as HTMLElement)?.click()
+                                    }
+                                    setDropdownMenu(menu => ({
+                                        ...menu,
+                                        open: true,
+                                        position: {
+                                            x: (event.event as MouseEvent)?.clientX,
+                                            y: (event.event as MouseEvent)?.clientY
+                                        },
+                                        files: event.api.getSelectedNodes().map(file => file.data)
+                                    }));
+                                }}
+                                preventDefaultOnContextMenu={true}
                             />
                         )}
                     </div>
@@ -433,6 +481,34 @@ const FilesView = () => {
                         </div>
                     )}
                 </div>
+                <div>
+                    {dropdownMenu.open || dropdownMenu.exportDialogOpen && <ExportDialog
+                        open={dropdownMenu.exportDialogOpen}
+                        setOpen={(value) => setDropdownMenu(menu => ({ ...menu, exportDialogOpen: value }))}
+                        file={dropdownMenu.files[0]}
+                    />}
+
+                    {dropdownMenu.open || dropdownMenu.renameDialogOpen && <RenameDialog
+                        open={dropdownMenu.renameDialogOpen}
+                        setOpen={(value) => setDropdownMenu(menu => ({ ...menu, renameDialogOpen: value }))}
+                        file={dropdownMenu.files[0]}
+                        setFiles={setFiles}
+                    />}
+
+                    {dropdownMenu.open || dropdownMenu.deleteDialogOpen && <DeleteDialog
+                        open={dropdownMenu.deleteDialogOpen}
+                        setOpen={(value) => setDropdownMenu(menu => ({ ...menu, deleteDialogOpen: value }))}
+                        file={dropdownMenu.files[0]}
+                        setFiles={setFiles}
+                    />}
+                </div>
+                {dropdownMenu.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdownMenu.position.y, left: dropdownMenu.position.x }}>
+                    <FileContextMenu open={dropdownMenu.open} onOpenChange={() => setDropdownMenu(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef} files={dropdownMenu.files} dialogTriggers={{
+                        rename: () => setDropdownMenu(menu => ({ ...menu, renameDialogOpen: true, open: false })),
+                        delete: () => setDropdownMenu(menu => ({ ...menu, deleteDialogOpen: true, open: false })),
+                        export: () => setDropdownMenu(menu => ({ ...menu, exportDialogOpen: true, open: false }))
+                    }} />
+                </div>}
             </div>
         </Container>
     )

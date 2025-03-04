@@ -1,4 +1,5 @@
 "use client";
+
 import axios, { AxiosResponse } from 'axios';
 import { createJob } from '../status-bar-jobs';
 import { DownloadIcon } from 'lucide-react';
@@ -21,9 +22,9 @@ export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<
                     }));
                     let renewedURLs: string[] = [];
                     for (let i = 0; i < Math.ceil(file.parts!.length / 50); i++) {
-                        const urls = file.parts!.slice(i * 50, (i + 1) * 50).map((part: any) => part.url);
+                        const messageIDs = file.parts!.slice(i * 50, (i + 1) * 50);
                         try {
-                            const response = await axios.post("/api/renew", { urls }, { signal });
+                            const response = await axios.post("/api/renew", { messageIDs, channelID: file.channelID, encryptedFilename: file.encryptedFilename }, { signal });
                             if (response.status >= 200 && response.status < 300) {
                                 renewedURLs.push(...response.data.hooks);
                                 if (!signal.aborted) setStatusBar(prev => ({ ...prev, progress: (renewedURLs.length / file.parts!.length) * 100 }));

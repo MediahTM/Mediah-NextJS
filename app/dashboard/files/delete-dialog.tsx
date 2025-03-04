@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const DeleteDialog = ({ open, setOpen, file, setFiles }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>>, file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
+const DeleteDialog = ({ open, setOpen, file, setFiles }: { open: boolean, setOpen: (open: boolean) => void, file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleDelete = async () => {

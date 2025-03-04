@@ -102,3 +102,5 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export const getFilePartUrl = (channelID: string, messageID: string, encryptedFileName: string): string => `https://cdn.discordapp.com/attachments/${channelID}/${messageID}/${encryptedFileName}`

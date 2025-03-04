@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: React.Dispatch<React.SetStateAction<boolean>>, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
+const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: boolean) => void, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const formSchema = z.object({
         fileName: z
             .string()
