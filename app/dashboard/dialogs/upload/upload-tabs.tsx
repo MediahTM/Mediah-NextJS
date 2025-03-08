@@ -2,22 +2,25 @@
 
 import * as z from 'zod';
 import React, { useEffect, useState } from 'react';
+import UploadPathDialog from './upload-path';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Share2, Upload, XIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Controller, useForm } from 'react-hook-form';
 import { getFileIcon } from '@/utils/file-types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { parsePath } from '@/lib/helpers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Share2, Upload, XIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { uploadFiles } from '@/utils/file-store/upload';
+import { useFiles } from '@/utils/files-context';
 import { useStatusBar } from '@/utils/status-bar-context';
 import { Webhook } from '@prisma/client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFiles } from '@/utils/files-context';
+import axios from 'axios';
 
 const schema = z.object({
     location: z.string().min(1, 'Save Location is required'),
@@ -29,7 +32,7 @@ type FormData = z.infer<typeof schema>
 
 const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const { setFiles } = useFiles();
-    const { statusBar, setStatusBar } = useStatusBar();
+    const { setStatusBar } = useStatusBar();
     const [activeTab, setActiveTab] = useState('upload')
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
@@ -44,21 +47,16 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
 
     useEffect(() => {
         if (open) {
-            fetch(`/api/webhooks`, {
-                method: "GET"
+            axios.get("/api/webhooks").then((response) => {
+                if (response.data.success) {
+                    setWebhooks(response.data.data)
+                    setValue('webhook', response.data.data[0].url)
+                } else {
+                    toast.error("Could not fetch user webhooks!")
+                }
+            }).catch(() => {
+                toast.error("Could not fetch the data!")
             })
-                .then((response) => response.json())
-                .then((response) => {
-                    if (response.success) {
-                        setWebhooks(response.data)
-                        setValue('webhook', response.data[0].url)
-                    } else {
-                        toast.error("Could not fetch user webhooks!")
-                    }
-                })
-                .catch(() => {
-                    toast.error("Could not fetch the data!")
-                })
         }
     }, [open])
 
@@ -107,7 +105,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
         }
 
         setOpen(false);
-        uploadFiles(data.files, data.webhook, data.location, setStatusBar, setFiles);
+        uploadFiles(data.files, data.webhook, parsePath(data.location), setStatusBar, setFiles);
     }
 
     const handleShare = () => {
@@ -120,14 +118,14 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
     }
 
     const handleClear = () => {
-        // @ts-ignore
+        //@ts-ignore
         setValue('files', [] as [File, ...File[]]);
     }
 
     return (
         <form onSubmit={handleSubmit(handleUpload)} className='space-y-6'>
             <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="md:grid w-full md:grid-cols-3 flex overflow-auto">
                     <TabsTrigger value="upload">Upload Files</TabsTrigger>
                     <TabsTrigger value="info" disabled={files.length <= 0 && activeTab === 'upload'}>File Information</TabsTrigger>
                     <TabsTrigger value="share" disabled={(files.length <= 0 && activeTab === 'upload') || !watch("webhook") || !watch("location")}>Upload & Share</TabsTrigger>
@@ -170,8 +168,8 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                                     Clear All
                                 </Button>
                             </div>
-                            <ScrollArea className={cn('max-w-full overflow-y-auto overflow-x-clip pr-4', files.length >= 6 && 'h-[200px]')}>
-                                <div className="max-w-full pl-5 flex flex-col gap-1">
+                            <ScrollArea className={cn('max-w-full mt-2 overflow-y-auto overflow-x-clip', files.length >= 6 && 'h-[200px]')}>
+                                <div className="max-w-full flex flex-col gap-1">
                                     {files.map((file, index) => (
                                         <div key={index} className="flex max-w-xl flex-1 gap-4 items-center justify-between overflow-hidden">
                                             <div className="flex items-center gap-2 overflow-hidden">
@@ -199,13 +197,16 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="location">Save Location</Label>
-                            <Input
-                                id="location"
-                                placeholder="Enter save location"
-                                value={"/"}
-                                disabled
-                                {...register('location')}
-                            />
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    id="location"
+                                    placeholder="Enter save location"
+                                    value={watch('location')}
+                                    className='w-full'
+                                    {...register('location')}
+                                />
+                                <UploadPathDialog setPath={(path) => { setValue('location', parsePath(path)) }} />
+                            </div>
                             {errors.location && (
                                 <p className="text-destructive font-semibold text-sm">{errors.location.message}</p>
                             )}
@@ -217,17 +218,20 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                                 name="webhook"
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger id='webhook' value='placeholder'>
-                                            <SelectValue placeholder='Select Webhook' defaultValue={webhooks.length > 0 ? webhooks[0].name : ''} />
+                                        <SelectTrigger id="webhook">
+                                            <SelectValue placeholder="Select Webhook" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {webhooks.map((webhook, index) => (
-                                                <SelectItem key={index} value={webhook.url}>{webhook.name}</SelectItem>
+                                                <SelectItem key={index} value={webhook.url}>
+                                                    {webhook.name}
+                                                </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 )}
                             />
+
                             {errors.webhook && (
                                 <p className="text-destructive font-semibold text-sm">{errors.webhook.message}</p>
                             )}
@@ -256,6 +260,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     onClick={() => setActiveTab(activeTab === 'upload' ? 'upload' : activeTab === 'info' ? 'upload' : 'info')}
                     disabled={activeTab === 'upload'}
                 >
+                    <ChevronLeft />
                     Previous
                 </Button>
                 <Button
@@ -264,6 +269,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     disabled={activeTab === 'share' || (files.length <= 0 && activeTab === 'upload') || ((!watch("webhook") || !watch("location")) && activeTab === 'info')}
                 >
                     Next
+                    <ChevronRight />
                 </Button>
             </div>
         </form>

@@ -130,7 +130,7 @@ const StatusBar = () => {
                     onClick={() => setStatusBar({ ...statusBar, open: true, openPreference: true })}
                     className="sm:w-[20%] w-[80%] flex items-center justify-center flex-col py-4 gap-1 h-auto pointer-events-auto"
                 >
-                    <ChevronUp className="w-4 h-4" />
+                    <ChevronUp className="size-4" />
                 </Button>
             </motion.div>
 

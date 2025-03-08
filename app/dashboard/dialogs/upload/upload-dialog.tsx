@@ -1,9 +1,9 @@
-import { buttonVariants } from '@/components/ui/button'
-import { Dialog, DialogHeader, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { motion } from 'framer-motion'
-import { UploadIcon } from 'lucide-react'
-import React, { useState } from 'react'
-import UploadDialogTabs from './upload-tabs'
+import React, { useState } from 'react';
+import UploadDialogTabs from './upload-tabs';
+import { buttonVariants } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { motion } from 'framer-motion';
+import { UploadIcon } from 'lucide-react';
 
 const UploadDialog = () => {
     const [open, setOpen] = useState<boolean>(false);
@@ -20,7 +20,7 @@ const UploadDialog = () => {
                     <UploadIcon />
                 </motion.button>
             </DialogTrigger>
-            <DialogContent className='max-w-xl'>
+            <DialogContent className='max-w-xl md:w-full w-[95vw]'>
                 <DialogHeader>
                     <DialogTitle>Upload Files</DialogTitle>
                     <DialogDescription>Add files, edit and upload to Mediah</DialogDescription>

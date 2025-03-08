@@ -4,33 +4,30 @@ import axios from 'axios';
 import Container from '@/components/ui/container';
 import DeleteDialog from './delete-dialog';
 import ExportDialog from './export-dialog';
+import FileContextMenu from '@/components/file-context-menu';
 import PageTitle from '@/components/ui/page-title';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import RenameDialog from './rename-dialog';
 import ShareDialog from './share-dialog';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon, Settings } from 'lucide-react';
+import { ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon, Files, FolderIcon, LucideIcon, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/constants';
-import { formatBytes, formatRelativeTime } from '@/lib/helpers';
+import { Dropdown } from '@/types/dropdown';
+import { File } from '@prisma/client';
+import { Folder } from '@/types/folder';
+import { formatBytes, formatRelativeTime, getFilesInPath, getFoldersMap } from '@/lib/helpers';
+import { getFileIcon } from '@/utils/file-types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useFiles } from '@/utils/files-context';
 import { useStatusBar } from '@/utils/status-bar-context';
-import { Dropdown } from "@/types/dropdown";
 
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import FileContextMenu from '@/components/file-context-menu';
 
 const FilesView = () => {
     const { files, setFiles, fetchFiles } = useFiles();
@@ -94,16 +91,24 @@ const FilesView = () => {
             filter: true,
             filterParams: {
                 filterOptions: ['contains', 'notContains', 'startsWith', 'endsWith'],
+            },
+            cellRenderer: ({ data }: CustomCellRendererProps) => {
+                return (
+                    <div className='flex items-center gap-2'>
+                        {data.isFolder ? <FolderIcon className='size-5 shrink-0' stroke='orange'/> : getFileIcon(data.filename, { className: 'size-5 shrink-0', stroke: 'gray' })}
+                        <p className='truncate'>{data.isFolder ? data.name : data.filename}</p>
+                    </div>
+                )
             }
         },
         {
             field: "uploadedSize",
-            headerName: "File Size",
+            headerName: "Size",
             suppressMovable: true,
             width: 140,
             cellRenderer: ({ data }: CustomCellRendererProps) => {
                 return (
-                    <p>{formatBytes(data.uploadedSize)}</p>
+                    <p>{formatBytes(data.uploadedSize ?? 0)}</p>
                 )
             },
             filter: true,
@@ -144,10 +149,10 @@ const FilesView = () => {
                 filterOptions: ['inRange'],
             },
             cellRenderer: ({ data }: CustomCellRendererProps) => {
-                const [updatedAt, setUpdatedAt] = useState<string>(formatRelativeTime(new Date(data.updatedAt.toString())));
-
+                const [updatedAt, setUpdatedAt] = useState<string>(formatRelativeTime(data.updatedAt ? new Date(data.updatedAt.toString()) : new Date()));
+                if (data.isFolder) console.log(data.updatedAt)
                 setInterval(() => {
-                    setUpdatedAt(formatRelativeTime(new Date(data.updatedAt.toString())))
+                    setUpdatedAt(formatRelativeTime(data.updatedAt ? new Date(data.updatedAt.toString()) : new Date()));
                 }, 1000);
 
                 return (
@@ -329,22 +334,39 @@ const FilesView = () => {
         deleteDialogOpen: false
     });
 
+    const [renderedResults, setRenderedResults] = useState<(File | Folder)[]>([]);
+    const [pageLocation, setPageLocation] = useState("/");
+
+    useEffect(() => {
+        gridRef.current?.api.paginationGoToPage(0);
+    }, [pageLocation]);
+
+    useEffect(() => {
+        console.log(getFilesInPath("/", files));
+        console.log(getFilesInPath("/test", files))
+        if (files.length > 1) {
+            console.log(getFoldersMap(files));
+            const filesToRender = getFilesInPath(pageLocation, files);
+            setRenderedResults([...filesToRender.filesInPath, ...filesToRender.foldersInPath]);
+        }
+    }, [files, pageLocation]);
+
     return (
         <Container className="h-full flex flex-col">
             <PageTitle title="My Files" />
-            <Breadcrumb className='py-2'>
+            <Breadcrumb className='pt-2 pb-3'>
                 <BreadcrumbList>
-                    <BreadcrumbItem>
+                    <BreadcrumbItem onClick={() => setPageLocation("/")} className='hover:cursor-pointer hover:text-primary transition-all'>
                         Home
                     </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        Components
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
-                    </BreadcrumbItem>
+                    {pageLocation !== "/" && pageLocation.split("/").slice(1).map((location, index) => (
+                        <React.Fragment key={index}>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem key={index} onClick={() => setPageLocation(pageLocation.split("/").slice(0, index + 2).join("/"))} className='hover:cursor-pointer hover:text-primary transition-all'>
+                                {location}
+                            </BreadcrumbItem>
+                        </React.Fragment>
+                    ))}
                 </BreadcrumbList>
             </Breadcrumb>
             <div className="flex-1 flex flex-col h-full">
@@ -385,7 +407,7 @@ const FilesView = () => {
                         {(files && files.length > 0) && pageSize && (
                             <AgGridReact
                                 columnDefs={columnsDefs}
-                                rowData={files || []}
+                                rowData={renderedResults || []}
                                 className="ag-theme h-full"
                                 theme={theme}
                                 animateRows={false}
@@ -433,6 +455,11 @@ const FilesView = () => {
                                     }));
                                 }}
                                 preventDefaultOnContextMenu={true}
+                                onCellDoubleClicked={(event) => {
+                                    if (event.node.data.isFolder) {
+                                        setPageLocation(event.node.data.path);
+                                    }
+                                }}
                             />
                         )}
                     </div>

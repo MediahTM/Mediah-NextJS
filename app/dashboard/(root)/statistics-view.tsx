@@ -1,29 +1,29 @@
 "use client";
 
-import Link from 'next/link';
-import PageTitle from '@/components/ui/page-title';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import StatisticsCard from './statistics-card';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { FileIcon, HardDrive } from 'lucide-react';
+import { FileIcon, FileQuestionIcon, HardDrive, ImageIcon, MusicIcon, VideoIcon } from 'lucide-react';
 import { formatBytes } from '@/lib/helpers';
 import { Session } from 'next-auth';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { StatisticsResponse } from '@/types/statistics/statistics-response';
-import { toast } from 'sonner';
 import { useFiles } from '@/utils/files-context';
+import { getFileType } from '@/utils/file-types';
+import { File } from '@prisma/client';
+import dynamic from 'next/dynamic';
+import RenameDialog from '../files/rename-dialog';
+import { Dropdown } from '@/types/dropdown';
+import DeleteDialog from '../files/delete-dialog';
+import FileContextMenu from '@/components/file-context-menu';
 import { useStatusBar } from '@/utils/status-bar-context';
+import ExportDialog from '../files/export-dialog';
 
-const InitialStatistics: StatisticsResponse = {
-    totalFiles: 0,
-    totalStorage: 0
-}
+const ExpandableCardClient = dynamic(() => import('./expandable-file'), {
+    ssr: false,
+    loading: () => <div className='h-[300px]' />
+});
 
 const StatisticsView = ({ session }: { session: Session | null }) => {
     const { setStatusBar } = useStatusBar();
-
-    const { files, setFiles, fetchFiles, loading } = useFiles();
+    const { files, fetchFiles, loading, setFiles } = useFiles();
 
     useEffect(() => {
         fetchFiles();
@@ -32,9 +32,38 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
     const totalFiles = files.length;
     const totalStorage = files.reduce((acc, file) => acc + file.uploadedSize, 0);
 
+    const fileTypeStatistics = [
+        { title: 'Total Videos', icon: VideoIcon, sorter: ((file: File) => getFileType(file.filename) === 'video') },
+        { title: 'Total Audio', icon: MusicIcon, sorter: ((file: File) => getFileType(file.filename) === 'audio') },
+        { title: 'Total Images', icon: ImageIcon, sorter: ((file: File) => getFileType(file.filename) === 'image') },
+        { title: 'Total Other', icon: FileQuestionIcon, sorter: ((file: File) => !['video', 'audio', 'image'].includes(getFileType(file.filename) || '')) },
+    ]
+
+    const [latestFiles, setLatestFiles] = useState(files.toSorted((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()));
+
+    useEffect(() => {
+        const handleResize = () => setLatestFiles(files.toSorted((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()).slice(
+            0,
+            window.innerWidth > 1280 ? 4 :
+                window.innerWidth > 640 ? 2 : 1
+        ));
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
+    }, [files]);
+
+    const [dropdown, setDropdown] = useState<Dropdown>({
+        files: [],
+        position: { x: 0, y: 0 },
+        open: false,
+        exportDialogOpen: false,
+        deleteDialogOpen: false,
+        renameDialogOpen: false
+    })
+
     return (
-        <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
-            <>
+        <div className='flex flex-col gap-6 overflow-hidden'>
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
                 <StatisticsCard
                     title={"Total Files"}
                     description={"All files in your account"}
@@ -47,16 +76,49 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     title={"Total Storage"}
                     description={"The sum of all bytes stored in your account"}
                     icon={<HardDrive className='size-5' />}
+                    progress={session?.user?.isReferral ? undefined : ((totalStorage / (25 * 1024 * 1024 * 1024)) * 100)}
                     loading={loading}
                     valueCallback={(percent: number) => loading ? `0` : `${formatBytes(Math.floor(percent * totalStorage / 100))}${session?.user?.isReferral ? '' : ' / 25 GB'}`}
-                >
-                    {!session?.user?.isReferral && <div className='flex justify-end'>
-                        <Link href='/dashboard/referrals' className={cn(buttonVariants({ variant: "link", size: "sm" }), "text-destructive")}>Remove this limit</Link>
-                    </div>}
-                </StatisticsCard>
-            </>
+                />
+            </div>
+            <div className='sm:grid xl:grid-cols-4 grid-cols-2 hidden gap-6'>
+                {fileTypeStatistics.map((statistic, index) => (
+                    <StatisticsCard
+                        key={index}
+                        title={statistic.title}
+                        icon={<statistic.icon className='size-5' />}
+                        loading={loading}
+                        progress={files.filter(file => statistic.sorter(file)).reduce((acc, file) => acc + file.uploadedSize, 0) / totalStorage * 100}
+                        valueCallback={(percent: number) => loading ? `0` : `${formatBytes(Math.floor(percent * files.filter(file => statistic.sorter(file)).reduce((acc, file) => acc + file.uploadedSize, 0) / 100))}`}
+                        loadingClassName='h-[48px]'
+                    />
+                ))}
+            </div>
+            <h1 className='text-3xl font-black sm:block hidden'>Latest Files</h1>
+            <h1 className='text-3xl font-black sm:hidden'>Latest File</h1>
+            <Suspense>
+                <div className='grid gap-6 xl:grid-cols-4 sm:grid-cols-2 grid-cols-1'>
+                    {latestFiles.length > 0 && latestFiles.map((_, index) => <div key={index} onContextMenu={(e) => {
+                        e.preventDefault();
+                        setDropdown(prev => ({ ...prev, open: true, position: { x: e.clientX, y: e.clientY }, files: [latestFiles[index]] }))
+                    }}>
+                        <ExpandableCardClient latestFiles={latestFiles} index={index} />
+                    </div>)}
+                </div>
+            </Suspense>
+
+            {(dropdown.open || dropdown.renameDialogOpen) && <RenameDialog open={dropdown.renameDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, renameDialogOpen: value }))} file={dropdown.files[0]} setFiles={setFiles} />}
+            {(dropdown.open || dropdown.deleteDialogOpen) && <DeleteDialog open={dropdown.deleteDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, deleteDialogOpen: value }))} file={dropdown.files[0]} setFiles={setFiles} />}
+            {(dropdown.open || dropdown.exportDialogOpen) && <ExportDialog open={dropdown.exportDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, exportDialogOpen: value }))} file={dropdown.files[0]} />}
+            {dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdown.position.y, left: dropdown.position.x }}>
+                <FileContextMenu open={dropdown.open} onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} files={dropdown.files} dialogTriggers={{
+                    rename: () => setDropdown(menu => ({ ...menu, renameDialogOpen: true, open: false })),
+                    delete: () => setDropdown(menu => ({ ...menu, deleteDialogOpen: true, open: false })),
+                    export: () => setDropdown(menu => ({ ...menu, exportDialogOpen: true, open: false }))
+                }} />
+            </div>}
         </div>
     )
 }
 
-export default StatisticsView
+export default StatisticsView;

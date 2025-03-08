@@ -1,8 +1,13 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { MagicCard } from "@/components/magicui/magic-card";
+import { Progress } from '@/components/ui/progress';
+import MagicCardWrapped from '@/components/ui/magic-card-wrapped';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
-const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1, loading = false, children }: { title: string, description: string, icon: React.ReactNode, valueCallback: (percent: number) => string, duration?: number, loading?: boolean, children?: React.ReactNode }) => {
+const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1, loading = false, progress, loadingClassName = 'h-9' }: { title: string, description?: string, icon: React.ReactNode, valueCallback: (percent: number) => string, duration?: number, loading?: boolean, progress?: number, loadingClassName?: string }) => {
     const [value, setValue] = useState(valueCallback(0));
     const current = useRef(0);
 
@@ -27,8 +32,14 @@ const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1,
         return () => clearInterval(interval);
     }, [duration, valueCallback]);
 
+    const [renderedProgress, setRenderedProgress] = useState(0);
+
+    useEffect(() => {
+        if (progress && !loading) setTimeout(() => setRenderedProgress(progress), 100);
+    }, [progress])
+
     return (
-        <Card araria-labelledby={title}>
+        <MagicCardWrapped>
             <CardHeader>
                 <CardTitle id={title}>
                     <div className="flex items-center gap-2">
@@ -36,13 +47,19 @@ const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1,
                         {title || ''}
                     </div>
                 </CardTitle>
-                <CardDescription>{description}</CardDescription>
+                {description && <CardDescription>{description}</CardDescription>}
             </CardHeader>
-            <CardContent className='flex items-center justify-between'>
-                <h1 className='text-2xl font-bold tracking-wide'>{value}</h1>
-                {children}
+            <CardContent className='flex justify-center'>
+                {!loading ? (
+                    <div className='flex flex-col gap-2 w-full'>
+                        <h1 className='text-2xl font-bold tracking-wide'>{value}</h1>
+                        {progress && <Progress className='w-full' value={renderedProgress} />}
+                    </div>
+                ) : (
+                    <Skeleton className={cn('w-full', loadingClassName)} />
+                )}
             </CardContent>
-        </Card>
+        </MagicCardWrapped>
     )
 }
 

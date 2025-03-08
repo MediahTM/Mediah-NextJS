@@ -1,12 +1,13 @@
-import React from 'react'
-import { StatusBarProps } from './status-bar/status-bar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu'
-import { downloadFiles } from '@/utils/file-store/download'
-import { AgGridReact } from 'ag-grid-react'
-import { File } from '@prisma/client'
-import { DeleteIcon } from 'lucide-react'
-import { createJob } from '@/utils/status-bar-jobs'
-import axios from 'axios'
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import { createJob } from '@/utils/status-bar-jobs';
+import { DeleteIcon, DownloadIcon, InfoIcon, PencilIcon, TableIcon, TrashIcon } from 'lucide-react';
+import { downloadFiles } from '@/utils/file-store/download';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { File } from '@prisma/client';
+import { StatusBarProps } from './status-bar/status-bar';
+import { toast } from 'sonner';
 
 export type FileContextMenuProps = {
     files: File[],
@@ -19,29 +20,44 @@ export type FileContextMenuProps = {
     onOpenChange?: (open: boolean) => void,
     setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>,
     setFiles: React.Dispatch<React.SetStateAction<File[]>>,
-    gridRef: React.RefObject<AgGridReact>,
+    gridRef?: React.RefObject<AgGridReact>,
     children?: React.ReactNode
 }
 
-const FileContextMenu = ({  open, onOpenChange, setStatusBar, setFiles, gridRef, children, files, dialogTriggers } : FileContextMenuProps) => {
+const FileContextMenu = ({ open, onOpenChange, setStatusBar, setFiles, gridRef, children, files, dialogTriggers }: FileContextMenuProps) => {
     return (
         <DropdownMenu open={open ?? undefined} onOpenChange={onOpenChange ?? undefined}>
             <DropdownMenuTrigger asChild={Boolean(children)}>
                 {children}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
+            <DropdownMenuContent align='end' className='w-[150px]'>
                 <DropdownMenuItem onClick={async () => {
                     await downloadFiles(files, setStatusBar)
-                    gridRef.current?.api.deselectAll();
-                }}>Download</DropdownMenuItem>
+                    gridRef?.current?.api.deselectAll();
+                }}>
+                    <DownloadIcon />
+                    Download
+                </DropdownMenuItem>
                 {files.length === 1 && <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => {
+                       toast.success('Bind me')
+                    }}>
+                        <InfoIcon />
+                        Info
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
                         dialogTriggers.export()
-                    }}>Export</DropdownMenuItem>
+                    }}>
+                        <TableIcon />
+                        Export
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         dialogTriggers.rename()
-                    }}>Rename</DropdownMenuItem>
+                    }}>
+                        <PencilIcon />
+                        Rename
+                    </DropdownMenuItem>
                 </>}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => {
@@ -61,7 +77,10 @@ const FileContextMenu = ({  open, onOpenChange, setStatusBar, setFiles, gridRef,
                             }
                         })
                     })
-                }}>Delete</DropdownMenuItem>
+                }}>
+                    <TrashIcon />
+                    Delete
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )

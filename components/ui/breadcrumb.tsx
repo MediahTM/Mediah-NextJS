@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { buttonVariants } from "./button"
 
 const Breadcrumb = React.forwardRef<
   HTMLElement,
@@ -33,7 +34,7 @@ const BreadcrumbItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <li
     ref={ref}
-    className={cn("inline-flex items-center gap-1.5", className)}
+    className={cn("inline-flex items-center gap-1.5", buttonVariants({variant: 'ghost'}), 'px-2 py-1 h-7', className)}
     {...props}
   />
 ))

@@ -5,8 +5,9 @@ import { arrayBufferToBase64, formatBytes, sleep } from '@/lib/helpers';
 import { createJob } from '../status-bar-jobs';
 import { StatusBarProps } from '@/components/status-bar/status-bar';
 import { Upload } from 'lucide-react';
+import { File as MediahFile } from '@prisma/client';
 
-export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, setFiles: React.Dispatch<React.SetStateAction<File[]>>) => {
+export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, setFiles: React.Dispatch<React.SetStateAction<MediahFile[]>>) => {
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 5000;
     const CHUNK_SIZE = 1024 * 1024 * 3;

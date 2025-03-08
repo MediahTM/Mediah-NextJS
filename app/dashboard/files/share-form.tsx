@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 
-const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: React.Dispatch<React.SetStateAction<boolean>>; file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
+const ShareForm = ({ open, setOpen, file, setFiles }: { open: boolean; setOpen: (open: boolean) => void; file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const DynamicFormSchema = z.object({
         never_expire: z.boolean(),
         end_date: z.date().nullable().optional(),

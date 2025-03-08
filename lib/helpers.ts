@@ -1,3 +1,6 @@
+import { File } from '@prisma/client';
+import { Folder, FolderTree } from '@/types/folder';
+
 export const getInitials = (text: string): string => {
     if (!text) return "";
 
@@ -104,3 +107,79 @@ export function sleep(ms: number): Promise<void> {
 }
 
 export const getFilePartUrl = (channelID: string, messageID: string, encryptedFileName: string): string => `https://cdn.discordapp.com/attachments/${channelID}/${messageID}/${encryptedFileName}`
+
+export const parsePath = (path: string): string => {
+    if (!path) return "/"
+    if (path.length > 1) {
+        if (path.endsWith("/")) path = path.slice(0, -1);
+        if (path.endsWith("/")) return parsePath(path);
+        return path
+    } else return path
+}
+
+export function getFilesInPath(path: string = "/", files: File[]): { filesInPath: File[], foldersInPath: Folder[] } {
+    path = parsePath(path);
+    const filesInPath: File[] = [];
+    const folderMap: Map<string, Folder> = new Map();
+
+    for (const file of files) {
+        if (file.path === path) {
+            filesInPath.push(file);
+        } else if (file.path.startsWith(path) && file.path !== path) {
+            const subPath = file.path.slice(path.length).split("/").filter(Boolean)[0];
+            if (subPath) {
+                const folderPath = path === "/" ? `/${subPath}` : `${path}/${subPath}`;
+                if (!folderMap.has(folderPath)) {
+                    folderMap.set(folderPath, {
+                        path: folderPath,
+                        name: subPath,
+                        isFolder: true,
+                        updatedAt: file.updatedAt.toString(),
+                        uploadedSize: file.uploadedSize,
+                    });
+                } else {
+                    const folder = folderMap.get(folderPath)!;
+                    folder.uploadedSize += file.uploadedSize;
+                    folder.updatedAt = new Date(Math.max(new Date(folder.updatedAt).getTime(), new Date(file.updatedAt).getTime())).toString();
+                }
+            }
+        }
+    }
+
+    return { filesInPath, foldersInPath: Array.from(folderMap.values()) };
+}
+
+export function getFoldersMap(files: File[]): FolderTree[] {
+    let totalID = 1;
+    const foldersArray: FolderTree[] = [
+        {
+            id: totalID.toString(),
+            path: "/",
+            name: "Home",
+            isSelectable: true,
+            children: []
+        }
+    ];
+    files = files.sort(file => 0 - parsePath(file.path).split("/").length)
+    for (const file of files) {
+        if (file.path.length > 1) {
+            let pathParts = file.path.split("/").filter(Boolean);
+            pathParts = ["Home", ...pathParts.slice(0, pathParts.length - 1)];
+            const node = pathParts.reduce((acc: FolderTree | undefined, name: string) => acc?.children && acc.children.find((child: FolderTree) => child.name === name), { children: foldersArray } as FolderTree) as FolderTree;
+            if (node) {
+                if (!node.children.find((child: any) => child.name === file.path.split("/").pop())) {
+                    totalID++;
+                    node.children.push({
+                        id: totalID.toString(),
+                        path: parsePath(file.path),
+                        name: file.path.split("/").pop() || '',
+                        isSelectable: true,
+                        children: []
+                    })
+                }
+            }
+
+        }
+    }
+    return foldersArray;
+}
