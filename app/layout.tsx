@@ -1,13 +1,15 @@
 import SessionWrapper from '@/providers/session-provider';
 import { authOptions } from '@/utils/auth-options';
 import { getServerSession } from 'next-auth';
-import { Inter } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 import type { Metadata } from 'next';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
+import { getSiteLogo } from '@/lib/helpers';
+import { QueryProvider } from '@/providers/query-provider';
 
-const inter = Inter({ subsets: ['latin'] })
+const dmSans = DM_Sans({ subsets: ['latin'] })
 
 const description: string = "A modern Discord based file Uploader and Sharer for your everyday needs.";
 
@@ -21,23 +23,24 @@ export const metadata: Metadata = {
         {
             rel: "icon",
             type: "image/x-icon",
-            url: "https://avatars.githubusercontent.com/u/165603488?s=32&v=4",
+            url: getSiteLogo(32),
             sizes: "32x32",
         },
         {
             rel: "icon",
             type: "image/x-icon",
-            url: "https://avatars.githubusercontent.com/u/165603488?s=64&v=4",
+            url: getSiteLogo(64),
             sizes: "64x64",
         },
         {
             rel: "icon",
             type: "image/x-icon",
-            url: "https://avatars.githubusercontent.com/u/165603488?s=128&v=4",
+            url: getSiteLogo(128),
             sizes: "128x128",
         }
     ],
     keywords: [
+        "cloud",
         "mediah",
         "files",
         "upload",
@@ -54,7 +57,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${inter.className} antialiased`}
+                className={`${dmSans.className} antialiased`}
             >
                 <ThemeProvider
                     attribute="class"
@@ -63,7 +66,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     disableTransitionOnChange
                 >
                     <SessionWrapper session={session}>
-                        {children}
+                        <QueryProvider>
+                            {children}
+                        </QueryProvider>
                     </SessionWrapper>
                     <Toaster />
                 </ThemeProvider>

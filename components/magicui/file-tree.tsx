@@ -202,6 +202,7 @@ type FolderProps = {
   expandedItems?: string[];
   element: string;
   isCollapsable?: boolean;
+  initallyExpanded?: boolean;
   isSelectable?: boolean;
   isSelect?: boolean;
 } & FolderComponentProps;
@@ -217,6 +218,7 @@ const Folder = forwardRef<
       value,
       isSelectable = true,
       isCollapsable = true,
+      initallyExpanded = false,
       isSelect,
       children,
       ...props
@@ -232,6 +234,12 @@ const Folder = forwardRef<
       openIcon,
       closeIcon,
     } = useTree();
+
+    useEffect(() => {
+      if (initallyExpanded) {
+        setExpandedItems?.((prev) => [...(prev ?? []), value]);
+      }
+    }, [initallyExpanded]);
 
     return (
       <AccordionPrimitive.Item
@@ -356,7 +364,6 @@ const CollapseButton = forwardRef<
   }, []);
 
   useEffect(() => {
-    console.log(expandAll);
     if (expandAll) {
       expendAllTree(elements);
     }

@@ -1,4 +1,4 @@
-import { FilesIcon, LayoutDashboard, PlugIcon, ShoppingCart, TrashIcon, WebhookIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { FilesIcon, LayoutDashboard, PlugIcon, ShoppingCart, TrashIcon, WebhookIcon, SettingsIcon, UsersIcon, KeyIcon } from "lucide-react";
 
 export const SidebarLinks = [
     {
@@ -53,6 +53,11 @@ export const SidebarLinks = [
                 title: "Settings",
                 icon: SettingsIcon,
                 url: "/settings",
+            },
+            {
+                title: "Authorization",
+                icon: KeyIcon,
+                url: "/auth",
             },
             {
                 title: "Referrals",

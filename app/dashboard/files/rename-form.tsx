@@ -2,7 +2,7 @@
 
 import * as z from 'zod';
 import axios from 'axios';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { File } from '@prisma/client';
 import { FileIcon, Loader2Icon } from 'lucide-react';
@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { renameFile } from '@/utils/api-actions';
+import { getFileIcon } from '@/utils/file-types';
 
 const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: boolean) => void, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const formSchema = z.object({
@@ -18,7 +20,7 @@ const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: b
             .string()
             .min(1, "File name is required!")
             .max(255, "File name is too long!")
-            .refine((name) => !name.includes("/"), "File name cannot contain '/'")
+            .refine((name) => !name.includes("/") && !name.includes("\\"), "File name cannot contain '/' or '\\'"),
     })
 
     const [loading, setLoading] = useState<boolean>(false);
@@ -39,12 +41,9 @@ const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: b
 
         setLoading(true);
 
-        const response = await axios.put(`/api/file`, {
-            ...file,
-            filename: values.fileName
-        });
-        if (response.data.success) {
-            setFiles((prev) => prev.map((file) => file.id == response.data.data.id ? { ...response.data.data, updatedAt: new Date(new Date().getTime() - 1 * 1000) } : file));
+        const response = await renameFile(file.id, values.fileName);
+        if (response.success) {
+            setFiles((prev) => prev.map((file) => file.id == response.data.id ? { ...response.data, updatedAt: new Date(new Date().getTime() - 1 * 1000) } : file));
             setOpen(false);
         }
         else {
@@ -64,7 +63,7 @@ const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: b
                             <FormLabel>File name</FormLabel>
                             <FormControl>
                                 <div className="flex items-center space-x-2.5">
-                                    <FileIcon className="size-5 opacity-50" />
+                                    {getFileIcon(form.watch("fileName"), { className: "size-5 opacity-50" })}
                                     <Input {...field} />
                                 </div>
                             </FormControl>

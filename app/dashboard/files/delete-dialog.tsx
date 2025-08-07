@@ -6,16 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Loader2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import axios from 'axios';
+import { patchFile } from '@/utils/api-actions';
 
 const DeleteDialog = ({ open, setOpen, file, setFiles }: { open: boolean, setOpen: (open: boolean) => void, file: File, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleDelete = async () => {
-        const response = await axios.put(`/api/file`, {
-            ...file,
-            isActive: false
-        })
+        const response = await patchFile(file.id, { isActive: false });
         if (response.data.success) {
             setFiles(prev => prev.filter((file) => file.id !== response.data.data.id));
             setOpen(false);

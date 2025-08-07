@@ -23,11 +23,7 @@ const ExpandableCardClient = dynamic(() => import('./expandable-file'), {
 
 const StatisticsView = ({ session }: { session: Session | null }) => {
     const { setStatusBar } = useStatusBar();
-    const { files, fetchFiles, loading, setFiles } = useFiles();
-
-    useEffect(() => {
-        fetchFiles();
-    }, [])
+    const { files, loading, setFiles } = useFiles();
 
     const totalFiles = files.length;
     const totalStorage = files.reduce((acc, file) => acc + file.uploadedSize, 0);
@@ -53,7 +49,7 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
     }, [files]);
 
     const [dropdown, setDropdown] = useState<Dropdown>({
-        files: [],
+        items: [],
         position: { x: 0, y: 0 },
         open: false,
         exportDialogOpen: false,
@@ -98,20 +94,20 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
             <h1 className='text-3xl font-black sm:hidden'>Latest File</h1>
             <Suspense>
                 <div className='grid gap-6 xl:grid-cols-4 sm:grid-cols-2 grid-cols-1'>
-                    {latestFiles.length > 0 && latestFiles.map((_, index) => <div key={index} onContextMenu={(e) => {
+                    {latestFiles.length > 0 && latestFiles.length <= 4 && latestFiles.map((_, index) => <div key={index} onContextMenu={(e) => {
                         e.preventDefault();
-                        setDropdown(prev => ({ ...prev, open: true, position: { x: e.clientX, y: e.clientY }, files: [latestFiles[index]] }))
+                        setDropdown(prev => ({ ...prev, open: true, position: { x: e.clientX, y: e.clientY }, items: [latestFiles[index]] }))
                     }}>
                         <ExpandableCardClient latestFiles={latestFiles} index={index} />
                     </div>)}
                 </div>
             </Suspense>
 
-            {(dropdown.open || dropdown.renameDialogOpen) && <RenameDialog open={dropdown.renameDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, renameDialogOpen: value }))} file={dropdown.files[0]} setFiles={setFiles} />}
-            {(dropdown.open || dropdown.deleteDialogOpen) && <DeleteDialog open={dropdown.deleteDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, deleteDialogOpen: value }))} file={dropdown.files[0]} setFiles={setFiles} />}
-            {(dropdown.open || dropdown.exportDialogOpen) && <ExportDialog open={dropdown.exportDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, exportDialogOpen: value }))} file={dropdown.files[0]} />}
+            {(dropdown.open || dropdown.renameDialogOpen) && <RenameDialog open={dropdown.renameDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, renameDialogOpen: value }))} file={dropdown.items[0] as File} setFiles={setFiles} />}
+            {(dropdown.open || dropdown.deleteDialogOpen) && <DeleteDialog open={dropdown.deleteDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, deleteDialogOpen: value }))} file={dropdown.items[0] as File} setFiles={setFiles} />}
+            {(dropdown.open || dropdown.exportDialogOpen) && <ExportDialog open={dropdown.exportDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, exportDialogOpen: value }))} file={dropdown.items[0] as File} />}
             {dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdown.position.y, left: dropdown.position.x }}>
-                <FileContextMenu open={dropdown.open} onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} files={dropdown.files} dialogTriggers={{
+                <FileContextMenu open={dropdown.open} onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} items={dropdown.items} dialogTriggers={{
                     rename: () => setDropdown(menu => ({ ...menu, renameDialogOpen: true, open: false })),
                     delete: () => setDropdown(menu => ({ ...menu, deleteDialogOpen: true, open: false })),
                     export: () => setDropdown(menu => ({ ...menu, exportDialogOpen: true, open: false }))

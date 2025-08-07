@@ -11,4 +11,12 @@ export type Folder = {
 export type FolderTree = TreeViewElement & {
     path: string,
     children: FolderTree[]
-}
+};
+
+export type NewFolderType = TreeViewElement & {
+    children: []
+    id: string
+    path: string
+    name: string
+    isNewFolder: true
+};

@@ -1,6 +1,6 @@
 import db from '@/lib/prisma';
-import { authOptions } from '@/utils/auth-options';
-import { getServerSession } from 'next-auth';
+import { withErrorHandling } from '@/utils/api-error-handling';
+import { getAuthenticatedSession } from '@/utils/api-session-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -14,37 +14,25 @@ export const uploadSchema = z.object({
     chunkSize: z.number(),
 })
 
-export async function POST(request: NextRequest) {
-    const session = await getServerSession(authOptions);
+export const POST = withErrorHandling(async (request: NextRequest) => {
+    const session = await getAuthenticatedSession();
 
-    if (!session || !session.user) {
-        return NextResponse.json({ success: false, message: 'User is not authenticated.', hooks: [] });
-    }
+    const data = uploadSchema.parse(await request.json());
 
-    let data;
-
-    try {
-        data = uploadSchema.parse(await request.json());
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.errors || 'An error occurred parsing the request.' });
-    }
-    
-    try {
-        const newFile = await db.file.create({
-            data: {
-                ...data,
-                parts: data.parts.map((part) => BigInt(part)),
-                channelID: BigInt(data.channelID),
-                chunkSize: data.chunkSize,
-                userId: session.user.id,
-            }
-        });
-        return NextResponse.json({ success: true, message: 'File uploaded successfully.', data: {
+    const newFile = await db.file.create({
+        data: {
+            ...data,
+            parts: data.parts.map((part) => BigInt(part)),
+            channelID: BigInt(data.channelID),
+            chunkSize: data.chunkSize,
+            userId: session.user.id,
+        }
+    });
+    return NextResponse.json({
+        success: true, message: 'File uploaded successfully.', data: {
             ...newFile,
             channelID: String(newFile.channelID).padStart(19, '0'),
             parts: newFile.parts.map((part) => String(part).padStart(19, '0'))
-        } });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, message: error.message || 'An error occurred uploading the file.'});
-    }
-}
+        }
+    });
+});

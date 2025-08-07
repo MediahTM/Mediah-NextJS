@@ -6,6 +6,7 @@ import { createJob } from '../status-bar-jobs';
 import { StatusBarProps } from '@/components/status-bar/status-bar';
 import { Upload } from 'lucide-react';
 import { File as MediahFile } from '@prisma/client';
+import { uploadFileToDatabase } from '../api-actions';
 
 export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, setFiles: React.Dispatch<React.SetStateAction<MediahFile[]>>) => {
     const MAX_RETRIES = 3;
@@ -58,15 +59,15 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                         reader.readAsArrayBuffer(file.slice(offset, offset + CHUNK_SIZE));
                                     } else {
                                         setStatusBar(prev => ({ ...prev, description: "Uploading to database..." }));
-                                        const response = await axios.post("/api/upload", {
+                                        const response = await uploadFileToDatabase({
                                             parts,
                                             filename: file.name,
-                                            encryptedFilename: attachmentURL.split("/").at(-1),
-                                            channelID: attachmentURL.split("/").at(-3),
+                                            encryptedFilename: attachmentURL.split("/").at(-1)!,
+                                            channelID: attachmentURL.split("/").at(-3)!,
                                             uploadedSize: file.size,
                                             chunkSize: CHUNK_SIZE,
                                             path: location
-                                        }, { headers: { 'Content-Type': 'application/json' }, signal });
+                                        }, { signal });
                                         setFiles(prev => [...prev, response.data.data]);
                                         resolve();
                                     }

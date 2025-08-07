@@ -14,16 +14,13 @@ datasource db {
 }
 
 model File {
-    id                String    @id @default(auto()) @map("_id") @db.ObjectId
+    id                String   @id @default(auto()) @map("_id") @db.ObjectId
     filename          String
     uploadedSize      Int
-    uploadedAt        DateTime  @default(now())
-    updatedAt         DateTime  @default(now())
-    isActive          Boolean   @default(true)
-    shareDate         DateTime?
-    path              String    @default("/")
-    endDate           DateTime?
-    neverExpire       Boolean   @default(false)
+    uploadedAt        DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+    isActive          Boolean  @default(true)
+    path              String   @default("/")
     parts             BigInt[]
     encryptedFilename String
     channelID         BigInt
@@ -62,4 +59,28 @@ model Webhook {
     User   User[]
 
     @@index([userId])
+}
+
+enum ShareType {
+  file
+  folder
+}
+
+// For the live demo, this project uses MongoDB, where the database has been configured to automatically delete expired share entries. This is impossible to add natively in Prisma.
+
+model Share {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    key    String
+    type   ShareType
+
+    fileId     String?
+    folderName String?
+
+    neverExpire Boolean  @default(false)
+    shareDate   DateTime
+    endDate     DateTime?
+
+    userId String
+    @@unique([userId, key, type])
 }

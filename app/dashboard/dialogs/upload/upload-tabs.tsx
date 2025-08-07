@@ -197,7 +197,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="location">Save Location</Label>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
                                 <Input
                                     id="location"
                                     placeholder="Enter save location"

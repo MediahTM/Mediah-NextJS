@@ -8,7 +8,12 @@ import { formatBytes } from '@/lib/helpers';
 import { saveAs } from 'file-saver';
 import { StatusBarProps } from '@/components/status-bar/status-bar';
 
-export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>) => {
+type DownloadOptions = {
+    onJobComplete?: (file: File) => void,
+    onCancel?: () => void
+}
+
+export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, downloadOptions: DownloadOptions = {}) => {
     for (const file of files) {
         if (file) {
             await createJob(setStatusBar, file.filename, DownloadIcon, async () => {
@@ -18,6 +23,7 @@ export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<
                     setStatusBar(prev => ({
                         ...prev, title: "Downloading " + file.filename, description: "Renewing URLs...", progress: 0, onCancel: () => {
                             controller.abort();
+                            if (downloadOptions.onCancel) downloadOptions.onCancel();
                         }
                     }));
                     let renewedURLs: string[] = [];
@@ -68,10 +74,11 @@ export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<
                         resolve();
                         return;
                     }
-                    const blob = new Blob(fileData);
+                    const blob = new Blob(fileData as BlobPart[]);
                     const url = URL.createObjectURL(blob);
                     saveAs(url, file.filename);
                     URL.revokeObjectURL(url);
+                    if (downloadOptions.onJobComplete) downloadOptions.onJobComplete(file);
                     resolve();
                 })
             })

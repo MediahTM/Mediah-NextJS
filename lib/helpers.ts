@@ -110,6 +110,7 @@ export const getFilePartUrl = (channelID: string, messageID: string, encryptedFi
 
 export const parsePath = (path: string): string => {
     if (!path) return "/"
+    path = `/${path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/')}`
     if (path.length > 1) {
         if (path.endsWith("/")) path = path.slice(0, -1);
         if (path.endsWith("/")) return parsePath(path);
@@ -182,4 +183,25 @@ export function getFoldersMap(files: File[]): FolderTree[] {
         }
     }
     return foldersArray;
+}
+
+export function serializeBigInt(obj: any): any {
+    if (typeof obj === 'bigint') {
+        return obj.toString();
+    } else if (obj instanceof Date) {
+        return obj;
+    } else if (Array.isArray(obj)) {
+        return obj.map(serializeBigInt);
+    } else if (obj !== null && typeof obj === 'object') {
+        const res: any = {};
+        for (const key in obj) {
+            res[key] = serializeBigInt(obj[key]);
+        }
+        return res;
+    }
+    return obj;
+}
+
+export const getSiteLogo = (size: number = 400) => {
+    return `https://avatars.githubusercontent.com/u/165603488?s=${size}&v=4`
 }

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { createJob } from '@/utils/status-bar-jobs';
 import { DeleteIcon, DownloadIcon, InfoIcon, PencilIcon, TableIcon, TrashIcon } from 'lucide-react';
@@ -8,9 +7,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { File } from '@prisma/client';
 import { StatusBarProps } from './status-bar/status-bar';
 import { toast } from 'sonner';
+import { patchFile } from '@/utils/api-actions';
+import { Folder } from '@/types/folder';
 
 export type FileContextMenuProps = {
-    files: File[],
+    items: (File | Folder)[],
     dialogTriggers: {
         rename: () => void,
         delete: () => void,
@@ -24,22 +25,23 @@ export type FileContextMenuProps = {
     children?: React.ReactNode
 }
 
-const FileContextMenu = ({ open, onOpenChange, setStatusBar, setFiles, gridRef, children, files, dialogTriggers }: FileContextMenuProps) => {
+const FileContextMenu = ({ open, onOpenChange, setStatusBar, setFiles, gridRef, children, items, dialogTriggers }: FileContextMenuProps) => {
+    const containsFolders = items.some(f => "isFolder" in f);
     return (
         <DropdownMenu open={open ?? undefined} onOpenChange={onOpenChange ?? undefined}>
             <DropdownMenuTrigger asChild={Boolean(children)}>
                 {children}
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='w-[150px]'>
-                <DropdownMenuItem onClick={async () => {
-                    await downloadFiles(files, setStatusBar)
+                {!containsFolders && <DropdownMenuItem onClick={async () => {
+                    await downloadFiles(items as File[], setStatusBar)
                     gridRef?.current?.api.deselectAll();
                 }}>
                     <DownloadIcon />
                     Download
-                </DropdownMenuItem>
-                {files.length === 1 && <>
-                    <DropdownMenuSeparator />
+                </DropdownMenuItem>}
+                {items.length === 1 && <>
+                    {!containsFolders && <DropdownMenuSeparator />}
                     <DropdownMenuItem onClick={() => {
                        toast.success('Bind me')
                     }}>
@@ -61,13 +63,13 @@ const FileContextMenu = ({ open, onOpenChange, setStatusBar, setFiles, gridRef, 
                 </>}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => {
-                    const filesToDelete = files;
+                    const filesToDelete = items;
                     await createJob(setStatusBar, "Delete " + filesToDelete.length + " files", DeleteIcon, () => {
                         return new Promise(async (resolve) => {
                             try {
                                 setStatusBar(statusBar => ({ ...statusBar, title: `Deleting ${filesToDelete.length} files` }));
                                 for (let i = 0; i < filesToDelete.length; i++) {
-                                    await axios.put("/api/file", { ...filesToDelete[i], isActive: false })
+                                    await patchFile(filesToDelete[i].id, { isActive: false });
                                     setStatusBar(statusBar => ({ ...statusBar, progress: (i + 1) / filesToDelete.length * 100 }));
                                 }
                                 setFiles(allFiles => allFiles.filter(file => !filesToDelete.find(f => f.id === file.id)));

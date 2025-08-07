@@ -36,7 +36,7 @@ const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1,
 
     useEffect(() => {
         if (progress && !loading) setTimeout(() => setRenderedProgress(progress), 100);
-    }, [progress])
+    }, [progress, loading]);
 
     return (
         <MagicCardWrapped>
@@ -53,7 +53,7 @@ const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1,
                 {!loading ? (
                     <div className='flex flex-col gap-2 w-full'>
                         <h1 className='text-2xl font-bold tracking-wide'>{value}</h1>
-                        {progress && <Progress className='w-full' value={renderedProgress} />}
+                        {typeof progress !== "undefined" && <Progress className='w-full' value={renderedProgress} />}
                     </div>
                 ) : (
                     <Skeleton className={cn('w-full', loadingClassName)} />

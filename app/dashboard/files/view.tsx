@@ -1,36 +1,34 @@
 "use client";
 
-import axios from 'axios';
 import Container from '@/components/ui/container';
 import DeleteDialog from './delete-dialog';
 import ExportDialog from './export-dialog';
 import FileContextMenu from '@/components/file-context-menu';
 import PageTitle from '@/components/ui/page-title';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import RenameDialog from './rename-dialog';
-import ShareDialog from './share-dialog';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, ModuleRegistry, themeQuartz } from 'ag-grid-community';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon, Files, FolderIcon, LucideIcon, Settings } from 'lucide-react';
+import { ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon, FolderIcon, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/constants';
 import { Dropdown } from '@/types/dropdown';
 import { File } from '@prisma/client';
 import { Folder } from '@/types/folder';
-import { formatBytes, formatRelativeTime, getFilesInPath, getFoldersMap } from '@/lib/helpers';
+import { formatBytes, formatRelativeTime, getFilesInPath } from '@/lib/helpers';
 import { getFileIcon } from '@/utils/file-types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
 import { useFiles } from '@/utils/files-context';
 import { useStatusBar } from '@/utils/status-bar-context';
+import ShareCell from './share-cell';
 
 
 const FilesView = () => {
-    const { files, setFiles, fetchFiles } = useFiles();
+    const { files, setFiles, shares } = useFiles();
+
     const [gridReady, setGridReady] = useState<boolean>(false);
     const gridRef = useRef<AgGridReact>(null);
 
@@ -47,7 +45,6 @@ const FilesView = () => {
     useEffect(() => {
         if (localStorage.getItem("pageSize") !== "Fit") setFitPage(false);
         setPageSize(Number(localStorage.getItem("pageSize")) || DEFAULT_PAGE_SIZE);
-        fetchFiles();
     }, [])
 
     const pageSizes: number[] = PAGE_SIZES;
@@ -60,7 +57,7 @@ const FilesView = () => {
                 gridRef.current.api.refreshHeader();
             }
         }, 100)
-    }, [gridReady])
+    }, [gridReady, shares])
 
     ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -80,6 +77,10 @@ const FilesView = () => {
         checkboxCheckedBorderColor: 'hsl(var(--primary))',
         menuBorder: '1px solid hsl(var(--border))',
         accentColor: 'hsl(var(--primary))',
+        borderRadius: 0,
+        inputBorderRadius: 0,
+        checkboxBorderRadius: 0,
+        wrapperBorderRadius: 0
     });
 
     const [columnsDefs] = useState<ColDef[]>([
@@ -95,7 +96,7 @@ const FilesView = () => {
             cellRenderer: ({ data }: CustomCellRendererProps) => {
                 return (
                     <div className='flex items-center gap-2'>
-                        {data.isFolder ? <FolderIcon className='size-5 shrink-0' stroke='orange'/> : getFileIcon(data.filename, { className: 'size-5 shrink-0', stroke: 'gray' })}
+                        {data.isFolder ? <FolderIcon className='size-5 shrink-0' stroke='orange' /> : getFileIcon(data.filename, { className: 'size-5 shrink-0', stroke: 'gray' })}
                         <p className='truncate'>{data.isFolder ? data.name : data.filename}</p>
                     </div>
                 )
@@ -150,7 +151,6 @@ const FilesView = () => {
             },
             cellRenderer: ({ data }: CustomCellRendererProps) => {
                 const [updatedAt, setUpdatedAt] = useState<string>(formatRelativeTime(data.updatedAt ? new Date(data.updatedAt.toString()) : new Date()));
-                if (data.isFolder) console.log(data.updatedAt)
                 setInterval(() => {
                     setUpdatedAt(formatRelativeTime(data.updatedAt ? new Date(data.updatedAt.toString()) : new Date()));
                 }, 1000);
@@ -161,107 +161,18 @@ const FilesView = () => {
             },
         },
         {
-            field: "neverExpire",
+            field: "shared",
             headerName: "Shared",
             suppressMovable: true,
             resizable: false,
             width: 100,
-            cellRenderer: ({ data }: CustomCellRendererProps) => {
-                const [useOpen, setUseOpen] = useState<boolean>(false);
-
-                const handleSwitchChange = async (checked: boolean) => {
-                    if (checked) {
-                        setUseOpen(true);
-                        return;
-                    }
-
-                    if (!data) {
-                        toast.error("Unable to locate the file for update.");
-                        return;
-                    }
-
-                    let previousFiles;
-
-                    setFiles((files) => {
-                        previousFiles = files;
-                        return files.map((file) => {
-                            if (file.id === data.id) {
-                                return {
-                                    ...file,
-                                    updatedAt: new Date(new Date().getTime() - 1 * 1000),
-                                    neverExpire: false,
-                                    shareDate: null,
-                                    endDate: null,
-                                    previousFile: file
-                                };
-                            }
-                            if ((file as any).previousFile) delete (file as any).previousFile;
-                            return file;
-                        })
-                    })
-
-                    const response = await axios.put(`/api/file`, {
-                        ...data,
-                        neverExpire: false,
-                        shareDate: null,
-                        endDate: null
-                    })
-
-                    if (!response.data.success && previousFiles) {
-                        toast.error("Could not update file!");
-                        setFiles(previousFiles);
-                    }
-                };
-
-                const [fileState, setFileState] = useState(data.previousFile || data);
-
-                useLayoutEffect(() => {
-                    if (data.previousFile) setTimeout(() => setFileState(data), 100);
-                }, [])
-
-                return (
-                    <div className="flex items-center gap-2 h-full">
-                        <Switch
-                            checked={fileState.neverExpire ||
-                                (fileState.shareData && fileState.endDate) ||
-                                fileState.endDate != null || useOpen}
-                            onCheckedChange={handleSwitchChange}
-                        />
-
-                        <ShareDialog
-                            open={useOpen}
-                            setOpen={setUseOpen}
-                            file={data}
-                            setFiles={setFiles}
-                        />
-
-                        {(fileState.neverExpire ||
-                            (fileState.shareData && fileState.endDate) ||
-                            fileState.endDate != null || useOpen) && (
-                                <Button
-                                    onClick={() => {
-                                        setUseOpen(true)
-                                    }}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-8"
-                                >
-                                    <Settings />
-                                </Button>
-                            )}
-                    </div>
-                );
-            },
+            cellRenderer: ShareCell,
             comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
                 const aChecked = Boolean(
-                    nodeA.data.neverExpire ||
-                    (nodeA.data.shareDate && nodeA.data.endDate) ||
-                    nodeA.data.endDate != null
+                    shares.some((share) => share.key === nodeA.data.id && share.type === "file")
                 );
                 const bChecked = Boolean(
-                    nodeB.data.neverExpire ||
-                    (nodeB.data.shareDate && nodeB.data.endDate) ||
-                    nodeB.data.endDate != null
+                    shares.some((share) => share.key === nodeB.data.id && share.type === "file")
                 );
                 return aChecked === bChecked ? 0 : aChecked ? 1 : -1;
             },
@@ -279,7 +190,7 @@ const FilesView = () => {
 
                 return (
                     <div className="flex justify-end h-full items-center">
-                        <FileContextMenu files={[data]} dialogTriggers={{ export: () => setExportDialog(true), rename: () => setRenameDialog(true), delete: () => setDeleteDialog(true) }} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef}>
+                        <FileContextMenu items={[data]} dialogTriggers={{ export: () => setExportDialog(true), rename: () => setRenameDialog(true), delete: () => setDeleteDialog(true) }} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef}>
                             <Button
                                 size={"icon"}
                                 variant={"ghost"}
@@ -328,7 +239,7 @@ const FilesView = () => {
     const [dropdownMenu, setDropdownMenu] = useState<Dropdown>({
         open: false,
         position: { x: 0, y: 0 },
-        files: [],
+        items: [],
         exportDialogOpen: false,
         renameDialogOpen: false,
         deleteDialogOpen: false
@@ -342,10 +253,7 @@ const FilesView = () => {
     }, [pageLocation]);
 
     useEffect(() => {
-        console.log(getFilesInPath("/", files));
-        console.log(getFilesInPath("/test", files))
         if (files.length > 1) {
-            console.log(getFoldersMap(files));
             const filesToRender = getFilesInPath(pageLocation, files);
             setRenderedResults([...filesToRender.filesInPath, ...filesToRender.foldersInPath]);
         }
@@ -372,7 +280,7 @@ const FilesView = () => {
             <div className="flex-1 flex flex-col h-full">
                 <div className="h-full flex flex-col">
                     {!gridReady && pageSize && (
-                        <div className="h-full border divide-y rounded-lg flex flex-col">
+                        <div className="h-full border divide-y flex flex-col">
                             <div style={{ gridTemplateColumns: `repeat(${columnsDefs.length - (window.innerWidth < 1024 ? 4 : 1)}, minmax(0, 1fr))` }} className="grid bg-border/15 grid-cols-5 gap-4 p-4 h-[48px]">
                                 {Array.from({ length: columnsDefs.length - (window.innerWidth < 1024 ? 4 : 1) }).map((_, index) => (
                                     <div key={index} className="flex items-center gap-2 justify-between">
@@ -417,6 +325,7 @@ const FilesView = () => {
                                 paginationAutoPageSize={fitPage}
                                 suppressPaginationPanel={true}
                                 suppressCellFocus={true}
+                                rowClass={"opacity-100 will-change-[opacity] transition-all duration-500"}
                                 rowSelection={{
                                     mode: 'multiRow',
                                     checkboxes: true,
@@ -424,6 +333,19 @@ const FilesView = () => {
                                 }}
                                 onPaginationChanged={(event) => {
                                     const pageSize = Number(event.api.paginationGetPageSize());
+                                    const renderedRows = event.api.getRenderedNodes();
+                                    // let animatedRows = 0;
+                                    // for (const row of renderedRows) {
+                                    //     animatedRows++;           
+                                    //     const rowElement = document.querySelector(
+                                    //         `.ag-row[row-index="${row.rowIndex}"]`
+                                    //     );
+                                    //     if (!rowElement) break;
+                                    //     setTimeout(() => {
+                                    //         rowElement.classList.remove("opacity-0");
+                                    //         rowElement.classList.add("opacity-100");
+                                    //     }, animatedRows * 5);
+                                    // }
                                     window.localStorage.setItem('pageSize', String(pageSize));
                                     setCurrentPage(event.api.paginationGetCurrentPage());
                                     setTotalPages(event.api.paginationGetTotalPages());
@@ -451,7 +373,7 @@ const FilesView = () => {
                                             x: (event.event as MouseEvent)?.clientX,
                                             y: (event.event as MouseEvent)?.clientY
                                         },
-                                        files: event.api.getSelectedNodes().map(file => file.data)
+                                        items: event.api.getSelectedNodes().map(file => file.data)
                                     }));
                                 }}
                                 preventDefaultOnContextMenu={true}
@@ -466,7 +388,7 @@ const FilesView = () => {
                     {(files && files.length > 0) && pageSize && gridReady && (
                         <div className="flex items-center justify-between p-2">
                             <div className="flex items-center justify-center gap-2">
-                                <p className='text-sm text-nowrap'>Page size:</p>
+                                <p className='text-sm text-nowrap'>Page Size:</p>
                                 <Select value={fitPage ? 'Fit' : pageSize.toString()} onValueChange={(value) => {
                                     if (value === 'Fit') setFitPage(true)
                                     else {
@@ -509,28 +431,28 @@ const FilesView = () => {
                     )}
                 </div>
                 <div>
-                    {dropdownMenu.open || dropdownMenu.exportDialogOpen && <ExportDialog
+                    {dropdownMenu.items[0] && !("isFolder" in dropdownMenu.items[0]) && dropdownMenu.open || dropdownMenu.exportDialogOpen && <ExportDialog
                         open={dropdownMenu.exportDialogOpen}
                         setOpen={(value) => setDropdownMenu(menu => ({ ...menu, exportDialogOpen: value }))}
-                        file={dropdownMenu.files[0]}
+                        file={dropdownMenu.items[0] as File}
                     />}
 
-                    {dropdownMenu.open || dropdownMenu.renameDialogOpen && <RenameDialog
+                    {dropdownMenu.items[0] && !("isFolder" in dropdownMenu.items[0]) && dropdownMenu.open || dropdownMenu.renameDialogOpen && <RenameDialog
                         open={dropdownMenu.renameDialogOpen}
                         setOpen={(value) => setDropdownMenu(menu => ({ ...menu, renameDialogOpen: value }))}
-                        file={dropdownMenu.files[0]}
+                        file={dropdownMenu.items[0] as File}
                         setFiles={setFiles}
                     />}
 
-                    {dropdownMenu.open || dropdownMenu.deleteDialogOpen && <DeleteDialog
+                    {dropdownMenu.items[0] && !("isFolder" in dropdownMenu.items[0]) && dropdownMenu.open || dropdownMenu.deleteDialogOpen && <DeleteDialog
                         open={dropdownMenu.deleteDialogOpen}
                         setOpen={(value) => setDropdownMenu(menu => ({ ...menu, deleteDialogOpen: value }))}
-                        file={dropdownMenu.files[0]}
+                        file={dropdownMenu.items[0] as File}
                         setFiles={setFiles}
                     />}
                 </div>
                 {dropdownMenu.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdownMenu.position.y, left: dropdownMenu.position.x }}>
-                    <FileContextMenu open={dropdownMenu.open} onOpenChange={() => setDropdownMenu(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef} files={dropdownMenu.files} dialogTriggers={{
+                    <FileContextMenu open={dropdownMenu.open} onOpenChange={() => setDropdownMenu(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef} items={dropdownMenu.items} dialogTriggers={{
                         rename: () => setDropdownMenu(menu => ({ ...menu, renameDialogOpen: true, open: false })),
                         delete: () => setDropdownMenu(menu => ({ ...menu, deleteDialogOpen: true, open: false })),
                         export: () => setDropdownMenu(menu => ({ ...menu, exportDialogOpen: true, open: false }))

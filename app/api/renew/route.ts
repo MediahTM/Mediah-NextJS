@@ -1,9 +1,8 @@
 import { DISCORD_ATTACHMENT_REGEX, DISCORD_ATTACHMENT_RENEW_API, DEFAULT_USER_AGENT } from '@/lib/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import { authOptions } from '@/utils/auth-options';
-import { getServerSession } from 'next-auth';
 import z from "zod";
 import { getFilePartUrl } from '@/lib/helpers';
+import { withErrorHandling } from '@/utils/api-error-handling';
 
 const renewSchema = z.object({
     encryptedFilename: z.string({ message: "Encrypted file name is required!" }).min(1, 'Encrypted file name is required!'),
@@ -11,19 +10,8 @@ const renewSchema = z.object({
     channelID: z.string()
 })
 
-export async function POST(request: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-        return NextResponse.json({ success: false, message: 'User is not authenticated.', hooks: [] });
-    }
-
-    let data;
-
-    try {
-        data = renewSchema.parse(await request.json());
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.errors || 'An error occurred parsing the request.' });
-    }
+export const POST = withErrorHandling(async (request: NextRequest) => {
+    const data = renewSchema.parse(await request.json());
 
     try {
         const urls = data.messageIDs.map((id: string) => getFilePartUrl(data.channelID, id, data.encryptedFilename));
@@ -60,4 +48,4 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         return NextResponse.json({ success: false, message: error.message || 'An error occurred renewing the hooks.', hooks: [] });
     }
-}
+});

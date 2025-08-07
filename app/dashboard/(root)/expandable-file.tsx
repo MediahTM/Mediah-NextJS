@@ -1,6 +1,6 @@
 "use client"
 
-import React, { SetStateAction } from 'react';
+import React from 'react';
 import { ActivityIcon, Calendar, DownloadIcon, Users } from 'lucide-react';
 import { formatBytes, formatTime } from '@/lib/helpers';
 import { getFileIcon, getFileType } from '@/utils/file-types';
