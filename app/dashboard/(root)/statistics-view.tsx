@@ -9,12 +9,10 @@ import { useFiles } from '@/utils/files-context';
 import { getFileType } from '@/utils/file-types';
 import { File } from '@prisma/client';
 import dynamic from 'next/dynamic';
-import RenameDialog from '../files/rename-dialog';
-import { Dropdown } from '@/types/dropdown';
-import DeleteDialog from '../files/delete-dialog';
-import FileContextMenu from '@/components/file-context-menu';
+import { defaultDropdown, Dropdown } from '@/types/dropdown';
+import FileDropdown from '@/components/file-dropdown/file-dropdown';
 import { useStatusBar } from '@/utils/status-bar-context';
-import ExportDialog from '../files/export-dialog';
+import DropdownDialogs from '@/components/file-dropdown/dropdown-dialogs';
 
 const ExpandableCardClient = dynamic(() => import('./expandable-file'), {
     ssr: false,
@@ -23,7 +21,7 @@ const ExpandableCardClient = dynamic(() => import('./expandable-file'), {
 
 const StatisticsView = ({ session }: { session: Session | null }) => {
     const { setStatusBar } = useStatusBar();
-    const { files, loading, setFiles } = useFiles();
+    const { files, loading, setFiles, setShares, shares } = useFiles();
 
     const totalFiles = files.length;
     const totalStorage = files.reduce((acc, file) => acc + file.uploadedSize, 0);
@@ -48,14 +46,7 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
         return () => window.removeEventListener('resize', handleResize);
     }, [files]);
 
-    const [dropdown, setDropdown] = useState<Dropdown>({
-        items: [],
-        position: { x: 0, y: 0 },
-        open: false,
-        exportDialogOpen: false,
-        deleteDialogOpen: false,
-        renameDialogOpen: false
-    })
+    const [dropdown, setDropdown] = useState<Dropdown>(defaultDropdown);
 
     return (
         <div className='flex flex-col gap-6 overflow-hidden'>
@@ -102,16 +93,19 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     </div>)}
                 </div>
             </Suspense>
-
-            {(dropdown.open || dropdown.renameDialogOpen) && <RenameDialog open={dropdown.renameDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, renameDialogOpen: value }))} file={dropdown.items[0] as File} setFiles={setFiles} />}
-            {(dropdown.open || dropdown.deleteDialogOpen) && <DeleteDialog open={dropdown.deleteDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, deleteDialogOpen: value }))} file={dropdown.items[0] as File} setFiles={setFiles} />}
-            {(dropdown.open || dropdown.exportDialogOpen) && <ExportDialog open={dropdown.exportDialogOpen} setOpen={(value) => setDropdown(menu => ({ ...menu, exportDialogOpen: value }))} file={dropdown.items[0] as File} />}
+            <DropdownDialogs dropdown={dropdown} setDropdown={setDropdown} setFiles={setFiles} setShares={setShares} shares={shares} />
             {dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdown.position.y, left: dropdown.position.x }}>
-                <FileContextMenu open={dropdown.open} onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))} setStatusBar={setStatusBar} setFiles={setFiles} items={dropdown.items} dialogTriggers={{
-                    rename: () => setDropdown(menu => ({ ...menu, renameDialogOpen: true, open: false })),
-                    delete: () => setDropdown(menu => ({ ...menu, deleteDialogOpen: true, open: false })),
-                    export: () => setDropdown(menu => ({ ...menu, exportDialogOpen: true, open: false }))
-                }} />
+                <FileDropdown
+                    open={dropdown.open}
+                    onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))}
+                    setStatusBar={setStatusBar}
+                    setFiles={setFiles}
+                    shares={shares}
+                    setShares={setShares}
+                    items={dropdown.items}
+                    dropdown={dropdown}
+                    setDropdown={setDropdown}
+                />
             </div>}
         </div>
     )

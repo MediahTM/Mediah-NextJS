@@ -5,18 +5,32 @@ import React, { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import UploadPathDialog from '@/app/dashboard/dialogs/upload/upload-path'
-import { parsePath } from '@/lib/helpers'
+import { parsePath, replaceIllegalCharacters } from '@/lib/helpers'
 import { Button } from '@/components/ui/button'
 import { uploadFileToDatabase } from '@/utils/api-actions'
-import { FileWithShareInfo } from './view'
+import { FileWithShareInfo } from '../../../app/share/[id]/view'
 import { toast } from 'sonner'
+import UploadPathDialog from '../upload/upload-path'
 
 const saveSchema = z.object({
-    location: z.string().min(1, 'Save Location is required'),
-    name: z.string()
+    location: z.preprocess(
+        (val) => typeof val === 'string' ? val : parsePath(val as string),
+        z.string().min(1, 'File path is required')
+    ),
+    name: z.preprocess(
+        (val) => typeof val === 'string' ? val : replaceIllegalCharacters(val as string, "filename"),
+        z.string({ message: "File name is required!" }).min(1, 'File name is required!').max(255, 'File name is too long!')
+    ),
 })
 
+// TODO: Validate no duplicate files
+
+// .refine((data) => {
+//     return containsIllegalCharacters(data.name, "filename");
+// }, {
+//     message: 'Exactly one of "endDate" or "neverExpire" must be provided',
+//     path: ['endDate', 'neverExpire']
+// });
 type FormData = z.infer<typeof saveSchema>
 
 const SaveDialog = ({ file, openSaveDialog, setOpenSaveDialog }: { file: FileWithShareInfo, openSaveDialog: boolean, setOpenSaveDialog: React.Dispatch<React.SetStateAction<boolean>> }) => {

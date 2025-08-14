@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/ui/navbar';
 import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
-import SaveDialog from './save-dialog';
+import SaveDialog from '../../../components/dialogs/save/save-dialog';
 import { Progress } from '@/components/ui/progress';
 import { AnimatePresence, motion, useAnimation } from 'motion/react';
 import { FilesProvider } from '@/utils/files-context';

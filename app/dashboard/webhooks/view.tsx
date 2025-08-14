@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import NewWebhook from './create-dialog';
+import NewWebhook from '../../../components/dialogs/create-webhook/create-dialog';
 import Container from '@/components/ui/container'
 import PageTitle from '@/components/ui/page-title'
 import WebhooksTable from './data-table'

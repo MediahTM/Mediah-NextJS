@@ -1,10 +1,8 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import type { StatusBarProps } from '@/components/status-bar/status-bar';
+import { GeneralProps } from '@/types/general-props';
 
-const StatusBarContext = createContext<{
-    statusBar: StatusBarProps;
-    setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>;
-} | undefined>(undefined);
+const StatusBarContext = createContext<Pick<GeneralProps, "statusBar" | "setStatusBar"> | undefined>(undefined);
 
 export const StatusBarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [statusBar, setStatusBar] = useState<StatusBarProps>({

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next/types'
-
 import React from 'react'
 import FilesView from './view'
 
@@ -9,9 +8,7 @@ export const metadata: Metadata = {
 
 const FilesPage = () => {
     return (
-        <>
-            <FilesView />
-        </>
+        <FilesView />
     )
 }
 

@@ -23,10 +23,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 
 const schema = z.object({
-    location: z.string().min(1, 'Save Location is required'),
+    location: z.preprocess(
+        (val) => typeof val === 'string' ? val : parsePath(val as string),
+        z.string().min(1, 'File path is required')
+    ),
     webhook: z.string().min(1, 'Webhook is required'),
     files: z.array(z.instanceof(File)).nonempty('At least one file is required')
 })
+
+// TODO: Validate no duplicate files
 
 type FormData = z.infer<typeof schema>
 

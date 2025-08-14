@@ -19,7 +19,6 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                 return new Promise((resolve) => {
                     const controller = new AbortController();
                     const signal = controller.signal;
-                    console.log(`Uploading ${file.name}`);
                     setStatusBar(prev => ({
                         ...prev, title: "Uploading " + file.name, progress: 0, onCancel: () => {
                             controller.abort();
@@ -53,7 +52,6 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                     const attachmentURL: string = responseJSON.attachments[0].url.split("?")[0];
                                     parts.push(attachmentURL.split("/").at(-2)!);
                                     totalBytesUploaded += (chunk.length * 3) / 4;
-                                    console.log(`Uploaded ${file.name} (${currentChunk}/${numChunks})`);
                                     offset += CHUNK_SIZE;
                                     if (offset / CHUNK_SIZE < numChunks) {
                                         reader.readAsArrayBuffer(file.slice(offset, offset + CHUNK_SIZE));
@@ -68,7 +66,7 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                             chunkSize: CHUNK_SIZE,
                                             path: location
                                         }, { signal });
-                                        setFiles(prev => [...prev, response.data.data]);
+                                        setFiles(prev => [...prev, response.data]);
                                         resolve();
                                     }
                                     break;

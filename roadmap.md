@@ -1,6 +1,6 @@
 # Mediah - Roadmap
 
-This document describes the current status and the upcoming milestones of the Mediah project and will act as a roadmap for the endless time sink that is this project.
+This document describes the current status and the upcoming milestones of Mediah and will act as a roadmap for the endless time sink that is this project.
 
 *Updated: Thu, 7 Aug 2025
 
@@ -12,8 +12,7 @@ This document describes the current status and the upcoming milestones of the Me
 | ✔ | Implement file sharing | |
 | ❌ | Extend file sharing to folders |`in progress`| 
 | ❌ | Overhaul login screen |`in progress`| 
-| ❌ | Fix the context menu for folders |`in progress`|
-| ❌ | Fix the dialog animations being janky |`in progress`|
+| ✔ | Fix the context menu for folders |`in progress`|
 | ❌ | Fix the New Folder button |`in progress`|
 | ❌ | Make the Share Files button actually do something |`in progress`|
 | ❌ | API rate limits |`in progress`|

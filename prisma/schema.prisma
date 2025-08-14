@@ -74,9 +74,6 @@ model Share {
     key    String
     type   ShareType
 
-    fileId     String?
-    folderName String?
-
     neverExpire Boolean  @default(false)
     shareDate   DateTime
     endDate     DateTime?

@@ -3,18 +3,16 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { File, Share } from '@prisma/client';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
+import { GeneralProps } from '@/types/general-props';
 
 const FilesContext = createContext<{
-    files: File[];
-    setFiles: React.Dispatch<React.SetStateAction<File[]>>;
     loading: boolean,
     fetchFiles: () => Promise<void>;
-    shares: Share[];
-    setShares: React.Dispatch<React.SetStateAction<Share[]>>
-} | undefined>(undefined);
+} & Pick<GeneralProps, "files" | "setFiles" | "shares" | "setShares" | "binFiles" | "setBinFiles"> | undefined>(undefined);
 
 export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [files, setFiles] = useState<File[]>([]);
+    const [binFiles, setBinFiles] = useState<File[]>([]);
     const [shares, setShares] = useState<Share[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -25,7 +23,11 @@ export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const fileResponse = await axios.get("/api/file?isActive=true");
         if (fileResponse.data.success) setFiles(fileResponse.data.data);
         else toast.error("Could not fetch user files!");
-        
+
+        const binFileResponse = await axios.get("/api/file?isActive=false");
+        if (binFileResponse.data.success) setBinFiles(binFileResponse.data.data);
+        else toast.error("Could not fetch user bin files!");
+
         const shareResponse = await axios.get("/api/file/share");
         if (shareResponse.data.success) setShares(shareResponse.data.data);
         else toast.error("Could not fetch shared files!");
@@ -39,7 +41,7 @@ export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, []);
 
     return (
-        <FilesContext.Provider value={{ files, setFiles, loading, fetchFiles, shares, setShares }}>
+        <FilesContext.Provider value={{ files, setFiles, binFiles, setBinFiles, loading, fetchFiles, shares, setShares }}>
             {children}
         </FilesContext.Provider>
     );
@@ -51,6 +53,6 @@ export const useFiles = () => {
     if (!context) {
         throw new Error('useFiles must be used within a FilesContext');
     }
-    
+
     return context;
 };

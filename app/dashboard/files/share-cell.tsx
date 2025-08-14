@@ -2,7 +2,7 @@ import { useFiles } from '@/utils/files-context';
 import { CustomCellRendererProps } from 'ag-grid-react';
 import React, { useState } from 'react'
 import { toast } from 'sonner';
-import ShareDialog from './share-dialog';
+import ShareDialog from '../../../components/dialogs/share/share-dialog';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';

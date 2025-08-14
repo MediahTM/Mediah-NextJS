@@ -10,8 +10,8 @@ import { Webhook } from '@prisma/client';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, EllipsisVerticalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
-import EditWebhook from './edit-dialog';
-import DeleteDialog from './delete-dialog';
+import EditWebhook from '../../../components/dialogs/edit-webhook/edit-dialog';
+import DeleteDialog from '../../../components/dialogs/delete-webhook/delete-dialog';
 import { toast } from 'sonner';
 
 const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (open: boolean) => void }) => {

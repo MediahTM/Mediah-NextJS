@@ -5,8 +5,13 @@ import { Folder } from "./folder";
 export type Dropdown = {
     items: (File | Folder)[],
     position: { x: number, y: number },
-    open: boolean
-    exportDialogOpen: boolean,
-    deleteDialogOpen: boolean,
-    renameDialogOpen: boolean
+    open: boolean,
+    dialogs: { [key in "export" | "delete" | "rename" | "share"]: boolean }
+}
+
+export const defaultDropdown: Dropdown = {
+    items: [],
+    position: { x: 0, y: 0 },
+    open: false,
+    dialogs: { export: false, delete: false, rename: false, share: false }
 }

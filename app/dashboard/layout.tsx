@@ -4,7 +4,6 @@ import AvatarDropdown from '@/components/ui/avatar-dropdown';
 import Container from '@/components/ui/container';
 import Link from 'next/link';
 import StatusBar from '@/components/status-bar/status-bar';
-import UploadDialog from './dialogs/upload/upload-dialog';
 import { cn } from '@/lib/utils';
 import { FilesProvider } from '@/utils/files-context';
 import { GalleryVerticalEnd } from 'lucide-react';
@@ -14,6 +13,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { SidebarLinks } from '@/lib/menu';
 import { StatusBarProvider } from '@/utils/status-bar-context';
 import { usePathname } from 'next/navigation';
+import UploadDialog from '@/components/dialogs/upload/upload-dialog';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();

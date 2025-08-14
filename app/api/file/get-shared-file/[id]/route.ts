@@ -34,8 +34,6 @@ export const GET = withErrorHandling(async (req: NextRequest, { params }: { para
             data: null,
         });
     }
-
-    console.log(shareObject.shareDate?.getFullYear());
     
     return NextResponse.json({
         message: null,

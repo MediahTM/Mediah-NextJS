@@ -8,7 +8,7 @@ export type Folder = {
     uploadedSize: number
 };
 
-export type FolderTree = TreeViewElement & {
+export type FolderTree = Omit<TreeViewElement, "children"> & {
     path: string,
     children: FolderTree[]
 };

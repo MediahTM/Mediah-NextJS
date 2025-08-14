@@ -108,14 +108,37 @@ export function sleep(ms: number): Promise<void> {
 
 export const getFilePartUrl = (channelID: string, messageID: string, encryptedFileName: string): string => `https://cdn.discordapp.com/attachments/${channelID}/${messageID}/${encryptedFileName}`
 
+export const containsIllegalCharacters = (str: string, type: "filename" | "path"): boolean => {
+    if (type === "filename") {
+        return /[\\\/:*?"<>|]/.test(str);
+    }
+    return /[\\\:*?"<>|]/.test(str);
+}
+
+export const replaceIllegalCharacters = (str: string, type: "filename" | "path"): string => {
+    if (type === "filename") {
+        return str.replace(/[\\\/:*?"<>|]/g, "_");
+    }
+    return str.replace(/[\\\:*?"<>|]/g, "_");
+}
+
 export const parsePath = (path: string): string => {
-    if (!path) return "/"
-    path = `/${path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/')}`
+    if (!path) return "/";
+
+    // replace illegal characters such as ":" with underscores
+    path = replaceIllegalCharacters(path, "path");
+    // replace leading/trailing slashes
+    path = '/' + path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/');
+
     if (path.length > 1) {
-        if (path.endsWith("/")) path = path.slice(0, -1);
-        if (path.endsWith("/")) return parsePath(path);
-        return path
-    } else return path
+        // replace multiple consecutive slashes with a single slash
+        path = path.replace(/\/+$/, '');
+    }
+
+    // replace leading/trailing spaces and periods with underscores for folder names
+    path = path.replace(/[. ]+(?=\/|$)/g, "_").replace(/(?<=\/|^) +/g, '/');
+
+    return path;
 }
 
 export function getFilesInPath(path: string = "/", files: File[]): { filesInPath: File[], foldersInPath: Folder[] } {
@@ -161,25 +184,38 @@ export function getFoldersMap(files: File[]): FolderTree[] {
             children: []
         }
     ];
-    files = files.sort(file => 0 - parsePath(file.path).split("/").length)
+
+    // process files from deepest to shallowest to avoid missing parents
+    files = files.sort((a, b) => {
+        const aDepth = parsePath(a.path).split("/").length;
+        const bDepth = parsePath(b.path).split("/").length;
+        return bDepth - aDepth;
+    });
     for (const file of files) {
         if (file.path.length > 1) {
+            // split file path into individual folders
             let pathParts = file.path.split("/").filter(Boolean);
-            pathParts = ["Home", ...pathParts.slice(0, pathParts.length - 1)];
-            const node = pathParts.reduce((acc: FolderTree | undefined, name: string) => acc?.children && acc.children.find((child: FolderTree) => child.name === name), { children: foldersArray } as FolderTree) as FolderTree;
-            if (node) {
-                if (!node.children.find((child: any) => child.name === file.path.split("/").pop())) {
+            // remove last segment since it represents the folder itself (leaf node)
+            let node = foldersArray[0];
+
+            for (const name of pathParts) {
+                // check if folder already exists
+                let child = node.children.find(c => c.name === name);
+                if (!child) {
                     totalID++;
-                    node.children.push({
+                    // if not, create new folder
+                    child = {
                         id: totalID.toString(),
-                        path: parsePath(file.path),
-                        name: file.path.split("/").pop() || '',
+                        path: `${node.path === "/" ? "" : node.path}/${name}`,
+                        name,
                         isSelectable: true,
                         children: []
-                    })
+                    };
+                    node.children.push(child);
                 }
+                // move down the tree
+                node = child;
             }
-
         }
     }
     return foldersArray;

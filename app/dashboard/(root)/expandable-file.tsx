@@ -1,7 +1,7 @@
 "use client"
 
-import React from 'react';
-import { ActivityIcon, Calendar, DownloadIcon, Users } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Calendar, DatabaseIcon, DownloadIcon, Users } from 'lucide-react';
 import { formatBytes, formatTime } from '@/lib/helpers';
 import { getFileIcon, getFileType } from '@/utils/file-types';
 import { File } from '@prisma/client';
@@ -12,10 +12,12 @@ import { Badge } from '@/components/ui/badge';
 import { downloadFiles } from '@/utils/file-store/download';
 import { useStatusBar } from '@/utils/status-bar-context';
 import { motion } from 'motion/react';
-
+import { useFiles } from '@/utils/files-context';
 
 const ExpandableFile = ({ index, latestFiles }: { index: number, latestFiles: File[] }) => {
     const { setStatusBar } = useStatusBar();
+    const { shares } = useFiles();
+    const fileShare = shares.find((share) => share.key === latestFiles[index].id) || null;
     return (
         <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Expandable
@@ -65,10 +67,10 @@ const ExpandableFile = ({ index, latestFiles }: { index: number, latestFiles: Fi
                                     <span className='truncate'>{new Intl.DateTimeFormat('en-US', { weekday: 'long', hour: 'numeric', minute: 'numeric', hour12: true }).format(Number(new Date(latestFiles[index].uploadedAt).getTime()))}</span>
                                 </div>
 
-                                {(latestFiles[index].endDate || latestFiles[index].neverExpire) && <ExpandableContent preset="blur-md" className='overflow-hidden max-w-full'>
+                                {fileShare && <ExpandableContent preset="blur-md" className='overflow-hidden max-w-full'>
                                     <div className="flex items-center text-sm text-muted-foreground overflow-hidden max-w-full">
                                         <Users className="h-4 w-4 mr-1" />
-                                        <span className='truncate'>{latestFiles[index].endDate ? `Sharing expires ${new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((Number(new Date(latestFiles[index].endDate).getTime()) - Date.now()) / 86400000), 'day')}` : "Sharing never expires"}</span>
+                                        <span className='truncate'>{fileShare.endDate ? `Sharing expires ${new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((Number(new Date(fileShare.endDate).getTime()) - Date.now()) / 86400000), 'day')}` : "Sharing never expires"}</span>
                                     </div>
                                 </ExpandableContent>}
                             </div>
@@ -82,7 +84,7 @@ const ExpandableFile = ({ index, latestFiles }: { index: number, latestFiles: Fi
                         <ExpandableContent preset="slide-up" className='bg-secondary'>
                             <ExpandableCardFooter>
                                 <div className="flex items-center justify-start gap-1 w-full text-sm text-muted-foreground overflow-hidden max-w-full">
-                                    <ActivityIcon className='size-3.5 shrink-0' />
+                                    <DatabaseIcon className='size-3.5 shrink-0' />
                                     <span className='truncate'>{formatBytes(latestFiles[index].uploadedSize)}</span>
                                 </div>
                             </ExpandableCardFooter>
