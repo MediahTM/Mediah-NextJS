@@ -20,6 +20,31 @@ export const GET = withErrorHandling(async (req: NextRequest, { params }: { para
         });
     }
 
+    if (shareObject.type === 'folder') {
+        const files = await db.file.findMany({
+            where: {
+                path: {
+                    startsWith: shareObject.key
+                }
+            }
+        })
+        if (!files) {
+            return NextResponse.json({
+                message: 'Could not find the shared folder',
+                success: false,
+                data: null,
+            });
+        }
+
+        return NextResponse.json({
+            message: null,
+            success: true,
+            type: shareObject.type,
+            userId: shareObject.userId,
+            key: shareObject.key,
+            data: files.map((file) => serializeBigInt({ ...file, shareDate: shareObject.shareDate || null, endDate: shareObject.endDate || null, neverExpire: shareObject.neverExpire })),
+        });
+    }
     const file = await db.file.findFirst({
         where: {
             id: shareObject?.key,
@@ -34,10 +59,13 @@ export const GET = withErrorHandling(async (req: NextRequest, { params }: { para
             data: null,
         });
     }
-    
+
     return NextResponse.json({
         message: null,
         success: true,
+        type: shareObject.type,
+        userId: shareObject.userId,
+        key: shareObject.key,
         data: serializeBigInt({ ...file, shareDate: shareObject.shareDate || null, endDate: shareObject.endDate || null, neverExpire: shareObject.neverExpire }),
     });
 });

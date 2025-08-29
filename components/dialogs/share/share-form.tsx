@@ -14,9 +14,10 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { shareFile } from '@/utils/api-actions';
+import { shareItem } from '@/utils/api-actions';
+import { Folder } from '@/types/folder';
 
-const ShareForm = ({ open, setOpen, file, shares, setShares }: { open: boolean; setOpen: (open: boolean) => void; file: File, shares: Share[], setShares: React.Dispatch<React.SetStateAction<Share[]>> }) => {
+const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; setOpen: (open: boolean) => void; item: File | Folder, shares: Share[], setShares: React.Dispatch<React.SetStateAction<Share[]>> }) => {
     const DynamicFormSchema = z.object({
         never_expire: z.boolean(),
         end_date: z.date().nullable().optional(),
@@ -28,7 +29,8 @@ const ShareForm = ({ open, setOpen, file, shares, setShares }: { open: boolean; 
         }
     );
 
-    const existingShare: Share | null = shares.find((share) => share.key === file.id && share.type === "file") || null;
+    const isFolder = item && "isFolder" in item && item.isFolder;
+    const existingShare: Share | null = shares.find((share) => isFolder ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file") || null;
 
     const form = useForm<z.infer<typeof DynamicFormSchema>>({
         resolver: zodResolver(DynamicFormSchema),
@@ -58,13 +60,13 @@ const ShareForm = ({ open, setOpen, file, shares, setShares }: { open: boolean; 
     const onSubmit = async (data: z.infer<typeof DynamicFormSchema>) => {
         setLoading(true);
 
-        const response = await shareFile(file.id, "file", {
+        const response = await shareItem(isFolder ? (item as Folder).path : (item as File).id, isFolder ? "folder" : "file", {
             ...(data.never_expire ? { neverExpire: data.never_expire } : {}),
             ...(data.end_date ? { endDate: data.end_date as Date } : {})
         })
 
         if (response.success) {
-            setShares((shares) => [...shares.filter((share) => !(share.key === file.id && share.type === "file")), response.data]);
+            setShares((shares) => [...shares.filter((share) => !(share.key === existingShare?.key && share.type === existingShare?.type)), response.data]);
             toast.success(existingShare ? 'Updated share expiration successfully!' : 'Shared file successfully!');
         }
         else {

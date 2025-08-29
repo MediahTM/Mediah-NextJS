@@ -14,17 +14,19 @@ import FileDropdown, { FileDropdownItem } from '../file-dropdown/file-dropdown';
 import SkeletonTable from './skeleton-table';
 import { useFileTable } from './table-context';
 import DropdownDialogs from '../file-dropdown/dropdown-dialogs';
+import { AnimatePresence, motion, useAnimation } from 'motion/react';
 
 const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdownItem[] }) => {
-    const { files, setFiles, shares, setShares, tableInfo, setTableInfo } = useFileTable();
+    const { files, setFiles, tableInfo, setTableInfo } = useFileTable();
     const { setStatusBar } = useStatusBar();
 
     const gridRef = useRef<AgGridReact>(null);
     useEffect(() => {
-        setTableInfo(pre => ({ ...pre, gridRef, columnDefs: getColumnDefs(shares, setShares, setFiles, setStatusBar, gridRef, fileDropdownOptions) }));
+        setTableInfo(pre => ({ ...pre, gridRef, columnDefs: getColumnDefs(setTableInfo, fileDropdownOptions) }));
     }, [gridRef, setTableInfo]);
 
     useEffect(() => {
+        tableAnimationControls.start({ opacity: 1 });
         setTimeout(() => {
             if (gridRef?.current?.api) {
                 gridRef.current.api.redrawRows();
@@ -32,7 +34,7 @@ const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdown
                 gridRef.current.api.refreshHeader();
             }
         }, 100)
-    }, [tableInfo.gridReady, shares])
+    }, [tableInfo.gridReady]);
 
     ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -57,69 +59,75 @@ const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdown
         }
     }, [files, tableInfo.viewingLocation]);
 
+    const tableAnimationControls = useAnimation();
+
     return <>
         <div className="h-full flex flex-col">
-            {!tableInfo.gridReady && tableInfo.pageSize && (
-                <SkeletonTable columns={tableInfo.columnDefs.length - 1} pageSize={tableInfo.pageSize} />
-            )}
+            <AnimatePresence>
+                {!tableInfo.gridReady && tableInfo.pageSize && <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className='h-full flex flex-col'>
+                    <SkeletonTable columns={tableInfo.columnDefs.length - 1} pageSize={tableInfo.pageSize} />
+                </motion.div>}
+            </AnimatePresence>
             <div className={cn(!tableInfo.gridReady && 'hidden', "flex-1 overflow-hidden")}>
-                {(files && files.length > 0) && tableInfo.pageSize && (
-                    <AgGridReact
-                        columnDefs={tableInfo.columnDefs}
-                        rowData={renderedResults || []}
-                        className="ag-theme h-full"
-                        theme={theme}
-                        animateRows={false}
-                        paginationPageSizeSelector={PAGE_SIZES}
-                        pagination={true}
-                        paginationPageSize={tableInfo.pageSize}
-                        paginationAutoPageSize={tableInfo.fitPage}
-                        suppressPaginationPanel={true}
-                        suppressCellFocus={true}
-                        rowClass={"opacity-100 will-change-[opacity] transition-all duration-500"}
-                        rowSelection={{
-                            mode: 'multiRow',
-                            checkboxes: true,
-                            enableClickSelection: true
-                        }}
-                        onPaginationChanged={(event) => {
-                            setTableInfo(pre => ({ ...pre, currentPage: event.api.paginationGetCurrentPage(), totalPages: event.api.paginationGetTotalPages() }));
-                            if (event.newPage && !event.newData) setFiles(files => files.map((file, index) => {
-                                if ((file as any).previousFile) delete (file as any).previousFile
-                                return file;
-                            }));
-                        }}
-                        ref={gridRef}
-                        onGridReady={() => {
-                            toggleColumns();
-                            setTableInfo(pre => ({ ...pre, gridReady: true, currentPage: gridRef.current?.api.paginationGetCurrentPage() || 0, totalPages: gridRef.current?.api.paginationGetTotalPages() || 0 }));
-                        }}
-                        onCellContextMenu={(event) => {
-                            setTableInfo(pre => ({ ...pre, dropdown: { ...pre.dropdown, open: false } }));
-                            if (!event.node.isSelected()) {
-                                (event.event?.target as HTMLElement)?.click()
-                            }
-                            setTableInfo(pre => ({
-                                ...pre,
-                                dropdown: {
-                                    ...pre.dropdown,
-                                    open: true,
-                                    position: {
-                                        x: (event.event as MouseEvent)?.clientX,
-                                        y: (event.event as MouseEvent)?.clientY
-                                    },
-                                    items: event.api.getSelectedNodes().map(file => file.data)
+                <motion.div className="h-full" initial={{ opacity: 0 }} animate={tableAnimationControls} transition={{ duration: 0.3, delay: 0.3 }}>
+                    {(files && files.length > 0) && tableInfo.pageSize && (
+                        <AgGridReact
+                            columnDefs={tableInfo.columnDefs}
+                            rowData={renderedResults || []}
+                            className="ag-theme h-full"
+                            theme={theme}
+                            animateRows={false}
+                            paginationPageSizeSelector={PAGE_SIZES}
+                            pagination={true}
+                            paginationPageSize={tableInfo.pageSize}
+                            paginationAutoPageSize={tableInfo.fitPage}
+                            suppressPaginationPanel={true}
+                            suppressCellFocus={true}
+                            rowClass={"opacity-100 will-change-[opacity] transition-all duration-500"}
+                            rowSelection={{
+                                mode: 'multiRow',
+                                checkboxes: true,
+                                enableClickSelection: true
+                            }}
+                            onPaginationChanged={(event) => {
+                                setTableInfo(pre => ({ ...pre, currentPage: event.api.paginationGetCurrentPage(), totalPages: event.api.paginationGetTotalPages() }));
+                                if (event.newPage && !event.newData) setFiles(files => files.map((file, index) => {
+                                    if ((file as any).previousFile) delete (file as any).previousFile
+                                    return file;
+                                }));
+                            }}
+                            ref={gridRef}
+                            onGridReady={() => {
+                                toggleColumns();
+                                setTableInfo(pre => ({ ...pre, gridReady: true, currentPage: gridRef.current?.api.paginationGetCurrentPage() || 0, totalPages: gridRef.current?.api.paginationGetTotalPages() || 0 }));
+                            }}
+                            onCellContextMenu={(event) => {
+                                setTableInfo(pre => ({ ...pre, dropdown: { ...pre.dropdown, open: false } }));
+                                if (!event.node.isSelected()) {
+                                    (event.event?.target as HTMLElement)?.click()
                                 }
-                            }));
-                        }}
-                        preventDefaultOnContextMenu={true}
-                        onCellDoubleClicked={(event) => {
-                            if (event.node.data.isFolder) {
-                                setTableInfo(pre => ({ ...pre, viewingLocation: event.node.data.path }));
-                            }
-                        }}
-                    />
-                )}
+                                setTableInfo(pre => ({
+                                    ...pre,
+                                    dropdown: {
+                                        ...pre.dropdown,
+                                        open: true,
+                                        position: {
+                                            x: (event.event as MouseEvent)?.clientX,
+                                            y: (event.event as MouseEvent)?.clientY
+                                        },
+                                        items: event.api.getSelectedNodes().map(file => file.data)
+                                    }
+                                }));
+                            }}
+                            preventDefaultOnContextMenu={true}
+                            onCellDoubleClicked={(event) => {
+                                if (event.node.data.isFolder) {
+                                    setTableInfo(pre => ({ ...pre, viewingLocation: event.node.data.path }));
+                                }
+                            }}
+                        />
+                    )}
+                </motion.div>
             </div>
         </div>
         <div>
@@ -134,14 +142,10 @@ const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdown
                     }));
                 }}
                 setFiles={setFiles}
-                setShares={setShares}
-                shares={shares}
             />
         </div>
         {tableInfo.dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: tableInfo.dropdown.position.y, left: tableInfo.dropdown.position.x }}>
             <FileDropdown
-                setShares={setShares}
-                shares={shares}
                 customOptions={fileDropdownOptions}
                 open={tableInfo.dropdown.open}
                 onOpenChange={() => setTableInfo(pre => ({ ...pre, dropdown: { ...pre.dropdown, open: false } }))}

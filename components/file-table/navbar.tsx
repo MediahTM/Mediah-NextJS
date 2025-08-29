@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from '../ui/breadcrumb'
 import { useFileTable } from './table-context';
 
-const FileTableNavbar = () => {
+const FileTableNavbar = ({ homeName = "Home"}: { homeName?: string }) => {
     // Location state is created and updated from grid API rather than directly reading from tableInfo to prevent the navbar from updating before the table
     const { tableInfo, setTableInfo } = useFileTable();
 
@@ -19,7 +19,7 @@ const FileTableNavbar = () => {
         <Breadcrumb className='pt-2 pb-3'>
             <BreadcrumbList>
                 <BreadcrumbItem onClick={() => setTableInfo(pre => ({ ...pre, viewingLocation: "/" }))} className='hover:cursor-pointer hover:text-primary transition-all'>
-                    Home
+                    {homeName}
                 </BreadcrumbItem>
                 {locationState !== "/" && locationState.split("/").slice(1).map((location, index) => (
                     <React.Fragment key={index}>

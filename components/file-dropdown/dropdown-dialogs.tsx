@@ -11,7 +11,7 @@ export type DialogConfig = {
     extraProps: { [key: string]: any };
 }
 
-const DropdownDialogs = ({ dropdown, setDropdown, setFiles, setShares, shares }: Pick<GeneralProps, "setFiles" | "setShares" | "shares" | "dropdown" | "setDropdown">) => {
+const DropdownDialogs = ({ dropdown, setDropdown, setFiles }: Pick<GeneralProps, "setFiles" | "dropdown" | "setDropdown">) => {
     const dialogConfigs: DialogConfig[] = [
         {
             key: "rename",
@@ -22,12 +22,7 @@ const DropdownDialogs = ({ dropdown, setDropdown, setFiles, setShares, shares }:
             key: "export",
             Component: ExportDialog,
             extraProps: {},
-        },
-        {
-            key: "share",
-            Component: ShareDialog,
-            extraProps: { setShares, shares },
-        },
+        }
     ];
     return (
         <>

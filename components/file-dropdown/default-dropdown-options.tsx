@@ -5,6 +5,7 @@ import { File } from "@prisma/client";
 import { toast } from 'sonner';
 export const defaultOptions: FileDropdownItem[] = [
     {
+        key: "download",
         label: () => "Download",
         icon: () => <DownloadIcon />,
         enabled: ({ items }) => !items.some(f => "isFolder" in f),
@@ -15,9 +16,10 @@ export const defaultOptions: FileDropdownItem[] = [
     },
     {
         separator: true,
-        dependencies: ["Download"]
+        dependencies: ["download"]
     },
     {
+        key: "info",
         label: () => "Info",
         icon: () => <InfoIcon />,
         enabled: () => true,
@@ -26,28 +28,7 @@ export const defaultOptions: FileDropdownItem[] = [
         }
     },
     {
-        label: (props) => {
-            if (props) {
-                const { shares, items } = props
-                const isShared = shares.some((share) => share.type === "file" && !("isFolder" in items[0]) && share.key === items[0].id);
-                return isShared ? "Edit Share" : "Share";
-            }
-            return "Share";
-        },
-        icon: (props) => {
-            if (props) {
-                const { shares, items } = props
-                const isShared = shares.some((share) => share.type === "file" && !("isFolder" in items[0]) && share.key === items[0].id);
-                return isShared ? <UserRoundCogIcon /> : <UserRoundPlusIcon />;
-            }
-            return <UserRoundPlusIcon />;
-        },
-        enabled: ({ items }) => items.length === 1,
-        onClick: ({ setDropdown }) => {
-            setDropdown(menu => ({ ...menu, dialogs: { ...menu.dialogs, share: true } }));
-        }
-    },
-    {
+        key: "export",
         label: () => "Export",
         icon: () => <TableIcon />,
         enabled: ({ items }) => !items.some(f => "isFolder" in f && f.isFolder),
@@ -56,6 +37,7 @@ export const defaultOptions: FileDropdownItem[] = [
         }
     },
     {
+        key: "rename",
         label: () => "Rename",
         icon: () => <PencilIcon />,
         enabled: () => true,

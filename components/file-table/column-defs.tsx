@@ -1,18 +1,14 @@
-import ShareCell from "@/app/dashboard/files/share-cell";
 import { formatBytes, formatRelativeTime } from "@/lib/helpers";
 import { getFileIcon } from "@/utils/file-types";
-import { Share, File } from "@prisma/client";
 import { ColDef } from "ag-grid-community";
-import { AgGridReact, CustomCellRendererProps } from "ag-grid-react";
+import { CustomCellRendererProps } from "ag-grid-react";
 import { EllipsisVerticalIcon, FolderIcon } from "lucide-react";
 import { useState } from "react";
-import FileDropdown, { FileDropdownItem } from "../file-dropdown/file-dropdown";
+import { FileDropdownItem } from "../file-dropdown/file-dropdown";
 import { Button } from "../ui/button";
-import { StatusBarProps } from "../status-bar/status-bar";
-import { defaultDropdown, Dropdown } from "@/types/dropdown";
-import DropdownDialogs from "../file-dropdown/dropdown-dialogs";
+import { TableInfo } from "./table-context";
 
-export const getColumnDefs = (shares: Share[], setShares: React.Dispatch<React.SetStateAction<Share[]>>, setFiles: React.Dispatch<React.SetStateAction<File[]>>, setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, gridRef: React.RefObject<AgGridReact>, fileContextOptions?: FileDropdownItem[]): ColDef[] => [
+export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>, fileContextOptions?: FileDropdownItem[]): ColDef[] => [
     {
         field: "filename",
         headerName: "Filename",
@@ -90,46 +86,26 @@ export const getColumnDefs = (shares: Share[], setShares: React.Dispatch<React.S
         },
     },
     {
-        field: "shared",
-        headerName: "Shared",
-        suppressMovable: true,
-        resizable: false,
-        width: 100,
-        cellRenderer: ShareCell,
-        comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
-            const aChecked = Boolean(
-                shares.some((share) => share.key === nodeA.data.id && share.type === "file")
-            );
-            const bChecked = Boolean(
-                shares.some((share) => share.key === nodeB.data.id && share.type === "file")
-            );
-            return aChecked === bChecked ? 0 : aChecked ? 1 : -1;
-        },
-    },
-    {
         headerName: " ",
         resizable: false,
         width: 70,
         suppressMovable: true,
         sortable: false,
         cellRenderer: ({ data }: CustomCellRendererProps) => {
-            const [dropdown, setDropdown] = useState<Dropdown>({
-                ...defaultDropdown,
-                items: [data]
-            });
 
             return (
                 <div className="flex justify-end h-full items-center">
-                    <FileDropdown shares={shares} setShares={setShares} customOptions={fileContextOptions} items={[data]} dropdown={dropdown} setDropdown={setDropdown} setStatusBar={setStatusBar} setFiles={setFiles} gridRef={gridRef}>
-                        <Button
-                            size={"icon"}
-                            variant={"ghost"}
-                        >
-                            <EllipsisVerticalIcon />
-                        </Button>
-                    </FileDropdown>
+                    <Button
+                        size={"icon"}
+                        variant={"ghost"}
+                        onClick={(event) => {
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            setTableInfo(pre => ({ ...pre, dropdown: { ...pre.dropdown, open: true, position: { x: rect.left + 30, y: rect.top + 30 }, items: [data] } }))
+                        }}
+                    >
+                        <EllipsisVerticalIcon />
+                    </Button>
 
-                    <DropdownDialogs dropdown={dropdown} setDropdown={setDropdown} setFiles={setFiles} setShares={setShares} shares={shares} />
                 </div>
             )
         }

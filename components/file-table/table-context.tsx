@@ -15,10 +15,10 @@ export type TableInfo = {
     totalPages: number,
     viewingLocation: string,
     gridReady: boolean,
-    gridRef?: React.RefObject<AgGridReact>
+    gridRef?: React.RefObject<AgGridReact | null>
 }
 
-export type FileTableProps = Pick<GeneralProps, "files" | "setFiles" | "shares" | "setShares"> & {
+export type FileTableProps = Pick<GeneralProps, "files" | "setFiles"> & {
     tableInfo: TableInfo,
     setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>
 }
@@ -26,7 +26,7 @@ export type FileTableProps = Pick<GeneralProps, "files" | "setFiles" | "shares" 
 const FileTableContext = createContext<FileTableProps | undefined>(undefined);
 
 export const FileTableProvider = ({ children, customFilesProps = undefined }: {
-    children: React.ReactNode, customFilesProps?: Pick<GeneralProps, "files" | "setFiles" | "shares" | "setShares">
+    children: React.ReactNode, customFilesProps?: Pick<GeneralProps, "files" | "setFiles">
 }) => {
     const [tableInfo, setTableInfo] = useState<TableInfo>({
         columnDefs: [],
@@ -55,7 +55,7 @@ export const FileTableProvider = ({ children, customFilesProps = undefined }: {
             else setTableInfo(pre => ({ ...pre, pageSize: Number(DEFAULT_PAGE_SETTING) || DEFAULT_PAGE_SIZE }));
         } else {
             if (pageSize === "Fit") setTableInfo(pre => ({ ...pre, fitPage: true }));
-            else setTableInfo(pre => ({ ...pre, pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE }));
+            else setTableInfo(pre => ({ ...pre, pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE, fitPage: false }));
         }
         setProcessedSavedSettings(true);
     }, [])

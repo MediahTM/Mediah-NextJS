@@ -21,7 +21,7 @@ const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelected
             .refine((name) => !name.includes("/") && !name.includes("\\"), "Folder name cannot contain '/' or '\\'"),
     })
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             folderName: "",

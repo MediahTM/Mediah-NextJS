@@ -6,7 +6,10 @@ import ShareDialog from '../../../components/dialogs/share/share-dialog';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { unshareFile } from '@/utils/api-actions';
+import { unshareItem } from '@/utils/api-actions';
+import { Share } from '@prisma/client';
+import { Folder } from '@/types/folder';
+import { File } from '@prisma/client';
 
 const ShareCell = ({ data }: CustomCellRendererProps) => {
     const { shares, setShares } = useFiles();
@@ -23,7 +26,7 @@ const ShareCell = ({ data }: CustomCellRendererProps) => {
             return;
         }
 
-        const response = await unshareFile(data.id, "file");
+        const response = await unshareItem(data.id, "file");
         if (!response.success) {
             toast.error("Could not unshare file!");
         } else {
@@ -31,25 +34,25 @@ const ShareCell = ({ data }: CustomCellRendererProps) => {
         }
     };
 
-    
-    const fileShared = shares.some((share) => share.key === data.id && share.type === "file");
+    const isFolder = data && "isFolder" in data && data.isFolder;
+    const existingShare: Share | null = shares.find((share) => isFolder ? share.key === (data as Folder).path && share.type === "folder" : share.key === (data as File).id && share.type === "file") || null;
 
     return (
         <div className="flex items-center gap-2 h-full">
             <Switch
-                checked={useOpen || fileShared}
+                checked={useOpen || Boolean(existingShare)}
                 onCheckedChange={handleSwitchChange}
             />
 
             <ShareDialog
                 open={useOpen}
                 setOpen={setUseOpen}
-                file={data}
+                item={data}
                 shares={shares}
                 setShares={setShares}
             />
 
-            {fileShared && (
+            {existingShare && (
                 <Button
                     onClick={() => {
                         setUseOpen(true)

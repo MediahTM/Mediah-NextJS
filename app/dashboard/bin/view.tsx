@@ -13,12 +13,13 @@ const BinView = () => {
     const { binFiles, setBinFiles } = useFiles();
 
     const fileDropdownOptions: FileDropdownItem[] = [
-        ...defaultOptions.filter(option => !("label" in option && ["Share", "Rename"].includes(option.label()))),
+        ...defaultOptions.filter(option => !("key" in option && ["rename"].includes(option.key))),
         {
             separator: true,
             dependencies: []
         },
         {
+            key: "restore",
             label: () => "Restore",
             icon: () => <FileOutputIcon />,
             enabled: () => true,
@@ -27,6 +28,7 @@ const BinView = () => {
             }
         },
         {
+            key: "delete",
             label: () => "Delete Forever",
             icon: () => <TrashIcon />,
             enabled: () => true,
@@ -40,8 +42,7 @@ const BinView = () => {
         <Container className="h-full flex flex-col">
             <PageTitle title="My Bin" description="Binned files are permanently deleted after 30 days" />
             <div className="flex-1 flex flex-col h-full">
-                <FileTableProvider customFilesProps={{ files: binFiles, setFiles: setBinFiles, shares: [], setShares: () => { } }}>
-                    <RemoveSharedColumn />
+                <FileTableProvider customFilesProps={{ files: binFiles, setFiles: setBinFiles }}>
                     <FileTableNavbar />
                     <FileTable fileDropdownOptions={fileDropdownOptions} />
                     <FileTablePageNavigation />
@@ -49,14 +50,6 @@ const BinView = () => {
             </div>
         </Container>
     )
-}
-
-const RemoveSharedColumn = () => {
-    const { tableInfo, setTableInfo } = useFileTable();
-    useEffect(() => {
-        if (tableInfo.columnDefs.find(col => col.field === 'shared')) setTableInfo(pre => ({ ...pre, columnDefs: pre.columnDefs.filter(col => col.field !== 'shared') }));
-    }, [tableInfo.columnDefs])
-    return null
 }
 
 

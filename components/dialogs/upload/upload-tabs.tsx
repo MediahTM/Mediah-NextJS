@@ -41,7 +41,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
     const [activeTab, setActiveTab] = useState('upload')
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
-    const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm<FormData>({
+    const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm({
         resolver: zodResolver(schema),
         defaultValues: {
             files: [],
@@ -65,7 +65,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
         }
     }, [open])
 
-    const files = watch('files')
+    const files: FormData['files'] = watch('files')
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault()
@@ -206,7 +206,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                                 <Input
                                     id="location"
                                     placeholder="Enter save location"
-                                    value={watch('location')}
+                                    value={watch('location') as FormData['location']}
                                     className='w-full'
                                     {...register('location')}
                                 />
