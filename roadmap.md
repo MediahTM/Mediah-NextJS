@@ -13,7 +13,9 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Extend file sharing to folders | | 
 | ❌ | Overhaul login screen |`in progress`| 
 | ✔ | Fix the context menu for folders | |
-| ❌ | Make "Save to Mediah" button work for folders/multiple files |`in progress`|
+| ❌ | Validate no duplicate files |`in progress`|
+| ❌ | Make empty tables load |`in progress`|
+| ✔ | Make "Save to Mediah" button work for folders/multiple files |`in progress`|
 | ❌ | Add "info" button functionality |`in progress`|
 | ❌ | Privacy badger fix |`in progress`|
 | ❌ | Mobile friendly status bar |`in progress`|

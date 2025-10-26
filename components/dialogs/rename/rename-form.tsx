@@ -5,14 +5,14 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { File } from '@prisma/client';
-import { FileIcon, Loader2Icon } from 'lucide-react';
+import { Loader2Icon } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { renameFile } from '@/utils/api-actions';
-import { getFileIcon } from '@/utils/file-types';
+import { FileIcon } from '@/utils/file-types';
 
 const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: boolean) => void, setFiles: React.Dispatch<React.SetStateAction<File[]>> }) => {
     const formSchema = z.object({
@@ -63,7 +63,7 @@ const RenameForm = ({ file, setOpen, setFiles }: { file: File, setOpen: (open: b
                             <FormLabel>File name</FormLabel>
                             <FormControl>
                                 <div className="flex items-center space-x-2.5">
-                                    {getFileIcon(form.watch("fileName"), { className: "size-5 opacity-50" })}
+                                    <FileIcon filename={form.watch("fileName")} className="size-5 opacity-50" />
                                     <Input {...field} />
                                 </div>
                             </FormControl>

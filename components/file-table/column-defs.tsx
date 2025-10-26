@@ -1,5 +1,5 @@
 import { formatBytes, formatRelativeTime } from "@/lib/helpers";
-import { getFileIcon } from "@/utils/file-types";
+import { FileIcon } from "@/utils/file-types";
 import { ColDef } from "ag-grid-community";
 import { CustomCellRendererProps } from "ag-grid-react";
 import { EllipsisVerticalIcon, FolderIcon } from "lucide-react";
@@ -21,7 +21,7 @@ export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<
         cellRenderer: ({ data }: CustomCellRendererProps) => {
             return (
                 <div className='flex items-center gap-2'>
-                    {data.isFolder ? <FolderIcon className='size-5 shrink-0 stroke-primary' /> : getFileIcon(data.filename, { className: 'size-5 shrink-0', stroke: 'gray' })}
+                    {data.isFolder ? <FolderIcon className='size-5 shrink-0 stroke-primary' /> : <FileIcon filename={data.filename} className='size-5 shrink-0 stroke-muted-foreground' />}
                     <p className='truncate'>{data.isFolder ? data.name : data.filename}</p>
                 </div>
             )

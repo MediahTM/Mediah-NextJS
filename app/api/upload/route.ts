@@ -9,6 +9,19 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     const data = uploadSchema.parse(await request.json());
 
+    const existingFile = await db.file.findFirst({
+        where: {
+            filename: data.filename,
+            path: data.path,
+            userId: session.user.id
+        }
+    });
+    if (existingFile) {
+        return NextResponse.json({
+            success: false, message: 'File with the same path and name already exists.', data: null
+        });
+    }
+
     const newFile = await db.file.create({
         data: {
             ...data,

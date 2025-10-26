@@ -24,6 +24,8 @@ export const GET = withErrorHandling(async (req: NextRequest, { params }: { para
     if (shareObject.type === 'folder') {
         const files = await db.file.findMany({
             where: {
+                userId: shareObject.userId,
+                isActive: true,
                 path: {
                     startsWith: escapeRegex(shareObject.key)
                 }
@@ -49,7 +51,8 @@ export const GET = withErrorHandling(async (req: NextRequest, { params }: { para
     const file = await db.file.findFirst({
         where: {
             id: shareObject?.key,
-            userId: shareObject?.userId
+            userId: shareObject?.userId,
+            isActive: true
         }
     })
 

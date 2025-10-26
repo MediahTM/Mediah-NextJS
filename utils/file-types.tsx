@@ -1,7 +1,7 @@
 "use client";
 
-import React, { JSX } from "react";
-import { FileAudio, FileVideo, FileBox, FileImage, FileChartLine, Database, FileTerminal, Gamepad, FileCode, FileType, FileArchive, File } from "lucide-react";
+import React from "react";
+import { FileAudio, FileVideo, FileBox, FileImage, FileChartLine, Database, FileTerminal, Gamepad, FileCode, FileType, FileArchive, File, LucideIcon } from "lucide-react";
 
 export const fileTypes = {
     audio: ["mp3", "ogg", "wav", "m4a", "wma", "mid", "flac", "alac", "aiff", "pcm", "aac", "opus"],
@@ -17,19 +17,19 @@ export const fileTypes = {
     archive: ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'lz', 'cab', 'tgz', 'tbz2']
 }
 
-export const fileIcons: { [key: string]: (props: React.SVGProps<SVGSVGElement>) => JSX.Element } = {
-    audio: (props) => <FileAudio {...props} />,
-    video: (props) => <FileVideo {...props} />,
-    "3d": (props) => <FileBox {...props} />,
-    image: (props) => <FileImage {...props} />,
-    spreadhseet: (props) => <FileChartLine {...props} />,
-    database: (props) => <Database {...props} />,
-    executatble: (props) => <FileTerminal {...props} />,
-    game: (props) => <Gamepad {...props} />,
-    code: (props) => <FileCode {...props} />,
-    text: (props) => <FileType {...props} />,
-    archive: (props) => <FileArchive {...props} />,
-    fallback: (props) => <File {...props} />
+export const fileIcons: { [key: string]: LucideIcon } = {
+    audio: FileAudio,
+    video: FileVideo,
+    "3d": FileBox,
+    image: FileImage,
+    spreadhseet: FileChartLine,
+    database: Database,
+    executatble: FileTerminal,
+    game: Gamepad,
+    code: FileCode,
+    text: FileType,
+    archive: FileArchive,
+    fallback: File
 }
 
 export const getFileType = (filename: string) => {
@@ -42,19 +42,24 @@ export const getFileType = (filename: string) => {
     return null;
 }
 
-export const getFileIcon = (filename: string, iconProps: React.SVGProps<SVGSVGElement> = {}) => {
-    const extension = getFileExtension(filename).toLowerCase().trim();
-    const type = getFileType(extension.toLowerCase());
+export const FileIcon = React.forwardRef((props: React.SVGProps<SVGSVGElement> & { filename: string }, ref: React.Ref<SVGSVGElement>) => {
+    const type = getFileType(props.filename);
     if (type && Object.keys(fileIcons).includes(type)) {
-        return fileIcons[type](iconProps);
+        const Icon = fileIcons[type];
+        return <Icon {...props} ref={ref} />
     }
-    return fileIcons["fallback"](iconProps);
-}
+    const Icon = fileIcons["fallback"];
+    return <Icon {...props} ref={ref} />
+})
 
-export const getFileExtension = (filename: string) => {
-    return filename.replace(filename.substring(0, filename.lastIndexOf(".") + 1), "");
-}
+export const getFileExtension = (filename: string): string => {
+    const lastDot = filename.lastIndexOf(".");
+    if (lastDot === -1 || lastDot === 0) return "";
+    return filename.slice(lastDot + 1);
+};
 
-export const getFileName = (filename: string) => {
-    return filename.substring(0, filename.lastIndexOf("."));
-}
+export const getFileName = (filename: string): string => {
+    const lastDot = filename.lastIndexOf(".");
+    if (lastDot === -1 || lastDot === 0) return filename;
+    return filename.slice(0, lastDot);
+};

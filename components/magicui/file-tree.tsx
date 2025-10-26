@@ -37,7 +37,7 @@ const useTree = () => {
   return context;
 };
 
-interface TreeViewComponentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface TreeViewComponentProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 type Direction = "rtl" | "ltr" | undefined;
 
@@ -148,7 +148,8 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
         <div className={cn("size-full", className)}>
           <ScrollArea
             ref={ref}
-            className="relative h-full px-2"
+            className="relative h-full px-2 flex flex-col flex-1"
+            innerClassName='[&>div]:!flex [&>div]:!flex-col [&>div]:!flex-1 flex flex-col flex-1'
             dir={dir as Direction}
           >
             <AccordionPrimitive.Root
@@ -164,7 +165,7 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
             >
               {children}
             </AccordionPrimitive.Root>
-            <ScrollBar orientation='horizontal'/>
+            <ScrollBar orientation='horizontal' />
           </ScrollArea>
         </div>
       </TreeContext.Provider>
@@ -196,7 +197,7 @@ const TreeIndicator = forwardRef<
 TreeIndicator.displayName = "TreeIndicator";
 
 interface FolderComponentProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {}
+  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> { }
 
 type FolderProps = {
   expandedItems?: string[];
@@ -258,7 +259,7 @@ const Folder = forwardRef<
             },
           )}
           disabled={!isSelectable}
-          onClick={() => {if (isCollapsable) handleExpand(value)}}
+          onClick={() => { if (isCollapsable) handleExpand(value) }}
         >
           {expandedItems?.includes(value)
             ? (openIcon ?? <FolderOpenIcon className="size-4" stroke={isSelect ? "orange" : "white"} />)

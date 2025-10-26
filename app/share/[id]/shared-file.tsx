@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckIcon, CopyIcon, DatabaseIcon, DownloadIcon, InfoIcon, SaveIcon, UserRoundPlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getFileExtension, getFileIcon, getFileName } from '@/utils/file-types';
+import { FileIcon, getFileExtension, getFileName } from '@/utils/file-types';
 import { useSession } from 'next-auth/react';
 import { useStatusBar } from '@/utils/status-bar-context';
 import { formatBytes } from '@/lib/helpers';
 import { cn } from '@/lib/utils';
-import SaveDialog from '@/components/dialogs/save/save-dialog';
+import SaveDialog from '@/components/dialogs/save/save-files-dialog';
 import { downloadFiles } from '@/utils/file-store/download';
 import { File } from '@prisma/client';
 import { toast } from 'sonner';
@@ -38,9 +38,7 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
                     <CardContent className='flex flex-col gap-4'>
                         <div className='flex items-center justify-center w-full text-nowrap overflow-hidden flex-col md:flex-row md:gap-2'>
                             <div className="flex gap-2">
-                                {getFileIcon(file.filename, {
-                                    className: "aspect-square w-6 shrink-0",
-                                })}
+                                <FileIcon filename={file.filename} className='aspect-square w-6 shrink-0' />
                                 <div className="flex max-w-full overflow-hidden">
                                     <span className="truncate">{getFileName(file.filename)}</span>
                                     <span className="shrink-0 max-w-full truncate">.{getFileExtension(file.filename)}</span>
@@ -115,7 +113,7 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
                 <p className='text-muted-foreground'>File was shared on {file.shareDate.toLocaleDateString()}</p>
             </TooltipProvider>
         </motion.div>}
-        {file && <SaveDialog file={file} openSaveDialog={openSaveDialog} setOpenSaveDialog={setOpenSaveDialog} />}
+        {file && <SaveDialog filesToSave={[file]} open={openSaveDialog} setOpen={setOpenSaveDialog} />}
     </>
 }
 

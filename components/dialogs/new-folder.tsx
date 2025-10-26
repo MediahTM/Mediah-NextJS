@@ -16,9 +16,11 @@ const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelected
     const formSchema = z.object({
         folderName: z
             .string()
+            .trim()
             .min(1, "Folder name is required!")
             .max(255, "Folder name is too long!")
-            .refine((name) => !name.includes("/") && !name.includes("\\"), "Folder name cannot contain '/' or '\\'"),
+            .refine((name) => !name.includes("/") && !name.includes("\\"), "Folder name cannot contain '/' or '\\'")
+            .refine((name) => !elements.find(folder => folder.name === name && (("isNewFolder" in folder && folder.isNewFolder) ? folder.path : parsePath(folder.path + "/" + folder.name)) === path), "Folder already exists"),
     })
 
     const form = useForm({
@@ -73,7 +75,7 @@ const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelected
                             )}
                         />
                         <div className="flex items-center justify-end gap-2">
-                            <Button type="submit">
+                            <Button type="submit" disabled={!form.formState.isValid}>
                                 Create
                             </Button>
                             <Button

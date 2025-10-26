@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Calendar, DatabaseIcon, DownloadIcon, Users } from 'lucide-react';
 import { formatBytes, formatTime } from '@/lib/helpers';
-import { getFileIcon, getFileType } from '@/utils/file-types';
+import { FileIcon, getFileType } from '@/utils/file-types';
 import { File } from '@prisma/client';
 import { Expandable, ExpandableCard, ExpandableCardContent, ExpandableCardFooter, ExpandableCardHeader, ExpandableContent } from '@/components/ui/expandable-card';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ const ExpandableFile = ({ index, latestFiles }: { index: number, latestFiles: Fi
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            {getFileIcon(latestFiles[index].filename, { className: 'shrink-0 size-5 absolute top-4 right-4' })}
+                                            <FileIcon filename={latestFiles[index].filename} className='shrink-0 size-5 absolute top-4 right-4' />
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p className='capitalize'>{getFileType(latestFiles[index].filename) || 'Other'}</p>

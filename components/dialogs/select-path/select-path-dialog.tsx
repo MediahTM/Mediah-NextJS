@@ -8,13 +8,13 @@ import { useFiles } from '@/utils/files-context';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { getFileIcon } from '@/utils/file-types';
+import { FileIcon } from '@/utils/file-types';
 import { Input } from '@/components/ui/input';
 import NewFolder from '../new-folder';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { FolderPlusIcon } from 'lucide-react';
 
-const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
+const UploadPathDialog = ({ setPath, title = "Select a path", description = "Choose the place to upload your files" }: { setPath: (path: string) => void, title?: string, description?: string }) => {
     const { files, loading } = useFiles();
     const [open, setOpen] = useState<boolean>(false);
     const [selectedPathId, setSelectedPathId] = useState<number | null>(1);
@@ -36,9 +36,11 @@ const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
     }, [files, loading])
 
     const RenderTreeChildren = (children: (FolderTree | NewFolderType)[], path: string = "/") => {
+        const filteredChildren = children.filter(newChild => (newChild.path.substring(0, path.length) === path));
+        if (filteredChildren.length === 0) return null;
         return (
-            <React.Fragment key={path}>
-                {children.filter(newChild => (newChild.path.substring(0, path.length) === path)).map((child) => {
+            <React.Fragment key={path + filteredChildren[0].id}>
+                {filteredChildren.map((child) => {
                     const isNewFolder = ("isNewFolder" in child ? child.isNewFolder : false);
                     const relativePath = parsePath(isNewFolder ? child.path + "/" + child.name : child.path);
                     const containsNewFolder = elements.filter(newChild => ("isNewFolder" in newChild ? newChild.isNewFolder : false) && newChild.path === relativePath).length > 0 ? true : false;
@@ -81,15 +83,15 @@ const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
             </DialogTrigger>
             <DialogContent className='max-w-[900px] w-5/6 sm:w-[70vw] 2xl:w-[45vw] overflow-hidden'>
                 <DialogHeader>
-                    <DialogTitle>Select a path</DialogTitle>
-                    <DialogDescription>Choose the place to upload your files</DialogDescription>
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
                 <ResizablePanelGroup
                     direction="horizontal"
                     className="w-full rounded-lg border md:min-w-[450px] min-h-[40vh] max-h-[40vh]"
                 >
                     <ResizablePanel defaultSize={55} minSize={25}>
-                        <div className="w-full flex flex-col col-span-5 overflow-hidden p-2 h-full">
+                        <div className="w-full flex flex-col col-span-5 overflow-hidden p-2 min-h-full">
                             <div className="flex justify-between mb-2">
                                 <h1 className='text-foreground/80 font-semibold text-sm'>Your Mediah Folders</h1>
                                 <NewFolder elements={elements} setElements={setElements} path={selectedPath} setSelectedPathId={setSelectedPathId} setSelectedPath={setSelectedPath} >
@@ -98,15 +100,17 @@ const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
                                     </Button>
                                 </NewFolder>
                             </div>
-                            <ScrollArea className='w-full max-w-full overflow-auto h-full'>
-                                <Tree
-                                    className="rounded-md bg-background p-2 w-full min-h-full"
-                                    initialExpandedItems={["1"]}
-                                    initialSelectedId="1"
-                                    elements={elements}
-                                >
-                                    {RenderTreeChildren(elements.filter(child => "isNewFolder" in child ? !child.isNewFolder : true))}
-                                </Tree>
+                            <ScrollArea className='w-full max-w-full overflow-auto h-full flex-1 flex flex-col' innerClassName='flex flex-col flex-1 [&>div]:!flex [&>div]:!flex-1 [&>div]:!flex-col h-full'>
+                                <div className='flex-1 min-h-full flex flex-col'>
+                                    <Tree
+                                        className="rounded-md bg-background py-2 w-full min-h-full flex-1 flex flex-col"
+                                        initialExpandedItems={["1"]}
+                                        initialSelectedId="1"
+                                        elements={elements}
+                                    >
+                                        {RenderTreeChildren(elements.filter(child => "isNewFolder" in child ? !child.isNewFolder : true))}
+                                    </Tree>
+                                </div>
                                 <ScrollBar orientation="horizontal" />
                                 <ScrollBar orientation="vertical" />
                             </ScrollArea>
@@ -156,7 +160,7 @@ const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
                                             {getFilesInPath(selectedPath, files).filesInPath.map((file, index) => (
                                                 <TableRow key={index} className="w-full">
                                                     <TableCell className="w-full flex items-center gap-2 min-w-0">
-                                                        {getFileIcon(file.filename, { className: "size-5 shrink-0", stroke: "gray" })}
+                                                        <FileIcon filename={file.filename} className='size-5 shrink-0 aspect-square' />
                                                         <div className="truncate w-full">{file.filename}</div>
                                                     </TableCell>
                                                     <TableCell className="w-1/4 truncate">{formatBytes(file.uploadedSize)}</TableCell>
