@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { JSX } from "react";
 import { FileAudio, FileVideo, FileBox, FileImage, FileChartLine, Database, FileTerminal, Gamepad, FileCode, FileType, FileArchive, File } from "lucide-react";
 
 export const fileTypes = {

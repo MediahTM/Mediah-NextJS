@@ -9,7 +9,7 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     const session = await getAuthenticatedSession();
 
     const { searchParams } = new URL(req.url)
-    const isActive = searchParams.get("isActive") === "true" ? true : false
+    const isActive = searchParams.get("isActive") === "true" ? true : (searchParams.get("isActive") === "false" ? false : undefined)
 
     const files = await db.file.findMany({
         where: {

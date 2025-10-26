@@ -1,25 +1,8 @@
-import { parsePath, replaceIllegalCharacters } from '@/lib/helpers';
+import { uploadSchema } from '@/lib/api-schemas';
 import db from '@/lib/prisma';
 import { withErrorHandling } from '@/utils/api-error-handling';
 import { getAuthenticatedSession } from '@/utils/api-session-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-
-export const uploadSchema = z.object({
-    filename: z.preprocess(
-        (val) => typeof val === 'string' ? val : replaceIllegalCharacters(val as string, "filename"),
-        z.string({ message: "File name is required." }).min(1, 'File name is required.').max(255, 'File name is too long.')
-    ),
-    uploadedSize: z.number({ message: "File size is required." }).positive('File size must be positive.'),
-    path: z.preprocess(
-        (val) => typeof val === 'string' ? val : parsePath(val as string),
-        z.string().min(1, 'File path is required.')
-    ),
-    encryptedFilename: z.string({ message: "Encrypted file name is required." }).min(1, 'Encrypted file name is required.'),
-    parts: z.array(z.string()).min(1, 'At least one part is required.'),
-    channelID: z.string(),
-    chunkSize: z.number(),
-})
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
     const session = await getAuthenticatedSession();

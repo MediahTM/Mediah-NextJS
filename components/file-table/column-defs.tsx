@@ -25,7 +25,12 @@ export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<
                     <p className='truncate'>{data.isFolder ? data.name : data.filename}</p>
                 </div>
             )
-        }
+        },
+        comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
+            const a = nodeA.data.isFolder ? nodeA.data.name : nodeA.data.filename;
+            const b = nodeB.data.isFolder ? nodeB.data.name : nodeB.data.filename;
+            return a.localeCompare(b);
+        },
     },
     {
         field: "uploadedSize",
@@ -92,7 +97,6 @@ export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<
         suppressMovable: true,
         sortable: false,
         cellRenderer: ({ data }: CustomCellRendererProps) => {
-
             return (
                 <div className="flex justify-end h-full items-center">
                     <Button

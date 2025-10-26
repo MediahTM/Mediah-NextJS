@@ -1,29 +1,9 @@
+import { baseShareSchema, shareSchema } from "@/lib/api-schemas";
+import { escapeRegex } from "@/lib/helpers";
 import db from "@/lib/prisma";
 import { withErrorHandling } from "@/utils/api-error-handling";
 import { getAuthenticatedSession } from "@/utils/api-session-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-
-const baseShareSchema = z.object({
-    key: z.string(),
-    type: z.enum(["file", "folder"])
-})
-
-const shareSchema = baseShareSchema.extend({
-    key: z.string(),
-    type: z.enum(["file", "folder"]),
-    endDate: z.preprocess((value) => {
-        if (!value) return undefined;
-        const date = new Date(value as string);
-        return isNaN(date.getTime()) ? undefined : date;
-    }, z.date()).optional().nullable(),
-    neverExpire: z.boolean().optional(),
-}).refine((data) => {
-    return [data.endDate, data.neverExpire].filter((val) => val !== undefined).length === 1;
-}, {
-    message: 'Exactly one of "endDate" or "neverExpire" must be provided',
-    path: ['endDate', 'neverExpire']
-});
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
     const session = await getAuthenticatedSession();
@@ -41,10 +21,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             return NextResponse.json({ success: false, message: "File not found.", data: null });
         }
     } else {
+        console.log(json.key);
         const file = await db.file.findFirst({
             where: {
+                userId: session.user.id,
                 path: {
-                    startsWith: json.key // json.key acts as the folder name
+                    startsWith: escapeRegex(json.key) // json.key acts as the folder name
                 }
             }
         })
@@ -67,7 +49,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             data: {
                 shareDate: new Date(new Date().getTime() - 1 * 1000),
                 ...(json.endDate ? { endDate: json.endDate, neverExpire: false } : {}),
-                ...(json.neverExpire ? { neverExpire: json.neverExpire, endDate: null, shareDate: null } : {})
+                ...(json.neverExpire ? { neverExpire: json.neverExpire, endDate: null } : {})
             }
         })
         return NextResponse.json({ success: true, message: `${json.type.charAt(0).toUpperCase() + json.type.slice(1)} share updated successfully.`, data: newObject });

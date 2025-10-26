@@ -10,14 +10,17 @@ import { FileDropdownItem } from '@/components/file-dropdown/file-dropdown';
 import { useFiles } from '@/utils/files-context';
 import { File, Share } from '@prisma/client';
 import DeleteDialog from '@/components/dialogs/delete-file/delete-dialog';
-import { useStatusBar } from '@/utils/status-bar-context';
 import ShareDialog from '@/components/dialogs/share/share-dialog';
 import { Folder } from '@/types/folder';
 import ShareCell from './share-cell';
+import { convertToFileList } from '@/lib/helpers';
+import { useStatusBar } from '@/utils/status-bar-context';
 
 const FilesView = () => {
-    const { setBinFiles, shares, setShares } = useFiles();
+    const { setStatusBar } = useStatusBar();
+    const { shares, setShares, setFiles, setBinFiles, files } = useFiles();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [itemsToDelete, setItemsToDelete] = useState<File[]>([]);
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
     const [selectedShareItem, setSelectedShareItem] = useState<File | Folder | undefined>(undefined);
 
@@ -64,26 +67,11 @@ const FilesView = () => {
             key: "bin",
             label: () => "Move to Bin",
             icon: () => <TrashIcon />,
-            enabled: ({ items }) => !items.some(f => "isFolder" in f && f.isFolder),
-            onClick: async ({ items, setStatusBar, setFiles }) => {
-                const filesToDelete: File[] = items as File[];
+            enabled: () => true,
+            onClick: async ({ items }) => {
+                const filesToDelete: File[] = convertToFileList(items, files);
                 setDeleteDialogOpen(true);
-                // await createJob(setStatusBar, `Move ${filesToDelete.length} ${filesToDelete.length === 1 ? " file" : " files"} to Bin`, DeleteIcon, () => {
-                //     return new Promise(async (resolve) => {
-                //         try {
-                //             setStatusBar(statusBar => ({ ...statusBar, title: `Moving ${filesToDelete.length} ${filesToDelete.length === 1 ? " file" : " files"} to Bin` }));
-                //             for (let i = 0; i < filesToDelete.length; i++) {
-                //                 await patchFile(filesToDelete[i].id, { isActive: false });
-                //                 setStatusBar(statusBar => ({ ...statusBar, progress: (i + 1) / filesToDelete.length * 100 }));
-                //             }
-                //             setFiles(allFiles => allFiles.filter(file => !filesToDelete.find(f => f.id === file.id)));
-                //             setBinFiles(binFiles => [...binFiles, ...filesToDelete.map(file => ({ ...file, updatedAt: new Date() }))]);
-                //             resolve();
-                //         } catch {
-                //             resolve();
-                //         }
-                //     })
-                // })
+                setItemsToDelete(filesToDelete);
             }
         }
     ]
@@ -96,7 +84,7 @@ const FilesView = () => {
                     <FileTableNavbar />
                     <FileTable fileDropdownOptions={fileDropdownOptions} />
                     <FileTablePageNavigation />
-                    <DeleteDialogWrapper open={deleteDialogOpen} setOpen={setDeleteDialogOpen} />
+                    <DeleteDialog open={deleteDialogOpen} setOpen={setDeleteDialogOpen} items={itemsToDelete} setStatusBar={setStatusBar} setFiles={setFiles} setBinFiles={setBinFiles} type="bin" />
                     <AddSharedColumn />
                     <ShareDialog open={shareDialogOpen} setOpen={setShareDialogOpen} item={selectedShareItem} shares={shares} setShares={setShares} />
                 </FileTableProvider>
@@ -138,14 +126,6 @@ const AddSharedColumn = () => {
         }
     }, [tableInfo.columnDefs, loading])
     return null;
-}
-
-const DeleteDialogWrapper = ({ open, setOpen }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
-    const { tableInfo, setFiles } = useFileTable();
-    const { setBinFiles } = useFiles();
-    const { setStatusBar } = useStatusBar();
-
-    return <DeleteDialog setFiles={setFiles} items={tableInfo.dropdown.items as File[]} open={open} setOpen={setOpen} setBinFiles={setBinFiles} setStatusBar={setStatusBar} />
 }
 
 export default FilesView

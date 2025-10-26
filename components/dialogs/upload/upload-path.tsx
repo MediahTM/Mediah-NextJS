@@ -11,6 +11,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { getFileIcon } from '@/utils/file-types';
 import { Input } from '@/components/ui/input';
 import NewFolder from '../new-folder';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+import { FolderPlusIcon } from 'lucide-react';
 
 const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
     const { files, loading } = useFiles();
@@ -33,50 +35,37 @@ const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
         }
     }, [files, loading])
 
-    const RenderTreeChildren = (children: (FolderTree | NewFolderType)[]) => {
+    const RenderTreeChildren = (children: (FolderTree | NewFolderType)[], path: string = "/") => {
         return (
-            <>
-                {children.filter(newChild => ("isNewFolder" in newChild ? !newChild.isNewFolder : true)).map((child) => {
-                    const containsNewFolder = elements.filter(newChild => ("isNewFolder" in newChild ? newChild.isNewFolder : false) && newChild.path === child.path).length > 0 ? true : false;
+            <React.Fragment key={path}>
+                {children.filter(newChild => (newChild.path.substring(0, path.length) === path)).map((child) => {
+                    const isNewFolder = ("isNewFolder" in child ? child.isNewFolder : false);
+                    const relativePath = parsePath(isNewFolder ? child.path + "/" + child.name : child.path);
+                    const containsNewFolder = elements.filter(newChild => ("isNewFolder" in newChild ? newChild.isNewFolder : false) && newChild.path === relativePath).length > 0 ? true : false;
                     return (
                         <Folder
-                            key={child.id}
+                            key={relativePath}
                             element={child.name}
                             value={child.id}
                             isSelect={selectedPathId === Number(child.id)}
-                            isCollapsable={(child.path !== "/" && child.children.length !== 0) || containsNewFolder}
+                            isCollapsable={(relativePath !== "/" && child.children.length !== 0) || containsNewFolder}
                             initallyExpanded={containsNewFolder}
                             className='w-fit text-nowrap'
                             onClick={(event) => {
                                 event.stopPropagation();
                                 event.preventDefault();
                                 setSelectedPathId(Number(child.id));
-                                setSelectedPath(child.path);
+                                setSelectedPath(relativePath);
                             }}
                         >
-                            {child.children.length > 0 && RenderTreeChildren(child.children)}
-                            {elements.filter(newChild => ("isNewFolder" in newChild ? newChild.isNewFolder : false) && newChild.path === child.path).map((child) => {
-                                return (
-                                    <Folder
-                                        key={child.id}
-                                        element={child.name}
-                                        value={child.id}
-                                        isSelect={selectedPathId === Number(child.id)}
-                                        isCollapsable={child.path !== "/" && child.children.length !== 0}
-                                        className='w-fit text-nowrap'
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            event.preventDefault();
-                                            setSelectedPathId(Number(child.id));
-                                            setSelectedPath(parsePath(child.path + "/" + child.name));
-                                        }}
-                                    />
-                                )
+                            {child.children.length > 0 && RenderTreeChildren(child.children, child.path.substring(0, child.path.length - child.name.length - 1))}
+                            {elements.filter(newChild => ("isNewFolder" in newChild ? newChild.isNewFolder : false) && newChild.path === relativePath).map((child) => {
+                                return RenderTreeChildren([child], child.path);
                             })}
                         </Folder>
                     )
                 })}
-            </>
+            </React.Fragment>
         )
     }
 
@@ -95,98 +84,115 @@ const UploadPathDialog = ({ setPath }: { setPath: (path: string) => void }) => {
                     <DialogTitle>Select a path</DialogTitle>
                     <DialogDescription>Choose the place to upload your files</DialogDescription>
                 </DialogHeader>
-                <NewFolder elements={elements} setElements={setElements} path={selectedPath} setSelectedPathId={setSelectedPathId} setSelectedPath={setSelectedPath}/>
-                <div className='grid xl:grid-cols-12 grid-rows-1 w-full gap-2 min-h-[40vh] max-h-[40vh] overflow-hidden'>
-                    <div className="w-full flex flex-col col-span-5 overflow-hidden">
-                        <ScrollArea className='w-full max-w-full overflow-auto h-full'>
-                            <Tree
-                                className="rounded-md bg-background p-2 w-full min-h-full"
-                                initialExpandedItems={["1"]}
-                                initialSelectedId="1"
-                                elements={elements}
-                            >
-                                {RenderTreeChildren(elements)}
-                            </Tree>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                        <div className="flex flex-1 w-full justify-center items-center xl:hidden gap-4">
-                            <div className='w-full sm:flex flex-1 items-center justify-center gap-2 whitespace-nowrap hidden'>
-                                <p className='font-medium'>Selected Path:</p>
-                                <Input readOnly value={selectedPath} />
+                <ResizablePanelGroup
+                    direction="horizontal"
+                    className="w-full rounded-lg border md:min-w-[450px] min-h-[40vh] max-h-[40vh]"
+                >
+                    <ResizablePanel defaultSize={55} minSize={25}>
+                        <div className="w-full flex flex-col col-span-5 overflow-hidden p-2 h-full">
+                            <div className="flex justify-between mb-2">
+                                <h1 className='text-foreground/80 font-semibold text-sm'>Your Mediah Folders</h1>
+                                <NewFolder elements={elements} setElements={setElements} path={selectedPath} setSelectedPathId={setSelectedPathId} setSelectedPath={setSelectedPath} >
+                                    <Button size="icon" variant="outline" aria-label="New Folder">
+                                        <FolderPlusIcon />
+                                    </Button>
+                                </NewFolder>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    variant='outline'
-                                    className='shrink-0'
-                                    onClick={() => setOpen(false)}
+                            <ScrollArea className='w-full max-w-full overflow-auto h-full'>
+                                <Tree
+                                    className="rounded-md bg-background p-2 w-full min-h-full"
+                                    initialExpandedItems={["1"]}
+                                    initialSelectedId="1"
+                                    elements={elements}
                                 >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant='default'
-                                    className='shrink-0'
-                                    onClick={() => {
-                                        setPath(selectedPath);
-                                        setOpen(false)
-                                    }}
-                                    disabled={selectedPathId === null}
-                                >
-                                    Select Path
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="w-full col-span-7 max-h-full overflow-hidden gap-3 xl:flex hidden">
-                        <Separator orientation='vertical' />
-                        <div className='flex flex-col w-full justify-between max-h-full overflow-hidden'>
-                            <ScrollArea className="h-full overflow-x-hidden max-w-full">
-                                <Table className="w-full table-fixed">
-                                    <TableHeader className="bg-background w-full">
-                                        <TableRow className="w-full">
-                                            <TableHead className="w-3/4 truncate">Filename</TableHead>
-                                            <TableHead className="w-1/4 truncate">Size</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {getFilesInPath(selectedPath, files).filesInPath.map((file, index) => (
-                                            <TableRow key={index} className="w-full">
-                                                <TableCell className="w-full flex items-center gap-2 min-w-0">
-                                                    {getFileIcon(file.filename, { className: "size-5 shrink-0", stroke: "gray" })}
-                                                    <div className="truncate w-full">{file.filename}</div>
-                                                </TableCell>
-                                                <TableCell className="w-1/4 truncate">{formatBytes(file.uploadedSize)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                    {RenderTreeChildren(elements.filter(child => "isNewFolder" in child ? !child.isNewFolder : true))}
+                                </Tree>
+                                <ScrollBar orientation="horizontal" />
+                                <ScrollBar orientation="vertical" />
                             </ScrollArea>
-                            <div className='w-full flex pt-2 items-center justify-center gap-2 whitespace-nowrap'>
-                                <p className='font-medium text-sm'>Selected Path:</p>
-                                <Input readOnly value={selectedPath} />
-                            </div>
-                            <div className="flex items-center justify-end gap-4 mt-6">
-                                <Button
-                                    variant='outline'
-                                    className='shrink-0'
-                                    onClick={() => setOpen(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant='default'
-                                    className='shrink-0'
-                                    onClick={() => {
-                                        setPath(selectedPath);
-                                        setOpen(false)
-                                    }}
-                                    disabled={selectedPathId === null}
-                                >
-                                    Select Path
-                                </Button>
+                            <div className="flex flex-1 w-full justify-center items-center xl:hidden gap-4">
+                                <div className='w-full sm:flex flex-1 items-center justify-center gap-2 whitespace-nowrap hidden'>
+                                    <p className='font-medium'>Selected Path:</p>
+                                    <Input readOnly value={selectedPath} />
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <Button
+                                        variant='outline'
+                                        className='shrink-0'
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant='default'
+                                        className='shrink-0'
+                                        onClick={() => {
+                                            setPath(selectedPath);
+                                            setOpen(false)
+                                        }}
+                                        disabled={selectedPathId === null}
+                                    >
+                                        Select Path
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </ResizablePanel>
+                    <ResizableHandle />
+                    <ResizablePanel defaultSize={45} minSize={30}>
+                        <div className="w-full col-span-7 h-full max-h-full overflow-hidden gap-3 xl:flex hidden py-2">
+                            <Separator orientation='vertical' />
+                            <div className='flex flex-col w-full justify-between max-h-full overflow-hidden'>
+                                <h1 className='text-foreground/80 font-semibold text-sm'>Folder contents</h1>
+                                <ScrollArea className="h-full overflow-x-hidden max-w-full">
+                                    <Table className="w-full table-fixed">
+                                        <TableHeader className="bg-background w-full">
+                                            <TableRow className="w-full">
+                                                <TableHead className="w-3/4 truncate">Filename</TableHead>
+                                                <TableHead className="w-1/4 truncate">Size</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {getFilesInPath(selectedPath, files).filesInPath.map((file, index) => (
+                                                <TableRow key={index} className="w-full">
+                                                    <TableCell className="w-full flex items-center gap-2 min-w-0">
+                                                        {getFileIcon(file.filename, { className: "size-5 shrink-0", stroke: "gray" })}
+                                                        <div className="truncate w-full">{file.filename}</div>
+                                                    </TableCell>
+                                                    <TableCell className="w-1/4 truncate">{formatBytes(file.uploadedSize)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </ScrollArea>
+                                <div className='w-full flex pt-2 items-center justify-center gap-2 whitespace-nowrap px-2'>
+                                    <p className='font-medium text-sm'>Selected Path:</p>
+                                    <Input readOnly value={selectedPath} />
+                                </div>
+                                <div className="flex items-center justify-end gap-4 mt-6 px-2">
+                                    <Button
+                                        variant='outline'
+                                        className='shrink-0'
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant='default'
+                                        className='shrink-0'
+                                        onClick={() => {
+                                            setPath(selectedPath);
+                                            setOpen(false)
+                                        }}
+                                        disabled={selectedPathId === null}
+                                    >
+                                        Select Path
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </ResizablePanel>
+                </ResizablePanelGroup>
             </DialogContent>
         </Dialog>
     )

@@ -17,7 +17,6 @@ const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, p
     const [selectedItem, setSelectedItem] = useState<File | null>(null);
     const [tableFiles, setTableFiles] = useState(files.map(file => ({ ...file, path: parsePath(file.path.replace(path, "/")) })));
 
-    // TODO: Make this work with folders/multiple files
     const fileDropdownOptions: FileDropdownItem[] = [
         ...defaultOptions.filter(option => !("key" in option && ["rename"].includes(option.key))),
         {
@@ -45,7 +44,7 @@ const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, p
                 <FileTablePageNavigation />
                 <SaveDialog openSaveDialog={saveDialogOpen} setOpenSaveDialog={setSaveDialogOpen} file={selectedItem ?? undefined} />
             </FileTableProvider>
-            <div className='font-semibold text-muted-foreground flex gap-2 w-full flex items-center justify-center'>
+            <div className='font-semibold text-muted-foreground flex gap-2 w-full items-center justify-center'>
                 <p>Shared by</p>
                 <span className='flex text-primary'>
                     <img src={user.image} alt={user.name} className='w-6 h-6 rounded-[3px] mr-2' />

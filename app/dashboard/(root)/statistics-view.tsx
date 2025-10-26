@@ -93,15 +93,13 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     </div>)}
                 </div>
             </Suspense>
-            <DropdownDialogs dropdown={dropdown} setDropdown={setDropdown} setFiles={setFiles} setShares={setShares} shares={shares} />
+            <DropdownDialogs dropdown={dropdown} setDropdown={setDropdown} setFiles={setFiles} />
             {dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdown.position.y, left: dropdown.position.x }}>
                 <FileDropdown
                     open={dropdown.open}
                     onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))}
                     setStatusBar={setStatusBar}
                     setFiles={setFiles}
-                    shares={shares}
-                    setShares={setShares}
                     items={dropdown.items}
                     dropdown={dropdown}
                     setDropdown={setDropdown}

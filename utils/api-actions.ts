@@ -6,8 +6,23 @@ export async function deleteFile(id: string, config?: AxiosRequestConfig) {
     return response.data;
 }
 
+export async function deleteFiles(ids: string[], config?: AxiosRequestConfig) {
+    if (ids.length === 1) return await deleteFile(ids[0], config);
+    const response = await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/file/many`, { ...config, data: { ids } });
+    return response.data;
+}
+
 export async function patchFile(id: string, data: Partial<File>, config?: AxiosRequestConfig) {
     const response = await axios.patch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/file/${id}`, data, config);
+    return response.data;
+}
+
+export async function patchFiles(ids: string[], data: Partial<File>, config?: AxiosRequestConfig) {
+    if (ids.length === 1) return await patchFile(ids[0], data, config);
+    const response = await axios.patch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/file/many`, {
+        ids,
+        ...data
+    }, config);
     return response.data;
 }
 
@@ -45,7 +60,7 @@ export async function getUser(id: string, config?: AxiosRequestConfig) {
     return response.data;
 }
 
-export async function uploadFileToDatabase(file: Omit<File, "parts" | "channelID" | "id" | "uploadedAt" | "updatedAt" | "isActive" | "userId"> & { parts: string[], channelID: string }, config?: AxiosRequestConfig) {
+export async function uploadFileToDatabase(file: Omit<File, "parts" | "channelID" | "id" | "uploadedAt" | "updatedAt" | "isActive" | "userId" | "expiresAt"> & { parts: string[], channelID: string }, config?: AxiosRequestConfig) {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/upload`, file, {
         ...config,
         headers: {

@@ -152,7 +152,7 @@ const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (ope
                 <CardDescription>View, edit and create new endpoints for your files</CardDescription>
             </CardHeader>
             <CardContent>
-                <DataTable filterBy='name' columns={columns} data={webhooks || []} loading={!webhooks} />
+                <DataTable columns={columns} data={webhooks || []} />
             </CardContent>
         </Card>
     )

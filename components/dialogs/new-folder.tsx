@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FolderIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { FolderTree, NewFolderType } from '@/types/folder';
 import { parsePath } from '@/lib/helpers';
 
-const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelectedPath }: { elements: (FolderTree | NewFolderType)[], setElements: React.Dispatch<React.SetStateAction<(FolderTree | NewFolderType)[]>>, path: string, setSelectedPathId: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPath: React.Dispatch<React.SetStateAction<string>> }) => {
+const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelectedPath, children }: { elements: (FolderTree | NewFolderType)[], setElements: React.Dispatch<React.SetStateAction<(FolderTree | NewFolderType)[]>>, path: string, setSelectedPathId: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPath: React.Dispatch<React.SetStateAction<string>>, children: React.ReactNode }) => {
     const [open, setOpen] = useState(false);
 
     const formSchema = z.object({
@@ -31,21 +31,20 @@ const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelected
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         const highestId = (folders: FolderTree[]): number => folders.reduce((max, folder) => Math.max(max, Number(folder.id), ...folder.children.map(child => highestId([child as FolderTree]))), -Infinity);
         const id = (highestId(elements) + 1);
-        setElements(elements => [...elements, { path: path, id: id.toString() , name: values.folderName, children: [], isNewFolder: true }]);
+        setElements(elements => [...elements, { path: path, id: id.toString(), name: values.folderName, children: [], isNewFolder: true }]);
         setSelectedPathId(id);
         setSelectedPath(parsePath(path + "/" + values.folderName));
         setOpen(false);
     }
 
+    useEffect(() => {
+        form.reset();
+    }, [open])
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    variant='outline'
-                    className='shrink-0 px-6'
-                >
-                    Add Folder
-                </Button>
+                {children}
             </DialogTrigger>
             <DialogContent className='sm:max-w-[425px] overflow-hidden'>
                 <DialogHeader>

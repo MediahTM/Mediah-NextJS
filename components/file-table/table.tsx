@@ -53,7 +53,7 @@ const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdown
     }, [tableInfo.viewingLocation, tableInfo.gridReady]);
 
     useEffect(() => {
-        if (files.length > 1) {
+        if (files.length > 0) {
             const filesToRender = getFilesInPath(tableInfo.viewingLocation, files);
             setRenderedResults([...filesToRender.filesInPath, ...filesToRender.foldersInPath]);
         }

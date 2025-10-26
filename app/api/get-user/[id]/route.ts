@@ -1,3 +1,4 @@
+import { mongoIdSchema } from "@/lib/api-schemas";
 import db from "@/lib/prisma";
 import { withErrorHandling } from "@/utils/api-error-handling";
 import { NextRequest, NextResponse } from "next/server";
@@ -9,7 +10,7 @@ export type UserProps = {
 } 
 
 export const GET = withErrorHandling(async (req: NextRequest,  { params }: { params: Promise<{ id: string }> }) => {
-    const { id } = await params;
+    const id = mongoIdSchema.parse((await params).id);
     if (!id) {
         return NextResponse.json({ success: false, message: "User ID is required.", data: null });
     }

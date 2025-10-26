@@ -1,10 +1,11 @@
-import { serializeBigInt } from "@/lib/helpers";
+import { mongoIdSchema } from "@/lib/api-schemas";
+import { escapeRegex, serializeBigInt } from "@/lib/helpers";
 import db from "@/lib/prisma";
 import { withErrorHandling } from "@/utils/api-error-handling";
 import { NextResponse, NextRequest } from "next/server";
 
 export const GET = withErrorHandling(async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
-    const { id } = await params;
+    const id = mongoIdSchema.parse((await params).id);
 
     const shareObject = await db.share.findFirst({
         where: {
@@ -24,7 +25,7 @@ export const GET = withErrorHandling(async (req: NextRequest, { params }: { para
         const files = await db.file.findMany({
             where: {
                 path: {
-                    startsWith: shareObject.key
+                    startsWith: escapeRegex(shareObject.key)
                 }
             }
         })

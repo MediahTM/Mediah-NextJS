@@ -1,14 +1,8 @@
 import { DISCORD_ATTACHMENT_REGEX, DISCORD_ATTACHMENT_RENEW_API, DEFAULT_USER_AGENT } from '@/lib/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import z from "zod";
 import { getFilePartUrl } from '@/lib/helpers';
 import { withErrorHandling } from '@/utils/api-error-handling';
-
-const renewSchema = z.object({
-    encryptedFilename: z.string({ message: "Encrypted file name is required!" }).min(1, 'Encrypted file name is required!'),
-    messageIDs: z.array(z.string()).min(1, 'At least one message ID is required!'),
-    channelID: z.string()
-})
+import { renewSchema } from '@/lib/api-schemas';
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
     const data = renewSchema.parse(await request.json());

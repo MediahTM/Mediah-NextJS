@@ -20,13 +20,12 @@ export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const fetchFiles = async () => {
         setLoading(true);
-        const fileResponse = await axios.get("/api/file?isActive=true");
-        if (fileResponse.data.success) setFiles(fileResponse.data.data);
+        const fileResponse = await axios.get("/api/file");
+        if (fileResponse.data.success) {
+            setFiles(fileResponse.data.data.filter((file: File) => file.isActive));
+            setBinFiles(fileResponse.data.data.filter((file: File) => !file.isActive));
+        }
         else toast.error("Could not fetch user files!");
-
-        const binFileResponse = await axios.get("/api/file?isActive=false");
-        if (binFileResponse.data.success) setBinFiles(binFileResponse.data.data);
-        else toast.error("Could not fetch user bin files!");
 
         const shareResponse = await axios.get("/api/file/share");
         if (shareResponse.data.success) setShares(shareResponse.data.data);

@@ -241,3 +241,17 @@ export function serializeBigInt(obj: any): any {
 export const getSiteLogo = (size: number = 400) => {
     return `https://avatars.githubusercontent.com/u/165603488?s=${size}&v=4`
 }
+
+export const convertToFileList = (items: (File | Folder)[], files: File[]): File[] => {
+    let filesToReturn: File[] = [];
+    for (const item of items) {
+        const isFolder = "isFolder" in item && item.isFolder;
+        if (isFolder) filesToReturn = [...filesToReturn, ...files.filter(f => f.path.startsWith((item as Folder).path))];
+        else filesToReturn.push(item as File);
+    }
+    return filesToReturn;
+}
+
+export const escapeRegex = (input: string) => {
+    return input.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}

@@ -9,6 +9,7 @@ import React, {
 } from "react"
 import {
   AnimatePresence,
+  Easing,
   HTMLMotionProps,
   TargetAndTransition,
   motion,
@@ -27,7 +28,7 @@ interface ExpandableContextType {
   expandDirection: "vertical" | "horizontal" | "both" // Direction of expansion
   expandBehavior: "replace" | "push" // How the expansion affects surrounding content
   transitionDuration: number // Duration of the expansion/collapse animation
-  easeType: string // Easing function for the animation
+  easeType: Easing // Easing function for the animation
   initialDelay: number // Delay before the animation starts
   onExpandEnd?: () => void // Callback function when expansion ends
   onCollapseEnd?: () => void // Callback function when collapse ends
@@ -54,7 +55,7 @@ interface ExpandableProps extends ExpandablePropsBase {
   expanded?: boolean
   onToggle?: () => void
   transitionDuration?: number
-  easeType?: string
+  easeType?: Easing
   expandDirection?: "vertical" | "horizontal" | "both"
   expandBehavior?: "replace" | "push"
   initialDelay?: number

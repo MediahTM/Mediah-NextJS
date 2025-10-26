@@ -13,14 +13,17 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+// This project is designed for use with MongoDB, so TTL indexes are added using the ttl-indexes.js script
+
 model File {
-    id                String   @id @default(auto()) @map("_id") @db.ObjectId
+    id                String    @id @default(auto()) @map("_id") @db.ObjectId
     filename          String
     uploadedSize      Int
-    uploadedAt        DateTime @default(now())
-    updatedAt         DateTime @updatedAt
-    isActive          Boolean  @default(true)
-    path              String   @default("/")
+    uploadedAt        DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+    expiresAt         DateTime?
+    isActive          Boolean   @default(true)
+    path              String    @default("/")
     parts             BigInt[]
     encryptedFilename String
     channelID         BigInt
@@ -62,22 +65,21 @@ model Webhook {
 }
 
 enum ShareType {
-  file
-  folder
+    file
+    folder
 }
-
-// For the live demo, this project uses MongoDB, where the database has been configured to automatically delete expired share entries. This is impossible to add natively in Prisma.
 
 model Share {
     id String @id @default(auto()) @map("_id") @db.ObjectId
 
-    key    String
-    type   ShareType
+    key  String
+    type ShareType
 
-    neverExpire Boolean  @default(false)
+    neverExpire Boolean   @default(false)
     shareDate   DateTime
     endDate     DateTime?
 
     userId String
+
     @@unique([userId, key, type])
 }

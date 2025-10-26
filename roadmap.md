@@ -10,13 +10,18 @@ This document describes the current status and the upcoming milestones of Mediah
 | :---: | :--- | --- |
 | ✔ | Theme overhaul | |
 | ✔ | Implement file sharing | |
-| ❌ | Extend file sharing to folders |`in progress`| 
+| ✔ | Extend file sharing to folders | | 
 | ❌ | Overhaul login screen |`in progress`| 
-| ✔ | Fix the context menu for folders |`in progress`|
+| ✔ | Fix the context menu for folders | |
+| ❌ | Make "Save to Mediah" button work for folders/multiple files |`in progress`|
+| ❌ | Add "info" button functionality |`in progress`|
+| ❌ | Privacy badger fix |`in progress`|
+| ❌ | Mobile friendly status bar |`in progress`|
+| ❌ | Better UI for diferent screen sizes |`in progress`|
 | ❌ | Fix the New Folder button |`in progress`|
 | ❌ | Make the Share Files button actually do something |`in progress`|
 | ❌ | API rate limits |`in progress`|
-| ❌ | Efficient API calls for mass edits |`in progress`|
+| ✔ | Efficient API calls for mass edits | |
 | ❌ | Variable storage limits (controlled in DB) |`in progress`|
 | ❌ | Make the mobile UI look better |`in progress`|
 | ❌ | Folder downloading and zipping |`in progress`|
