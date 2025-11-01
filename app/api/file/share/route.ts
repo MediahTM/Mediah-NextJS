@@ -21,7 +21,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             return NextResponse.json({ success: false, message: "File not found.", data: null });
         }
     } else {
-        console.log(json.key);
         const file = await db.file.findFirst({
             where: {
                 userId: session.user.id,

@@ -92,9 +92,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
 
     const goToFirstErrorTab = async () => {
         const uploadErrors = await trigger(['files'])
-        console.log(filesToUpload);
         if (!uploadErrors) {
-            console.log("test")
             setActiveTab('upload')
             return
         }

@@ -1,19 +1,16 @@
 "use client";
 
 import AvatarDropdown from '@/components/ui/avatar-dropdown';
-import Container from '@/components/ui/container';
 import Link from 'next/link';
 import StatusBar from '@/components/status-bar/status-bar';
 import { cn } from '@/lib/utils';
 import { FilesProvider } from '@/utils/files-context';
 import { GalleryVerticalEnd } from 'lucide-react';
-import { ModeToggle } from '@/components/ui/theme-toggler';
-import { Separator } from '@/components/ui/separator';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SidebarLinks } from '@/lib/menu';
 import { StatusBarProvider } from '@/utils/status-bar-context';
 import { usePathname } from 'next/navigation';
-import UploadDialog from '@/components/dialogs/upload/upload-dialog';
+import Navbar from './(root)/navbar';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
@@ -69,18 +66,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                         </SidebarFooter>
                     </Sidebar>
                     <SidebarInset className="flex-1 flex">
-                        <div className="border-b px-6">
-                            <Container className="flex h-16 shrink-0 items-center gap-2 justify-between">
-                                <div className="flex items-center gap-2">
-                                    <SidebarTrigger />
-                                    <Separator orientation="vertical" className="mr-2 h-4" />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <UploadDialog />
-                                    <ModeToggle />
-                                </div>
-                            </Container>
-                        </div>
+                        <Navbar />
                         <main className="px-6 relative h-full flex-1 overflow-y-auto">
                             {children}
                         </main>

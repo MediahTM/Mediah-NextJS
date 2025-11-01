@@ -6,12 +6,12 @@ export type Dropdown = {
     items: (File | Folder)[],
     position: { x: number, y: number },
     open: boolean,
-    dialogs: { [key in "export" | "delete" | "rename"]: boolean }
+    dialogs: { [key in "export" | "delete" | "rename" | "info"]: boolean }
 }
 
 export const defaultDropdown: Dropdown = {
     items: [],
     position: { x: 0, y: 0 },
     open: false,
-    dialogs: { export: false, delete: false, rename: false }
+    dialogs: { export: false, delete: false, rename: false, info: false },
 }

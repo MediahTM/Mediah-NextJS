@@ -19,6 +19,7 @@ export type TableInfo = {
 }
 
 export type FileTableProps = Pick<GeneralProps, "files" | "setFiles"> & {
+    loading: boolean,
     tableInfo: TableInfo,
     setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>
 }
@@ -26,7 +27,7 @@ export type FileTableProps = Pick<GeneralProps, "files" | "setFiles"> & {
 const FileTableContext = createContext<FileTableProps | undefined>(undefined);
 
 export const FileTableProvider = ({ children, customFilesProps = undefined }: {
-    children: React.ReactNode, customFilesProps?: Pick<GeneralProps, "files" | "setFiles">
+    children: React.ReactNode, customFilesProps?: Pick<GeneralProps, "files" | "setFiles"> & { loading: boolean }
 }) => {
     const [tableInfo, setTableInfo] = useState<TableInfo>({
         columnDefs: [],

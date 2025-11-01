@@ -1,9 +1,11 @@
 "use client";
 
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/theme-toggler";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { FaDiscord } from "react-icons/fa";
 
 export default function Navbar() {
     return (
@@ -14,12 +16,10 @@ export default function Navbar() {
                 </Link>
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                        <Link
-                            href={"/login"}
-                            className={buttonVariants({ size: "sm" })}
-                        >
-                            Log In
-                        </Link>
+                        <Button size="sm" onClick={() => signIn("discord", { callbackUrl: process.env.BASEPATH! })}>
+                            <FaDiscord />
+                            Login with Discord
+                        </Button>
                     </div>
                     <ModeToggle />
                 </div>

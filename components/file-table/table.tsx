@@ -1,6 +1,6 @@
 import { PAGE_SIZES } from '@/lib/constants';
 import { File } from '@prisma/client';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModule, ColDef, ModuleRegistry } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import React, { useEffect, useRef, useState } from 'react'
 import { theme } from './theme';
@@ -12,17 +12,17 @@ import { Folder } from '@/types/folder';
 import { Dropdown } from '@/types/dropdown';
 import FileDropdown, { FileDropdownItem } from '../file-dropdown/file-dropdown';
 import SkeletonTable from './skeleton-table';
-import { useFileTable } from './table-context';
+import { TableInfo, useFileTable } from './table-context';
 import DropdownDialogs from '../file-dropdown/dropdown-dialogs';
 import { AnimatePresence, motion, useAnimation } from 'motion/react';
 
-const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdownItem[] }) => {
-    const { files, setFiles, tableInfo, setTableInfo } = useFileTable();
+const FileTable = ({ fileDropdownOptions, noRowsOverlay, colDefs }: { fileDropdownOptions?: FileDropdownItem[], noRowsOverlay?: () => React.ReactNode, colDefs?: (setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>) => ColDef[] }) => {
+    const { files, setFiles, tableInfo, setTableInfo, loading } = useFileTable();
     const { setStatusBar } = useStatusBar();
 
     const gridRef = useRef<AgGridReact>(null);
     useEffect(() => {
-        setTableInfo(pre => ({ ...pre, gridRef, columnDefs: getColumnDefs(setTableInfo, fileDropdownOptions) }));
+        setTableInfo(pre => ({ ...pre, gridRef, columnDefs: colDefs ? colDefs(setTableInfo) : getColumnDefs(setTableInfo) }));
     }, [gridRef, setTableInfo]);
 
     useEffect(() => {
@@ -70,7 +70,7 @@ const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdown
             </AnimatePresence>
             <div className={cn(!tableInfo.gridReady && 'hidden', "flex-1 overflow-hidden")}>
                 <motion.div className="h-full" initial={{ opacity: 0 }} animate={tableAnimationControls} transition={{ duration: 0.3, delay: 0.3 }}>
-                    {(files && files.length > 0) && tableInfo.pageSize && (
+                    {!loading && tableInfo.pageSize && (
                         <AgGridReact
                             columnDefs={tableInfo.columnDefs}
                             rowData={renderedResults || []}
@@ -83,6 +83,7 @@ const FileTable = ({ fileDropdownOptions }: { fileDropdownOptions?: FileDropdown
                             paginationAutoPageSize={tableInfo.fitPage}
                             suppressPaginationPanel={true}
                             suppressCellFocus={true}
+                            noRowsOverlayComponent={noRowsOverlay ?? (() => "No files or folders found.")}
                             rowClass={"opacity-100 will-change-[opacity] transition-all duration-500"}
                             rowSelection={{
                                 mode: 'multiRow',

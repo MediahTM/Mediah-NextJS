@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { FileIcon } from '@/utils/file-types';
 import { Input } from '@/components/ui/input';
-import NewFolder from '../new-folder';
+import NewFolder from '../new-folder/new-folder';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { FolderPlusIcon } from 'lucide-react';
 

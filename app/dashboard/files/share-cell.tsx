@@ -10,6 +10,7 @@ import { unshareItem } from '@/utils/api-actions';
 import { Share } from '@prisma/client';
 import { Folder } from '@/types/folder';
 import { File } from '@prisma/client';
+import { isFolder } from '@/lib/helpers';
 
 const ShareCell = ({ data }: CustomCellRendererProps) => {
     const { shares, setShares } = useFiles();
@@ -34,8 +35,7 @@ const ShareCell = ({ data }: CustomCellRendererProps) => {
         }
     };
 
-    const isFolder = data && "isFolder" in data && data.isFolder;
-    const existingShare: Share | null = shares.find((share) => isFolder ? share.key === (data as Folder).path && share.type === "folder" : share.key === (data as File).id && share.type === "file") || null;
+    const existingShare: Share | null = shares.find((share) => isFolder(data) ? share.key === (data as Folder).path && share.type === "folder" : share.key === (data as File).id && share.type === "file") || null;
 
     return (
         <div className="flex items-center gap-2 h-full">

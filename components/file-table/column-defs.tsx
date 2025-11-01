@@ -4,11 +4,10 @@ import { ColDef } from "ag-grid-community";
 import { CustomCellRendererProps } from "ag-grid-react";
 import { EllipsisVerticalIcon, FolderIcon } from "lucide-react";
 import { useState } from "react";
-import { FileDropdownItem } from "../file-dropdown/file-dropdown";
 import { Button } from "../ui/button";
 import { TableInfo } from "./table-context";
 
-export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>, fileContextOptions?: FileDropdownItem[]): ColDef[] => [
+export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>): ColDef[] => [
     {
         field: "filename",
         headerName: "Filename",

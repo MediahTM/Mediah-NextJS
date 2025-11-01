@@ -6,7 +6,7 @@ import { FileAudio, FileVideo, FileBox, FileImage, FileChartLine, Database, File
 export const fileTypes = {
     audio: ["mp3", "ogg", "wav", "m4a", "wma", "mid", "flac", "alac", "aiff", "pcm", "aac", "opus"],
     video: ["mp4", "mkv", "avi", "wmv", "flv", "mov", "3gp", "webm", "asf", "m4v", "mpg", "srt", "swf", "vob", "ts"],
-    "3d": ["3dm", "3ds", "blend", "dae", "fbx", "max", "obj", "stl", "x3d", "ply"],
+    "3D": ["3dm", "3ds", "blend", "dae", "fbx", "max", "obj", "stl", "x3d", "ply"],
     image: ["bmp", "dcm", "dds", "djvu", "gif", "heic", "jpg", "jpeg", "png", "psd", "tga", "tif", "ai", "ccdr", "emf", "eps", "ps", "sketch", "svg", "vsdx", "webp", "ico"],
     spreadhseet: ["numbers", "ods", "xlr", "xls", "xlsx"],
     database: ["accdb", "crypt14", "db", "mdb", "odb", "pdb", "sql", "sqllite", "sqllitedb", "sqllite3", "sdf"],
@@ -20,7 +20,7 @@ export const fileTypes = {
 export const fileIcons: { [key: string]: LucideIcon } = {
     audio: FileAudio,
     video: FileVideo,
-    "3d": FileBox,
+    "3D": FileBox,
     image: FileImage,
     spreadhseet: FileChartLine,
     database: Database,

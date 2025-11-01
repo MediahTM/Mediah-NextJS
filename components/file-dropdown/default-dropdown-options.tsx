@@ -3,12 +3,13 @@ import { FileDropdownItem } from "./file-dropdown";
 import { downloadFiles } from "@/utils/file-store/download";
 import { File } from "@prisma/client";
 import { toast } from 'sonner';
+import { isFolder } from "@/lib/helpers";
 export const defaultOptions: FileDropdownItem[] = [
     {
         key: "download",
         label: () => "Download",
         icon: () => <DownloadIcon />,
-        enabled: ({ items }) => !items.some(f => "isFolder" in f),
+        enabled: ({ items }) => !items.some(f => isFolder(f)),
         onClick: async ({ items, setStatusBar, gridRef }) => {
             await downloadFiles(items as File[], setStatusBar)
             gridRef?.current?.api.deselectAll();
@@ -23,15 +24,15 @@ export const defaultOptions: FileDropdownItem[] = [
         label: () => "Info",
         icon: () => <InfoIcon />,
         enabled: () => true,
-        onClick: () => {
-            toast.success('Bind me')
+        onClick: ({ setDropdown }) => {
+            setDropdown(menu => ({ ...menu, dialogs: { ...menu.dialogs, info: true } }));
         }
     },
     {
         key: "export",
         label: () => "Export",
         icon: () => <TableIcon />,
-        enabled: ({ items }) => !items.some(f => "isFolder" in f && f.isFolder),
+        enabled: ({ items }) => !items.some(f => isFolder(f)),
         onClick: ({ setDropdown }) => {
             setDropdown(menu => ({ ...menu, dialogs: { ...menu.dialogs, export: true } }));
         }

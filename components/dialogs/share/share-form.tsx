@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { shareItem } from '@/utils/api-actions';
 import { Folder } from '@/types/folder';
+import { isFolder } from '@/lib/helpers';
 
 const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; setOpen: (open: boolean) => void; item: File | Folder, shares: Share[], setShares: React.Dispatch<React.SetStateAction<Share[]>> }) => {
     const DynamicFormSchema = z.object({
@@ -29,8 +30,7 @@ const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; 
         }
     );
 
-    const isFolder = item && "isFolder" in item && item.isFolder;
-    const existingShare: Share | null = shares.find((share) => isFolder ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file") || null;
+    const existingShare: Share | null = shares.find((share) => isFolder(item) ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file") || null;
 
     const form = useForm<z.infer<typeof DynamicFormSchema>>({
         resolver: zodResolver(DynamicFormSchema),
@@ -60,7 +60,7 @@ const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; 
     const onSubmit = async (data: z.infer<typeof DynamicFormSchema>) => {
         setLoading(true);
 
-        const response = await shareItem(isFolder ? (item as Folder).path : (item as File).id, isFolder ? "folder" : "file", {
+        const response = await shareItem(isFolder(item) ? (item as Folder).path : (item as File).id, isFolder(item) ? "folder" : "file", {
             ...(data.never_expire ? { neverExpire: data.never_expire } : {}),
             ...(data.end_date ? { endDate: data.end_date as Date } : {})
         })

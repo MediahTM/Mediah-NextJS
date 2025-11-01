@@ -245,8 +245,7 @@ export const getSiteLogo = (size: number = 400) => {
 export const convertToFileList = (items: (File | Folder)[], files: File[]): File[] => {
     let filesToReturn: File[] = [];
     for (const item of items) {
-        const isFolder = "isFolder" in item && item.isFolder;
-        if (isFolder) filesToReturn = [...filesToReturn, ...files.filter(f => f.path.startsWith((item as Folder).path))];
+        if (isFolder(item)) filesToReturn = [...filesToReturn, ...files.filter(f => f.path.startsWith((item as Folder).path))];
         else filesToReturn.push(item as File);
     }
     return filesToReturn;
@@ -254,4 +253,9 @@ export const convertToFileList = (items: (File | Folder)[], files: File[]): File
 
 export const escapeRegex = (input: string) => {
     return input.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}
+
+export const isFolder = (item: File | Folder): boolean => {
+    if (!item) return false;
+    return "isFolder" in item && item.isFolder;
 }

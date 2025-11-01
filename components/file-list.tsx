@@ -22,6 +22,9 @@ const FileList = ({ filenames, onNameChange, onRemove }: { filenames: string[], 
                                 onFocus={(event) => {
                                     event.currentTarget.setSelectionRange(0, event.currentTarget.value.lastIndexOf('.'));
                                 }}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') event.preventDefault();
+                                }}
                                 maxLength={255}
                                 onChange={(event) => {
                                     const newName = replaceIllegalCharacters(event.target.value.trim() as string, "filename")

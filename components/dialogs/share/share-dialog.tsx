@@ -7,15 +7,15 @@ import { Separator } from '@/components/ui/separator';
 import { File, Share } from '@prisma/client';
 import { GeneralProps } from '@/types/general-props';
 import { Folder } from '@/types/folder';
+import { isFolder } from '@/lib/helpers';
 
 const ShareDialog = ({ open, setOpen, item, shares, setShares }: Pick<GeneralProps, "shares" | "setShares"> & { open: boolean, setOpen: (open: boolean) => void, item?: File | Folder }) => {
-    const isFolder = item && "isFolder" in item && item.isFolder;
-    const existingShare: Share | null = item && shares.find((share) => isFolder ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file") || null;
+    const existingShare: Share | null = item && shares.find((share) => isFolder(item) ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file") || null;
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Share &apos;{item && (isFolder ? (item as Folder).name : (item as File).filename)}&apos;</DialogTitle>
+                    <DialogTitle>Share &apos;{item && (isFolder(item) ? (item as Folder).name : (item as File).filename)}&apos;</DialogTitle>
                     <DialogDescription>
                         Select the duration to share your file for and copy a public link to access it
                     </DialogDescription>

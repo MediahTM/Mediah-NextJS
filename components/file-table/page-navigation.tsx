@@ -6,9 +6,10 @@ import { useFileTable } from './table-context';
 import { PAGE_SIZES } from '@/lib/constants';
 
 const FileTablePageNavigation = () => {
-    const { files, tableInfo, setTableInfo } = useFileTable();
+    const { loading, tableInfo, setTableInfo } = useFileTable();
+
     return (
-        (files && files.length > 0) && tableInfo.pageSize && tableInfo.gridReady && (
+        !loading && tableInfo.pageSize && tableInfo.gridReady && (
             <div className="flex items-center justify-between p-2">
                 <div className="flex items-center justify-center gap-2">
                     <p className='text-sm text-nowrap'>Page Size:</p>
@@ -34,7 +35,7 @@ const FileTablePageNavigation = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <p className='text-sm text-nowrap md:block hidden'>Page {tableInfo.currentPage + 1}/{tableInfo.totalPages}</p>
+                <p className='text-sm text-nowrap md:block hidden'>Page {tableInfo.currentPage + 1}/{Math.max(1, tableInfo.totalPages)}</p>
                 <div className="flex items-center justify-center gap-2">
                     <Button size="icon" variant="outline" onClick={() => tableInfo.gridRef?.current?.api.paginationGoToFirstPage()} disabled={tableInfo.currentPage <= 0 || tableInfo.totalPages <= 1}>
                         <ChevronFirstIcon className="size-4" />

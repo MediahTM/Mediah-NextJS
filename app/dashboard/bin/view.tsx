@@ -16,7 +16,7 @@ import { File } from '@prisma/client';
 import DeleteDialog from '@/components/dialogs/delete-file/delete-dialog';
 
 const BinView = () => {
-    const { binFiles, setBinFiles, setFiles } = useFiles();
+    const { binFiles, setBinFiles, setFiles, loading } = useFiles();
     const { setStatusBar } = useStatusBar();
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -74,9 +74,9 @@ const BinView = () => {
         <Container className="h-full flex flex-col">
             <PageTitle title="My Bin" description="Binned files are permanently deleted after 30 days" />
             <div className="flex-1 flex flex-col h-full">
-                <FileTableProvider customFilesProps={{ files: binFiles, setFiles: setBinFiles }}>
+                <FileTableProvider customFilesProps={{ files: binFiles, setFiles: setBinFiles, loading: loading }}>
                     <FileTableNavbar />
-                    <FileTable fileDropdownOptions={fileDropdownOptions} />
+                    <FileTable fileDropdownOptions={fileDropdownOptions} noRowsOverlay={() => "Bin is empty."} />
                     <FileTablePageNavigation />
                     <DeleteDialog setBinFiles={setBinFiles} setFiles={() => { }} open={deleteDialogOpen} setOpen={setDeleteDialogOpen} items={itemsToDelete} setStatusBar={setStatusBar} type="forever" />
                 </FileTableProvider>

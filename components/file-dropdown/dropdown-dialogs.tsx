@@ -3,7 +3,7 @@ import React from 'react'
 import { Dropdown } from '@/types/dropdown';
 import { GeneralProps } from '@/types/general-props';
 import ExportDialog from '@/components/dialogs/export/export-dialog';
-import ShareDialog from '@/components/dialogs/share/share-dialog';
+import InfoDialog from '../dialogs/info/info-dialog';
 
 export type DialogConfig = {
     key: keyof Dropdown["dialogs"];
@@ -22,6 +22,11 @@ const DropdownDialogs = ({ dropdown, setDropdown, setFiles }: Pick<GeneralProps,
             key: "export",
             Component: ExportDialog,
             extraProps: {},
+        },
+        {
+            key: "info",
+            Component: InfoDialog,
+            extraProps: { items: dropdown.items },
         }
     ];
     return (

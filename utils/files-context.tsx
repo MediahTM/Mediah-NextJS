@@ -4,43 +4,59 @@ import { File, Share } from '@prisma/client';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { GeneralProps } from '@/types/general-props';
+import { useQuery } from '@tanstack/react-query';
 
 const FilesContext = createContext<{
     loading: boolean,
-    fetchFiles: () => Promise<void>;
+    fetching: boolean,
+    refetching: boolean,
+    fetchFiles: () => void;
 } & Pick<GeneralProps, "files" | "setFiles" | "shares" | "setShares" | "binFiles" | "setBinFiles"> | undefined>(undefined);
 
 export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [binFiles, setBinFiles] = useState<File[]>([]);
     const [shares, setShares] = useState<Share[]>([]);
-    const [loading, setLoading] = useState(true);
 
     const session = useSession();
 
-    const fetchFiles = async () => {
-        setLoading(true);
-        const fileResponse = await axios.get("/api/file");
-        if (fileResponse.data.success) {
-            setFiles(fileResponse.data.data.filter((file: File) => file.isActive));
-            setBinFiles(fileResponse.data.data.filter((file: File) => !file.isActive));
+    const { data, isLoading: loading, refetch: fetchFiles, isFetching: fetching, isRefetching: refetching } = useQuery({
+        queryKey: ["files"],
+        enabled: true,
+        queryFn: async () => {
+            if (session.status !== "authenticated") return;
+            const fileResponse = await axios.get("/api/file");
+            if (!fileResponse.data.success) {
+                toast.error(`Could not fetch user files: '${fileResponse.data.message}'`);
+                return;
+            }
+
+            const shareResponse = await axios.get("/api/file/share");
+            if (!shareResponse.data.success) {
+                toast.error(`Could not fetch shared files: '${shareResponse.data.message}'`);
+                return {
+                    files: fileResponse.data.data,
+                    shares: []
+                }
+            }
+
+            return {
+                files: fileResponse.data.data,
+                shares: shareResponse.data.data
+            }
         }
-        else toast.error("Could not fetch user files!");
-
-        const shareResponse = await axios.get("/api/file/share");
-        if (shareResponse.data.success) setShares(shareResponse.data.data);
-        else toast.error("Could not fetch shared files!");
-
-        setLoading(false);
-    }
+    });
 
     useEffect(() => {
-        if (session.status !== "authenticated") return;
-        fetchFiles();
-    }, []);
+        if (data) {
+            setFiles(data.files.filter((file: File) => file.isActive));
+            setBinFiles(data.files.filter((file: File) => !file.isActive));
+            setShares(data.shares);
+        }
+    }, [data]);
 
     return (
-        <FilesContext.Provider value={{ files, setFiles, binFiles, setBinFiles, loading, fetchFiles, shares, setShares }}>
+        <FilesContext.Provider value={{ files, setFiles, binFiles, setBinFiles, loading, fetching, refetching, fetchFiles, shares, setShares }}>
             {children}
         </FilesContext.Provider>
     );
