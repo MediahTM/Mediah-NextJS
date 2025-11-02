@@ -28,7 +28,10 @@ export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const fileResponse = await axios.get("/api/file");
             if (!fileResponse.data.success) {
                 toast.error(`Could not fetch user files: '${fileResponse.data.message}'`);
-                return;
+                return {
+                    files: [],
+                    shares: []
+                };
             }
 
             const shareResponse = await axios.get("/api/file/share");
@@ -49,9 +52,11 @@ export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     useEffect(() => {
         if (data) {
-            setFiles(data.files.filter((file: File) => file.isActive));
-            setBinFiles(data.files.filter((file: File) => !file.isActive));
-            setShares(data.shares);
+            if (data.files.length > 0) {
+                setFiles(data.files.filter((file: File) => file.isActive));
+                setBinFiles(data.files.filter((file: File) => !file.isActive));
+            }
+            if (data.shares.length > 0) setShares(data.shares);
         }
     }, [data]);
 

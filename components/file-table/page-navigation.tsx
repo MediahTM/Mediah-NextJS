@@ -10,7 +10,7 @@ const FileTablePageNavigation = () => {
 
     return (
         !loading && tableInfo.pageSize && tableInfo.gridReady && (
-            <div className="flex items-center justify-between p-2">
+            <div className="flex items-center justify-between px-2 pt-2">
                 <div className="flex items-center justify-center gap-2">
                     <p className='text-sm text-nowrap'>Page Size:</p>
                     <Select value={tableInfo.fitPage ? 'Fit' : tableInfo.pageSize.toString()} onValueChange={(value) => {

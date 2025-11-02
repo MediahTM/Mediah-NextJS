@@ -1,7 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MagicCard } from "@/components/magicui/magic-card";
 import { Progress } from '@/components/ui/progress';
 import MagicCardWrapped from '@/components/ui/magic-card-wrapped';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -26,11 +26,11 @@ export async function createJob(setStatusBar: React.Dispatch<React.SetStateActio
             }))
         } else {
             running = true;
-            setStatusBar(prev => ({ ...prev, processing: true, open: prev.openPreference, progress: 0 }))
+            setStatusBar(prev => ({ ...prev, processing: true, open: prev.openPreference, progress: 0, icon: QueueIcon }))
             ready().then(() => {
                 jobs.shift();
                 if (jobs.length <= 0) {
-                    setStatusBar(prev => ({ ...prev, open: false, title: "", description: "", progress: 0, processing: false }));
+                    setStatusBar(prev => ({ ...prev, open: false, title: "", description: "", progress: 0, processing: false, icon: null }));
                 }
             });
         }
@@ -40,7 +40,7 @@ export async function createJob(setStatusBar: React.Dispatch<React.SetStateActio
     if (!running) {
         const interval = setInterval(async () => {
             if (jobs[0] === job) {
-                setStatusBar(prev => ({ ...prev, processing: false, onCancel: () => { }, queue: prev.queue?.filter(item => item.UUID !== UUID), progress: 0 }))
+                setStatusBar(prev => ({ ...prev, processing: false, onCancel: () => { }, queue: prev.queue?.filter(item => item.UUID !== UUID), progress: 0, icon: null }))
                 clearInterval(interval);
                 await updateJob();
             }

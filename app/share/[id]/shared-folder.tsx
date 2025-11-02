@@ -41,7 +41,7 @@ const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, p
                         setSelectedItems(items as File[]);
                         setSaveDialogOpen(true);
                     }
-                } else router.push("/login?callbackUrl=" + window.location.href);
+                } else router.push("/");
             }
         }
     ]

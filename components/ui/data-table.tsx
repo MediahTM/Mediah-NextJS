@@ -18,12 +18,14 @@ import {
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  data: TData[],
+  noRowsOverlay?: () => React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  noRowsOverlay
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -43,9 +45,9 @@ export function DataTable<TData, TValue>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 )
               })}
@@ -69,7 +71,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                {typeof noRowsOverlay === "function" ? noRowsOverlay() : "No results."}
               </TableCell>
             </TableRow>
           )}

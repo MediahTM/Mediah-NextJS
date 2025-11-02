@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dock, DockIcon } from '@/components/magicui/dock';
 import { useRouter } from 'next/navigation';
+import AvatarBlock from '@/app/(referrals)/r/[discordId]/[accountId]/avatar-block';
 
 const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserProps, id: string }) => {
     const router = useRouter();
@@ -30,9 +31,9 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
             <TooltipProvider>
                 <Card className='max-w-sm sm:max-w-md md:max-w-lg xl:max-w-xl'>
                     <CardHeader>
-                        <CardTitle className='flex gap-2 items-center'>
-                            <img src={user.image} alt={user.name} crossOrigin="anonymous" className="h-6 w-6 rounded-[10%]" />
-                            <p className='text-muted-foreground'><span className='text-primary'>{user.name}</span> has shared a file with you</p>
+                        <CardTitle className='flex gap-1 items-center'>
+                            <AvatarBlock account={user} textClassName='text-primary text-base' />
+                            has shared a file with you
                         </CardTitle>
                     </CardHeader>
                     <CardContent className='flex flex-col gap-4'>
@@ -71,7 +72,7 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
                             </DockIcon>
                             <DockIcon size={50} onClick={() => {
                                 if (session.status !== "authenticated") {
-                                    router.push("/login?callbackUrl=" + window.location.href);
+                                    router.push("/");
                                 } else {
                                     setOpenSaveDialog(true);
                                 }

@@ -1,7 +1,7 @@
 'use client'
 
 import * as z from 'zod';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import UploadPathDialog from '../select-path/select-path-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Share2, Upload, XIcon } from 'lucide-react';
@@ -12,17 +12,20 @@ import { Label } from '@/components/ui/label';
 import { parsePath } from '@/lib/helpers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 import { uploadFiles } from '@/utils/file-store/upload';
 import { useFiles } from '@/utils/files-context';
 import { useStatusBar } from '@/utils/status-bar-context';
-import { Webhook } from '@prisma/client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import FileList from "@/components/file-list";
+import RequestBlockedDialog from '../request-blocked/request-blocked-dialog';
+import UnknownWebhookDialog from '../unknown-webhook/unknown-webhook-dialog';
+import { useWebhooks } from '@/utils/webhooks-context';
 
-const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const { files, setFiles } = useFiles();
+    const { webhooks, loading } = useWebhooks();
+    const { setStatusBar } = useStatusBar();
+
     type FormData = z.infer<typeof schema>
     const schema = z.object({
         location: z.preprocess(
@@ -39,33 +42,18 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
         message: "Selected path already contains a file with this name!",
     })
 
-    const { setStatusBar } = useStatusBar();
-    const [activeTab, setActiveTab] = useState('upload')
-    const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+    const [activeTab, setActiveTab] = useState('upload');
+    const [blockedOpen, setBlockedOpen] = useState(false);
+    const [unknownOpen, setUnknownOpen] = useState(false);
 
     const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm({
         resolver: zodResolver(schema),
         defaultValues: {
             files: [],
             location: '/',
-            webhook: ''
+            webhook: webhooks[0]?.url || ''
         }
     })
-
-    useEffect(() => {
-        if (open) {
-            axios.get("/api/webhooks").then((response) => {
-                if (response.data.success) {
-                    setWebhooks(response.data.data)
-                    setValue('webhook', response.data.data[0].url)
-                } else {
-                    toast.error("Could not fetch user webhooks!")
-                }
-            }).catch(() => {
-                toast.error("Could not fetch the data!")
-            })
-        }
-    }, [open])
 
     const filesToUpload: FormData['files'] = watch('files')
 
@@ -111,8 +99,16 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
             return
         }
 
-        setOpen(false);
-        uploadFiles(data.files, data.webhook, parsePath(data.location), setStatusBar, setFiles);
+        const errors = await uploadFiles(data.files, data.webhook, parsePath(data.location), setStatusBar, setFiles);
+        if (errors) {
+            if (errors === "UnknownWebhook") {
+                setUnknownOpen(true);
+            } else {
+                setBlockedOpen(true);
+            }
+        } else {
+            setOpen(false);
+        }
     }
 
     const handleShare = () => {
@@ -133,8 +129,8 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
         <form onSubmit={handleSubmit(handleUpload)} className='space-y-6'>
             <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
                 <TabsList className="md:grid w-full md:grid-cols-3 flex overflow-auto">
-                    <TabsTrigger value="upload">Upload Files</TabsTrigger>
-                    <TabsTrigger value="info" disabled={filesToUpload.length <= 0 && activeTab === 'upload'}>File Information</TabsTrigger>
+                    <TabsTrigger value="upload">Select Files</TabsTrigger>
+                    <TabsTrigger value="info" disabled={filesToUpload.length <= 0 && activeTab === 'upload'}>Details</TabsTrigger>
                     <TabsTrigger value="share" disabled={(filesToUpload.length <= 0 && activeTab === 'upload') || !watch("webhook") || !watch("location")}>Upload & Share</TabsTrigger>
                 </TabsList>
 
@@ -214,7 +210,7 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <SelectTrigger id="webhook">
-                                            <SelectValue placeholder="Select Webhook" />
+                                            <SelectValue placeholder={loading ? "Loading..." : "Select Webhook"} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {webhooks.map((webhook, index) => (
@@ -267,6 +263,8 @@ const UploadDialogTabs = ({ open, setOpen }: { open: boolean, setOpen: React.Dis
                     <ChevronRight />
                 </Button>
             </div>
+            <RequestBlockedDialog open={blockedOpen} setOpen={setBlockedOpen} />
+            <UnknownWebhookDialog open={unknownOpen} setOpen={setUnknownOpen} webhook={watch("webhook")} />
         </form>
     )
 }

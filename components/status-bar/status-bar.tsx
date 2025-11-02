@@ -18,6 +18,7 @@ export type QueueProps = {
 export type StatusBarProps = {
     open: boolean,
     openPreference: boolean,
+    icon?: LucideIcon | null,
     title: string,
     description: string,
     progress: number,
@@ -32,6 +33,8 @@ const StatusBar = () => {
     const statusBarRef = useRef<HTMLDivElement>(null);
 
     const [queueOpen, setQueueOpen] = useState<boolean>(false);
+    const [statusBarHeight, setStatusBarHeight] = useState<number>(0);
+    const [titleContents, setTitleContents] = useState<string>("");
 
     const statusBarControls = useAnimation();
     const minimizeControls = useAnimation();
@@ -39,14 +42,18 @@ const StatusBar = () => {
     useEffect(() => {
         if (statusBar.open) {
             statusBarControls.start({ y: 0, opacity: 1 });
-            minimizeControls.start({ y: 100, opacity: 0 });
+            minimizeControls.start({ y: 100, opacity: 0, transition: { duration: 0.3 } });
         } else {
-            statusBarControls.start({ y: 100, opacity: 0 })
+            statusBarControls.start({ y: 100, opacity: 0, transition: { duration: 0.3 } }).then(() => (!statusBar.title) && setTitleContents(""));
             minimizeControls.start({ y: 0, opacity: 1 });
         };
     }, [statusBar.open, statusBarControls, minimizeControls]);
 
-    const [statusBarHeight, setStatusBarHeight] = useState<number>(0);
+    useEffect(() => {
+        if (statusBar.title) {
+            setTitleContents(statusBar.title);
+        }
+    }, [statusBar.title])
 
     useEffect(() => {
         if (statusBarRef.current) {
@@ -78,7 +85,7 @@ const StatusBar = () => {
                                     <QueueIcon className='w-4 h-4' />
                                 </Button>
                                 <div className="flex flex-col justify-center text-center items-center">
-                                    <CardTitle>{statusBar.title || "No items in the queue"}</CardTitle>
+                                    <CardTitle>{titleContents || "No items in the queue"}</CardTitle>
                                     <AnimatePresence>
                                         {statusBar.description &&
                                             <motion.div

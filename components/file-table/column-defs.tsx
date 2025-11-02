@@ -9,8 +9,8 @@ import { TableInfo } from "./table-context";
 
 export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<TableInfo>>): ColDef[] => [
     {
-        field: "filename",
-        headerName: "Filename",
+        field: "name",
+        headerName: "Name",
         flex: 1,
         suppressMovable: true,
         filter: true,

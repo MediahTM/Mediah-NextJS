@@ -39,7 +39,7 @@ const FileTable = ({ fileDropdownOptions, noRowsOverlay, colDefs }: { fileDropdo
     ModuleRegistry.registerModules([AllCommunityModule]);
 
     function toggleColumns() {
-        gridRef.current?.api.setColumnsVisible(['updatedAt', 'uploadedSize', 'neverExpire'], !(window.innerWidth < 1024)); // lg
+        gridRef.current?.api.setColumnsVisible(['updatedAt', 'uploadedSize', 'neverExpire', 'shared'], !(window.innerWidth < 1024)); // lg
     }
 
     if (typeof window !== 'undefined') {
@@ -53,11 +53,11 @@ const FileTable = ({ fileDropdownOptions, noRowsOverlay, colDefs }: { fileDropdo
     }, [tableInfo.viewingLocation, tableInfo.gridReady]);
 
     useEffect(() => {
-        if (files.length > 0) {
+        if (!loading) {
             const filesToRender = getFilesInPath(tableInfo.viewingLocation, files);
             setRenderedResults([...filesToRender.filesInPath, ...filesToRender.foldersInPath]);
         }
-    }, [files, tableInfo.viewingLocation]);
+    }, [files, tableInfo.viewingLocation, loading]);
 
     const tableAnimationControls = useAnimation();
 

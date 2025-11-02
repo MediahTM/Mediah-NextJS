@@ -33,7 +33,6 @@ export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<
                             const response = await axios.post("/api/renew", { messageIDs, channelID: file.channelID, encryptedFilename: file.encryptedFilename }, { signal });
                             if (response.status >= 200 && response.status < 300) {
                                 renewedURLs.push(...response.data.hooks);
-                                if (!signal.aborted) setStatusBar(prev => ({ ...prev, progress: (renewedURLs.length / file.parts!.length) * 100 }));
                             } else {
                                 resolve();
                             }

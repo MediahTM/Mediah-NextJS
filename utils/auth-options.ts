@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
                 let dbUser = await db.user.findUnique({
                     where: { email: user.email ?? '' },
                 });
-  
+
                 if (!dbUser) {
                     dbUser = await db.user.create({
                         data: {
@@ -81,7 +81,7 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-  
+
         async session({ session, token }: { session: any, token: JWT }) {
             if (token) {
                 session.user = {
@@ -98,8 +98,6 @@ export const authOptions: NextAuthOptions = {
         },
     },
     pages: {
-        signIn: '/login',
         error: '/auth/error'
     }
-  };
-  
+};

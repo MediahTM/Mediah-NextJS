@@ -7,16 +7,28 @@ import { StatusBarProps } from '@/components/status-bar/status-bar';
 import { Upload } from 'lucide-react';
 import { File as MediahFile } from '@prisma/client';
 import { uploadFileToDatabase } from '../api-actions';
+import { toast } from "sonner";
 
-export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, setFiles: React.Dispatch<React.SetStateAction<MediahFile[]>>) => {
+type UploadError = "UnknownWebhook" | "RequestFailed"
+
+export const uploadFiles = async (files: File[], webhook: string, location: string = "/", setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, setFiles: React.Dispatch<React.SetStateAction<MediahFile[]>>): Promise<UploadError | undefined> => {
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 5000;
     const CHUNK_SIZE = 1024 * 1024 * 3;
 
+    const networkTest = await testNetwork(webhook);
+    if (networkTest) return networkTest;
+
     for (const file of files) {
         if (file) {
             await createJob(setStatusBar, file.name, Upload, async () => {
-                return new Promise((resolve) => {
+                return new Promise(async (resolve) => {
+                    const networkTest = await testNetwork(webhook);
+                    if (networkTest) {
+                        toast.error("Could not connect to webhook.");
+                        resolve();
+                        return;
+                    }
                     const controller = new AbortController();
                     const signal = controller.signal;
                     setStatusBar(prev => ({
@@ -87,4 +99,16 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
             })
         }
     };
+}
+
+export const testNetwork = async (webhook: string): Promise<UploadError | undefined> => {
+    try {
+        const request = await axios.get(webhook);
+        if (!(request.status >= 200 && request.status < 300)) {
+            return "UnknownWebhook";
+        }
+    } catch (e) {
+        if (e && "code" in (e as any) && (e as any).code === "ERR_BAD_REQUEST") return "UnknownWebhook";
+        return "RequestFailed";
+    }
 }

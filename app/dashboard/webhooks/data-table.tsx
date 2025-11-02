@@ -8,29 +8,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { formatRelativeTime } from '@/lib/helpers';
 import { Webhook } from '@prisma/client';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, EllipsisVerticalIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react'
+import { ArrowUpDown, EllipsisVerticalIcon, LoaderCircleIcon } from 'lucide-react';
+import React, { useState } from 'react'
 import EditWebhook from '../../../components/dialogs/edit-webhook/edit-dialog';
 import DeleteDialog from '../../../components/dialogs/delete-webhook/delete-dialog';
-import { toast } from 'sonner';
+import { useWebhooks } from '@/utils/webhooks-context';
 
-const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (open: boolean) => void }) => {
-    const [webhooks, setWebhooks] = useState<[] | Webhook[] | null>(null);
-
-    useEffect(() => {
-        fetch(`/api/webhooks`, {
-            method: "GET"
-        })
-            .then((response) => response.json())
-            .then((response) => {
-                if (response.success) {
-                    setWebhooks(response.data)
-                }
-                else {
-                    toast.error("Could not fetch user files!")
-                }
-            })
-    }, [reload])
+const WebhooksTable = () => {
+    const { webhooks, loading } = useWebhooks();
 
     const columns: ColumnDef<Webhook>[] = [
         {
@@ -61,16 +46,6 @@ const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (ope
             accessorKey: "name",
             meta: "Name",
             header: "Name"
-        },
-        {
-            accessorKey: "url",
-            meta: "URL",
-            header: "URL",
-            cell: ({ row }) => {
-                return (
-                    <p>{row.original.url.substring(0, 40)}...</p>
-                )
-            }
         },
         {
             meta: "Updated At",
@@ -127,16 +102,12 @@ const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (ope
                             open={editWebhook}
                             setOpen={setEditWebhook}
                             webhook={row.original}
-                            setReload={setReload}
-                            reload={reload}
                         />
 
                         <DeleteDialog
                             open={deleteWebhook}
                             setOpen={setDeleteWebhook}
                             webhook={row.original}
-                            setReload={setReload}
-                            reload={reload}
                         />
                     </div>
                 )
@@ -151,8 +122,13 @@ const WebhooksTable = ({ reload, setReload }: { reload: boolean, setReload: (ope
                 <CardTitle>View Webhooks</CardTitle>
                 <CardDescription>View, edit and create new endpoints for your files</CardDescription>
             </CardHeader>
-            <CardContent>
-                <DataTable columns={columns} data={webhooks || []} />
+            <CardContent className='max-w-full overflow-hidden'>
+                <DataTable columns={columns} data={webhooks || []} noRowsOverlay={() => {
+                    if (loading) return (<div className='w-full h-full flex items-center justify-center'>
+                        <LoaderCircleIcon className='animate-spin' />
+                    </div>)
+                    return "No webhooks found. Get started by adding one above.";
+                }} />
             </CardContent>
         </Card>
     )

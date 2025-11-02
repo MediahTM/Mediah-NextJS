@@ -23,8 +23,8 @@ const QueueView = ({ queueItems }: { queueItems: QueueProps[] }) => {
     }, [search, queueItems]);
 
     return (
-        <div className="space-y-4">
-            <div>
+        <div className="space-y-4 max-w-full overflow-hidden">
+            <div className='p-[1px]'>
                 <Input
                     placeholder="Search..."
                     value={search}
@@ -37,28 +37,28 @@ const QueueView = ({ queueItems }: { queueItems: QueueProps[] }) => {
                         {statusBar.processing &&
                             (
                                 <Card className='bg-muted/60 w-full pr-0'>
-                                    <CardHeader className='flex p-3 w-full flex-row space-y-0 items-center justify-between'>
-                                        <CardTitle className='flex items-center gap-2 leading-snug'>
-                                            <ActivityIcon className='size-5 shrink-0 aspect-square'/>
-                                            <div className="flex items-center gap-2 flex-col justify-center">
-                                                {statusBar.title}
-                                                <Progress value={statusBar.progress} />
+                                    <CardHeader className='flex p-3 w-full flex-col space-y-0 items-center justify-between overflow-hidden gap-2'>
+                                        <CardTitle className='flex items-center gap-2 leading-snug w-full'>
+                                            {statusBar.icon ? <statusBar.icon className='size-5 shrink-0 aspect-square' /> : <ActivityIcon className='size-5 shrink-0 aspect-square' />}
+                                            <div className="flex items-center gap-2 flex-col justify-center truncate text-nowrap w-full overflow-hidden">
+                                                <span className='max-w-full overflow-hidden truncate'>{statusBar.title}</span>
                                             </div>
+                                            <Button size="icon" variant="outline" className='size-6 bg-muted/10 hover:bg-muted shrink-0 aspect-square' onClick={statusBar.onCancel}>
+                                                <X className="size-4 shrink-0 aspect-square" />
+                                            </Button>
                                         </CardTitle>
-                                        <Button size="icon" variant="outline" className='size-6 bg-muted/10 hover:bg-muted' onClick={statusBar.onCancel}>
-                                            <X className="size-4 shrink-0 aspect-square" />
-                                        </Button>
+                                        <Progress value={statusBar.progress} className='w-full' />
                                     </CardHeader>
                                 </Card>
                             )}
                         {items.map((item, index) => (
                             <Card key={index}>
                                 <CardHeader className='flex p-3 flex-row space-y-0 items-center justify-between'>
-                                    <CardTitle className='flex items-center gap-2 leading-snug'>
+                                    <CardTitle className='flex items-center gap-2 leading-snug w-full overflow-hidden text-nowrap mr-[2px]'>
                                         {item.icon != undefined && (
                                             <item.icon className='size-5 shrink-0 aspect-square' />
                                         )}
-                                        {item.title}
+                                        <span className='max-w-full overflow-hidden truncate'>{item.title}</span>
                                     </CardTitle>
                                     <Button
                                         onClick={() => {
@@ -71,7 +71,7 @@ const QueueView = ({ queueItems }: { queueItems: QueueProps[] }) => {
                                         }
                                         size="icon"
                                         variant="outline"
-                                        className="size-6"
+                                        className="size-6 aspect-square shrink-0"
                                     >
                                         <X className="size-4 shrink-0 aspect-square" />
                                     </Button>

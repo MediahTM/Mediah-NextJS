@@ -9,7 +9,7 @@ import { defaultOptions } from '@/components/file-dropdown/default-dropdown-opti
 import { FileDropdownItem } from '@/components/file-dropdown/file-dropdown';
 import { FileOutputIcon, FolderOutputIcon, TrashIcon } from 'lucide-react';
 import { convertToFileList } from '@/lib/helpers';
-import { deleteFiles, patchFiles } from '@/utils/api-actions';
+import { patchFiles } from '@/utils/api-actions';
 import { createJob } from '@/utils/status-bar-jobs';
 import { useStatusBar } from '@/utils/status-bar-context';
 import { File } from '@prisma/client';

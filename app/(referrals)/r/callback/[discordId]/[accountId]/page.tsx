@@ -19,7 +19,6 @@ const ReferralCallback = async ({ params }: { params: Promise<Params> }) => {
         })
     }
     redirect(process.env.BASEPATH!);
-    return;
 }
 
 export default ReferralCallback

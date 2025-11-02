@@ -1,10 +1,8 @@
-import { useFiles } from '@/utils/files-context';
 import { RefreshCcwIcon } from 'lucide-react'
 import { motion, useAnimation, useMotionValue } from 'motion/react';
 import React, { useEffect } from 'react'
 
-const RefreshSpinner = React.forwardRef<React.ComponentProps<"div">>(({ ...props }, ref) => {
-    const { refetching, loading } = useFiles();
+const RefreshSpinner = React.forwardRef<React.ComponentProps<"div">, { loading: boolean, refetching: boolean }>(({ loading, refetching, ...props }, ref) => {
     const rotate = useMotionValue(0);
     const divControls = useAnimation();
     useEffect(() => {

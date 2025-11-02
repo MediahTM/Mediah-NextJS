@@ -9,14 +9,15 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Webhook } from '@prisma/client'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Loader2Icon } from 'lucide-react'
 import { DISCORD_WEBHOOK_REGEX } from '@/lib/constants'
+import axios from 'axios'
+import { useWebhooks } from '@/utils/webhooks-context'
 
 const webhookSchema = z.object({
     name: z.string().min(1, { message: 'Name is required' }).max(50, { message: 'Name cannot exceed 50 characters' }),
     url: z
-        .string()
         .url({ message: 'Invalid URL format' })
         .regex(DISCORD_WEBHOOK_REGEX, {
             message: 'Must be a valid Discord webhook URL',
@@ -25,7 +26,8 @@ const webhookSchema = z.object({
 
 type WebhookFormData = z.infer<typeof webhookSchema>
 
-const EditWebhook = ({ open, setOpen, webhook, reload, setReload }: { open: boolean; setOpen: (open: boolean) => void, webhook: Webhook, reload: boolean, setReload: (open: boolean) => void }) => {
+const EditWebhook = ({ open, setOpen, webhook }: { open: boolean; setOpen: (open: boolean) => void, webhook: Webhook }) => {
+    const { setWebhooks } = useWebhooks();
     const { register, handleSubmit, reset, formState: { errors } } = useForm<WebhookFormData>({
         resolver: zodResolver(webhookSchema),
         defaultValues: {
@@ -36,7 +38,7 @@ const EditWebhook = ({ open, setOpen, webhook, reload, setReload }: { open: bool
 
     const [loading, setLoading] = useState<boolean>(false);
 
-    const onSubmit = (data: WebhookFormData) => {
+    const onSubmit = async (data: WebhookFormData) => {
         const updatedWebhook = {
             ...webhook,
             name: data.name,
@@ -52,27 +54,16 @@ const EditWebhook = ({ open, setOpen, webhook, reload, setReload }: { open: bool
 
         setLoading(true)
 
-        fetch(`/api/webhooks`, {
-            method: "PUT",
-            body: JSON.stringify(updatedWebhook)
-        })
-            .then((response) => response.json())
-            .then((response) => {
-                if (response.success) {
-                    setReload(!reload)
-                    setOpen(false);
-                }
-                else {
-                    toast({
-                        title: "Update Error",
-                        description: response.message || "Could not update the webhook!"
-                    })
-                }
+        const response = await axios.put("/api/webhooks", updatedWebhook);
+        if (!response.data.success) {
+            toast.error(`Could not update webhook: '${response.data.message}'`);
+        } else {
+            toast.success("Successfully updated the webhook!");
+            setWebhooks(prev => prev.map(webhook => webhook.id === response.data.data.id ? response.data.data : webhook));
+        }
 
-                setLoading(false)
-            })
-
-        setOpen(false)
+        setLoading(false);
+        setOpen(false);
         reset();
     }
 

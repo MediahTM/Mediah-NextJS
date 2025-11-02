@@ -1,10 +1,6 @@
 # Mediah - Roadmap
 
-This document describes the current status and the upcoming milestones of Mediah and will act as a roadmap for the endless time sink that is this project.
-
-*Updated: Thu, 7 Aug 2025
-
-📉 &nbsp;&nbsp;**2 / 22** goals completed
+This document describes the current status and the upcoming milestones of Mediah and will act as a roadmap to track things I need to do.
 
 | Status | Goal | Labels |
 | :---: | :--- | --- |
@@ -17,9 +13,13 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Make empty tables load | |
 | ✔ | Make "Save to Mediah" button work for folders/multiple files | |
 | ✔ | Add "info" button functionality | |
-| ❌ | Make file navbar scroll |`in progress`|
-| ❌ | Privacy badger fix |`in progress`|
-| ❌ | Mobile friendly status bar |`in progress`|
+| ✔ | Make file navbar scroll | |
+| ✔ | Privacy badger fix | |
+| ✔ | Better webhook fetching | |
+| ✔ | Webhook validation | |
+| ❌ | Drag and drop files |`in progress`|
+| ❌ | Better empty dashboard |`in progress`|
+| ✔ | Mobile friendly status bar | |
 | ❌ | Better UI for diferent screen sizes |`in progress`|
 | ✔ | Fix the New Folder button |`in progress`|
 | ❌ | Make the Share Files button actually do something |`in progress`|
@@ -27,6 +27,7 @@ This document describes the current status and the upcoming milestones of Mediah
 | ❌ | API rate limits |`in progress`|
 | ✔ | Efficient API calls for mass edits | |
 | ❌ | Variable storage limits (controlled in DB) |`in progress`|
+| ❌ | Referral account comparison page |`in progress`|
 | ❌ | Make the mobile UI look better |`in progress`|
 | ❌ | Folder downloading and zipping |`in progress`|
 | ❌ | Import files from JSON/CSV |`in progress`|

@@ -84,7 +84,7 @@ const FilesView = () => {
         <Container className="h-full flex flex-col">
             <PageTitle title="My Files" />
             <UploadDialog open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
-            <div className="flex-1 flex flex-col h-full">
+            <div className="flex-1 flex flex-col h-full md:pb-0 pb-4">
                 <FileTableProvider>
                     <FileTableNavbar />
                     <FileTable
@@ -149,10 +149,10 @@ const FilesView = () => {
 }
 
 const ReloadButton = () => {
-    const { fetching, fetchFiles } = useFiles();
+    const { fetching, fetchFiles, loading, refetching } = useFiles();
     return (
         <Button variant="outline" onClick={fetchFiles} disabled={fetching}>
-            <RefreshSpinner />
+            <RefreshSpinner loading={loading} refetching={refetching} />
             Refresh
         </Button>
     )
