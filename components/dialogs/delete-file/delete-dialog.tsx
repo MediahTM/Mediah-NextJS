@@ -12,10 +12,10 @@ const DeleteDialog = ({ open, setOpen, items = [], setFiles, setStatusBar, setBi
     const handleDelete = async () => {
         setOpen(false);
         if (type === "bin") {
-            await createJob(setStatusBar, `Move ${items.length} ${items.length === 1 ? " file" : " files"} to Bin`, DeleteIcon, () => {
+            await createJob(setStatusBar, `Move ${items.length} ${items.length === 1 ? " file" : " files"} to bin`, DeleteIcon, () => {
                 return new Promise(async (resolve) => {
                     try {
-                        setStatusBar(statusBar => ({ ...statusBar, title: `Moving ${items.length} ${items.length === 1 ? " file" : " files"} to Bin`, progress: 0 }));
+                        setStatusBar(statusBar => ({ ...statusBar, title: `Moving ${items.length} ${items.length === 1 ? " file" : " files"} to bin`, progress: 0 }));
                         const response = await patchFiles(items.map(file => file.id), { isActive: false });
                         if (!response.success) resolve();
                         setFiles(allFiles => allFiles.filter(file => !items.find(f => f.id === file.id)));
@@ -67,7 +67,7 @@ const DeleteDialog = ({ open, setOpen, items = [], setFiles, setStatusBar, setBi
                 </DialogHeader>
                 {items.length > 0 && <div className="flex items-center justify-end gap-2">
                     <Button type="submit" onClick={handleDelete} variant={"destructive"}>
-                        {type === "bin" ? "Move to Bin" : "Delete"}
+                        {type === "bin" ? "Move to bin" : "Delete"}
                     </Button>
                     <Button
                         variant="secondary"

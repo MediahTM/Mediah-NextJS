@@ -14,11 +14,11 @@ import { isFolder } from '@/lib/helpers';
 
 const ShareCell = ({ data }: CustomCellRendererProps) => {
     const { shares, setShares } = useFiles();
-    const [useOpen, setUseOpen] = useState<boolean>(false);
+    const [open, setOpen] = useState<boolean>(false);
 
     const handleSwitchChange = async (checked: boolean) => {
         if (checked) {
-            setUseOpen(true);
+            setOpen(true);
             return;
         }
 
@@ -27,11 +27,13 @@ const ShareCell = ({ data }: CustomCellRendererProps) => {
             return;
         }
 
-        const response = await unshareItem(data.id, "file");
+        const key = isFolder(data) ? (data as Folder).path : (data as File).id;
+        const type = isFolder(data) ? "folder" : "file";
+        const response = await unshareItem(key, type);
         if (!response.success) {
             toast.error("Could not unshare file!");
         } else {
-            setShares((shares) => shares.filter((share) => !(share.key === data.id && share.type === "file")));
+            setShares((shares) => shares.filter((share) => !(share.key === key && share.type === type)));
         }
     };
 
@@ -40,13 +42,13 @@ const ShareCell = ({ data }: CustomCellRendererProps) => {
     return (
         <div className="flex items-center gap-2 h-full">
             <Switch
-                checked={useOpen || Boolean(existingShare)}
+                checked={open || Boolean(existingShare)}
                 onCheckedChange={handleSwitchChange}
             />
 
             <ShareDialog
-                open={useOpen}
-                setOpen={setUseOpen}
+                open={open}
+                setOpen={setOpen}
                 item={data}
                 shares={shares}
                 setShares={setShares}
@@ -55,7 +57,7 @@ const ShareCell = ({ data }: CustomCellRendererProps) => {
             {existingShare && (
                 <Button
                     onClick={() => {
-                        setUseOpen(true)
+                        setOpen(true)
                     }}
                     variant="ghost"
                     size="sm"

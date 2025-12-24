@@ -1,7 +1,7 @@
 import { NextRequestWithAuth, withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
+import { NextFetchEvent, NextResponse } from "next/server"
 
-export default function middleware(req: NextRequestWithAuth) {
+export default function middleware(req: NextRequestWithAuth, event: NextFetchEvent) {
     const { pathname } = req.nextUrl
 
     if (pathname.includes("/api/file/get-shared-item") || pathname.includes("/api/get-user") || pathname.includes("/api/renew")) {
@@ -9,7 +9,7 @@ export default function middleware(req: NextRequestWithAuth) {
         return NextResponse.next()
     }
 
-    return withAuth(req)
+    return withAuth(req, event);
 }
 
 export const config = {

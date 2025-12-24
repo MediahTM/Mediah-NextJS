@@ -8,7 +8,7 @@ export const uploadSchema = z.object({
         (val) => typeof val === 'string' ? val : replaceIllegalCharacters(val as string, "filename"),
         z.string({ message: "File name is required." }).min(1, 'File name is required.').max(255, 'File name is too long.')
     ),
-    uploadedSize: z.number({ message: "File size is required." }).positive('File size must be positive.'),
+    uploadedSize: z.number({ message: "File size is required." }).min(0, 'File size must be at least 0 bytes.'),
     path: z.preprocess(
         (val) => typeof val === 'string' ? val : parsePath(val as string),
         z.string().min(1, 'File path is required.').refine((val) => !containsIllegalCharacters(val, "path"), 'File path contains illegal characters.')

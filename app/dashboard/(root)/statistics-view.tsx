@@ -2,7 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import StatisticsCard from './statistics-card';
-import { FileIcon, FileQuestionIcon, HardDrive, ImageIcon, MusicIcon, VideoIcon } from 'lucide-react';
+import { Divide, FileIcon, FileQuestionIcon, HardDrive, ImageIcon, ImportIcon, MusicIcon, VideoIcon } from 'lucide-react';
 import { formatBytes } from '@/lib/helpers';
 import { Session } from 'next-auth';
 import { useFiles } from '@/utils/files-context';
@@ -13,6 +13,10 @@ import { defaultDropdown, Dropdown } from '@/types/dropdown';
 import FileDropdown from '@/components/file-dropdown/file-dropdown';
 import { useStatusBar } from '@/utils/status-bar-context';
 import DropdownDialogs from '@/components/file-dropdown/dropdown-dialogs';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import MagicCardWrapped from '@/components/ui/magic-card-wrapped';
+import { UploadButton } from './navbar';
+import UploadDialog from '@/components/dialogs/upload/upload-dialog';
 
 const ExpandableCardClient = dynamic(() => import('./expandable-file'), {
     ssr: false,
@@ -21,7 +25,7 @@ const ExpandableCardClient = dynamic(() => import('./expandable-file'), {
 
 const StatisticsView = ({ session }: { session: Session | null }) => {
     const { setStatusBar } = useStatusBar();
-    const { files, loading, setFiles, setShares, shares } = useFiles();
+    const { files, loading, setFiles } = useFiles();
 
     const totalFiles = files.length;
     const totalStorage = files.reduce((acc, file) => acc + file.uploadedSize, 0);
@@ -47,15 +51,27 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
     }, [files]);
 
     const [dropdown, setDropdown] = useState<Dropdown>(defaultDropdown);
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
     return (
         <div className='flex flex-col gap-6 overflow-hidden'>
+            {files.length === 0 && !loading && <MagicCardWrapped>
+                <CardHeader className='flex items-center justify-center'>
+                    <CardTitle className='text-xl'>Your account is empty!</CardTitle>
+                    <CardDescription>Upload your first file to get started.</CardDescription>
+                </CardHeader>
+                <CardContent className='flex flex-col items-center justify-center gap-1'>
+                    <UploadButton open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
+                    <p className="hover:underline text-muted-foreground text-sm cursor-pointer">or import files you've already uploaded</p>
+                </CardContent>
+            </MagicCardWrapped>}
             <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
                 <StatisticsCard
                     title={"Total Files"}
                     description={"All files in your account"}
                     icon={<FileIcon className='size-5' />}
                     loading={loading}
+                    value={String(totalFiles)}
                     valueCallback={(percent: number) => `${Math.floor(percent * totalFiles / 100)}`}
                 />
 
@@ -65,6 +81,7 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     icon={<HardDrive className='size-5' />}
                     progress={session?.user?.isReferral ? undefined : ((totalStorage / (25 * 1024 * 1024 * 1024)) * 100)}
                     loading={loading}
+                    value={formatBytes(totalStorage)}
                     valueCallback={(percent: number) => loading ? `0` : `${formatBytes(Math.floor(percent * totalStorage / 100))}${session?.user?.isReferral ? '' : ' / 25 GB'}`}
                 />
             </div>
@@ -76,23 +93,26 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                         icon={<statistic.icon className='size-5' />}
                         loading={loading}
                         progress={files.filter(file => statistic.sorter(file)).reduce((acc, file) => acc + file.uploadedSize, 0) / totalStorage * 100}
+                        value={formatBytes(files.filter(file => statistic.sorter(file)).reduce((acc, file) => acc + file.uploadedSize, 0))}
                         valueCallback={(percent: number) => loading ? `0` : `${formatBytes(Math.floor(percent * files.filter(file => statistic.sorter(file)).reduce((acc, file) => acc + file.uploadedSize, 0) / 100))}`}
                         loadingClassName='h-[48px]'
                     />
                 ))}
             </div>
-            <h1 className='text-3xl font-black sm:block hidden'>Latest Files</h1>
-            <h1 className='text-3xl font-black sm:hidden'>Latest File</h1>
-            <Suspense>
-                <div className='grid gap-6 xl:grid-cols-4 sm:grid-cols-2 grid-cols-1'>
-                    {latestFiles.length > 0 && latestFiles.length <= 4 && latestFiles.map((_, index) => <div key={index} onContextMenu={(e) => {
-                        e.preventDefault();
-                        setDropdown(prev => ({ ...prev, open: true, position: { x: e.clientX, y: e.clientY }, items: [latestFiles[index]] }))
-                    }}>
-                        <ExpandableCardClient latestFiles={latestFiles} index={index} />
-                    </div>)}
-                </div>
-            </Suspense>
+            {files.length > 0 && <>
+                <h1 className='text-3xl font-black sm:block hidden'>Latest Files</h1>
+                <h1 className='text-3xl font-black sm:hidden'>Latest File</h1>
+                <Suspense>
+                    <div className='grid gap-6 xl:grid-cols-4 sm:grid-cols-2 grid-cols-1'>
+                        {latestFiles.length > 0 && latestFiles.length <= 4 && latestFiles.map((_, index) => <div key={index} onContextMenu={(e) => {
+                            e.preventDefault();
+                            setDropdown(prev => ({ ...prev, open: true, position: { x: e.clientX, y: e.clientY }, items: [latestFiles[index]] }))
+                        }}>
+                            <ExpandableCardClient latestFiles={latestFiles} index={index} />
+                        </div>)}
+                    </div>
+                </Suspense>
+            </>}
             <DropdownDialogs dropdown={dropdown} setDropdown={setDropdown} setFiles={setFiles} />
             {dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdown.position.y, left: dropdown.position.x }}>
                 <FileDropdown
@@ -105,6 +125,7 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     setDropdown={setDropdown}
                 />
             </div>}
+            <UploadDialog open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
         </div>
     )
 }

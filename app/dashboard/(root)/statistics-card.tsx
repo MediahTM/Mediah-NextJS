@@ -6,9 +6,13 @@ import MagicCardWrapped from '@/components/ui/magic-card-wrapped';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1, loading = false, progress, loadingClassName = 'h-9' }: { title: string, description?: string, icon: React.ReactNode, valueCallback: (percent: number) => string, duration?: number, loading?: boolean, progress?: number, loadingClassName?: string }) => {
+const StatisticsCard = ({ title, description, icon, value: inputValue, valueCallback, duration = 1, loading = false, progress, loadingClassName = 'h-9' }: { title: string, description?: string, icon: React.ReactNode, value: string, valueCallback: (percent: number) => string, duration?: number, loading?: boolean, progress?: number, loadingClassName?: string }) => {
     const [value, setValue] = useState(valueCallback(0));
     const current = useRef(0);
+
+    useEffect(() => {
+        setValue(inputValue);
+    }, [inputValue]);
 
     useEffect(() => {
         if (current.current >= 1) return;
@@ -21,7 +25,7 @@ const StatisticsCard = ({ title, description, icon, valueCallback, duration = 1,
             if (current.current >= 1) current.current = 1;
 
             const easedProgress = current.current * (2 - current.current);
-            setValue(valueCallback(easedProgress * 100));
+            setValue(easedProgress === 1 ? inputValue : valueCallback(easedProgress * 100));
 
             if (current.current >= 1) {
                 clearInterval(interval);

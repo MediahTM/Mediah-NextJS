@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation';
 import Navbar from './(root)/navbar';
 import { WebhooksProvider } from '@/utils/webhooks-context';
 import Logo from '@/components/ui/logo';
+import FileDragDrop from '@/components/file-drag-drop';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
@@ -19,6 +20,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <FilesProvider>
             <WebhooksProvider>
                 <StatusBarProvider>
+                    <FileDragDrop />
                     <SidebarProvider>
                         <Sidebar>
                             <SidebarHeader>

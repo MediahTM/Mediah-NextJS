@@ -1,9 +1,9 @@
 "use client";
 import Container from '@/components/ui/container';
 import PageTitle from '@/components/ui/page-title';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import FileTable from '@/components/file-table/table';
-import { FileTableNavbar, FileTablePageNavigation, FileTableProvider, useFileTable } from '@/components/file-table';
+import { FileTableNavbar, FileTablePageNavigation, FileTableProvider } from '@/components/file-table';
 import { defaultOptions } from '@/components/file-dropdown/default-dropdown-options';
 import { FolderOpenIcon, TrashIcon, UploadIcon, UserRoundCogIcon, UserRoundPlusIcon } from 'lucide-react';
 import { FileDropdownItem } from '@/components/file-dropdown/file-dropdown';
@@ -49,7 +49,7 @@ const FilesView = () => {
                     const { items } = props;
                     const item = items[0];
                     if (!item) return "Share";
-                    const existingShare: Share | null = shares.find((share) => isFolder(item) ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file") || null;
+                    const existingShare = Boolean(shares.some((share) => isFolder(item) ? share.key === (item as Folder).path && share.type === "folder" : share.key === (item as File).id && share.type === "file"));
                     return existingShare ? <UserRoundCogIcon /> : <UserRoundPlusIcon />;
                 }
                 return <UserRoundPlusIcon />;
@@ -69,7 +69,7 @@ const FilesView = () => {
         },
         {
             key: "bin",
-            label: () => "Move to Bin",
+            label: () => "Move to bin",
             icon: () => <TrashIcon />,
             enabled: () => true,
             onClick: async ({ items }) => {
@@ -102,10 +102,10 @@ const FilesView = () => {
                                     cellRenderer: ShareCell,
                                     comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
                                         const aChecked = Boolean(
-                                            shares.some((share) => share.key === nodeA.data.id && share.type === "file")
+                                            shares.some((share) => isFolder(nodeA.data) ? share.key === (nodeA.data as Folder).path && share.type === "folder" : share.key === (nodeA.data as File).id && share.type === "file")
                                         );
                                         const bChecked = Boolean(
-                                            shares.some((share) => share.key === nodeB.data.id && share.type === "file")
+                                            shares.some((share) => isFolder(nodeB.data) ? share.key === (nodeB.data as Folder).path && share.type === "folder" : share.key === (nodeB.data as File).id && share.type === "file")
                                         );
                                         return aChecked === bChecked ? 0 : aChecked ? 1 : -1;
                                     },

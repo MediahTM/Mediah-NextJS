@@ -1,10 +1,10 @@
 'use client'
 
 import * as z from 'zod';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import UploadPathDialog from '../select-path/select-path-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Share2, Upload, XIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, ShareIcon, Upload, XIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Controller, useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -20,9 +20,13 @@ import FileList from "@/components/file-list";
 import RequestBlockedDialog from '../request-blocked/request-blocked-dialog';
 import UnknownWebhookDialog from '../unknown-webhook/unknown-webhook-dialog';
 import { useWebhooks } from '@/utils/webhooks-context';
+import { createJob } from '@/utils/status-bar-jobs';
+import { File as DBFile, Share } from '@prisma/client';
+import { shareItem } from '@/utils/api-actions';
+import ShareSuccessDialog, { ShareSuccessDialogProps } from '../share-success/share-success-dialog';
 
-const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
-    const { files, setFiles } = useFiles();
+const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { setOpen: React.Dispatch<React.SetStateAction<boolean>>, customFiles?: File[], setSuccessDialogProps: React.Dispatch<React.SetStateAction<ShareSuccessDialogProps>> }) => {
+    const { files, setFiles, fetchFiles, setShares, shares } = useFiles();
     const { webhooks, loading } = useWebhooks();
     const { setStatusBar } = useStatusBar();
 
@@ -35,16 +39,19 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
         webhook: z.string().min(1, 'Webhook is required'),
         files: z.array(z.instanceof(File)).nonempty('At least one file is required').refine((files) => files.find(file => file.name.length === 0) === undefined, 'File name is mssing from at least one file.').refine((files) => files.find(file => file.name.length > 255) === undefined, 'File name cannot exceed 255 characters.'),
     }).refine((data) => {
-        const duplicateFile = data.files.find(file => files.find(databaseFile => databaseFile.filename === file.name && databaseFile.path === data.location));
-        return !duplicateFile
+        const duplicateFilesIndexes = data.files.map((_, i) => i).filter(i => files.find(databaseFile => databaseFile.filename === data.files[i].name && databaseFile.path === data.location))
+        setErrorFileIndexes(duplicateFilesIndexes);
+        return !(duplicateFilesIndexes.length > 0);
     }, {
-        path: ["location"],
+        path: ["files"],
         message: "Selected path already contains a file with this name!",
     })
 
     const [activeTab, setActiveTab] = useState('upload');
     const [blockedOpen, setBlockedOpen] = useState(false);
     const [unknownOpen, setUnknownOpen] = useState(false);
+    const [errorFileIndexes, setErrorFileIndexes] = useState<number[]>([]);
+    const [shareSuccessOpen, setShareSuccessOpen] = useState(false);
 
     const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm({
         resolver: zodResolver(schema),
@@ -91,7 +98,7 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
         }
     }
 
-    const handleUpload = async (data: FormData) => {
+    const handleUpload = async (data: FormData, share: boolean = false) => {
         const isValid = await trigger()
 
         if (!isValid) {
@@ -100,6 +107,27 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
         }
 
         const errors = await uploadFiles(data.files, data.webhook, parsePath(data.location), setStatusBar, setFiles);
+        if (share) {
+            await createJob(setStatusBar, `Create share link for ${data.files[0].name}`, ShareIcon, async () => {
+                return new Promise(async (resolve) => {
+                    setStatusBar(prev => ({ ...prev, progress: 0, title: `Creating share link for ${data.files[0].name}` }));
+                    const newFiles = (await fetchFiles()).data?.files as DBFile[];
+                    setStatusBar(prev => ({ ...prev, progress: 50 }));
+                    if (newFiles) {
+                        const fileToShare = newFiles.find(file => file.filename === data.files[0].name && file.path === data.location);
+                        if (fileToShare) {
+                            const shareResponse = await shareItem(fileToShare.id, "file", { neverExpire: true });
+                            if (shareResponse.success) {
+                                setShares(prev => [...prev, shareResponse.data]);
+                                setSuccessDialogProps({ open: true, name: data.files[0].name, share: shareResponse.data });
+                                setStatusBar(prev => ({ ...prev, progress: 100 }));
+                            }
+                        }
+                    }
+                    resolve();
+                })
+            })
+        }
         if (errors) {
             if (errors === "UnknownWebhook") {
                 setUnknownOpen(true);
@@ -111,27 +139,28 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
         }
     }
 
-    const handleShare = () => {
-        console.log('Sharing files:', filesToUpload)
-    }
-
     const handleRemove = (index: number) => {
         const updatedFiles = filesToUpload.filter((_, i) => i !== index);
-        setValue('files', updatedFiles as [File, ...File[]]);
+        setValue('files', updatedFiles);
     }
 
     const handleClear = () => {
-        //@ts-ignore
-        setValue('files', [] as [File, ...File[]]);
+        setValue('files', []);
     }
 
+    useEffect(() => {
+        if (customFiles) {
+            setValue('files', customFiles);
+        }
+    }, [customFiles])
+
     return (
-        <form onSubmit={handleSubmit(handleUpload)} className='space-y-6'>
+        <form className='space-y-6'>
             <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
                 <TabsList className="md:grid w-full md:grid-cols-3 flex overflow-auto">
                     <TabsTrigger value="upload">Select Files</TabsTrigger>
                     <TabsTrigger value="info" disabled={filesToUpload.length <= 0 && activeTab === 'upload'}>Details</TabsTrigger>
-                    <TabsTrigger value="share" disabled={(filesToUpload.length <= 0 && activeTab === 'upload') || !watch("webhook") || !watch("location")}>Upload & Share</TabsTrigger>
+                    <TabsTrigger value="share" disabled={(filesToUpload.length <= 0 && activeTab === 'upload') || !watch("webhook") || !watch("location")}>{filesToUpload.length === 1 ? "Upload & Share" : "Upload"}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="upload">
@@ -141,7 +170,7 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
                         onDrop={handleDrop}
                     >
                         <Upload className="mx-auto mb-4" />
-                        <p>Drag and drop files here, or click to select files</p>
+                        <p>{filesToUpload.length > 0 ? `${filesToUpload.length} ${filesToUpload.length === 1 ? "file" : "files"} selected` : "Select files to upload"}</p>
                         <input
                             type="file"
                             multiple
@@ -156,9 +185,6 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
                             Select Files
                         </label>
                     </div>
-                    {errors.files && (
-                        <p className="text-destructive font-semibold text-sm mt-2">{errors.files.message}</p>
-                    )}
                     {filesToUpload.length > 0 && (
                         <div className="mt-4">
                             <div className="flex items-center justify-between">
@@ -179,8 +205,13 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
                                 onRemove={(name) => {
                                     handleRemove(filesToUpload.findIndex(file => file.name === name));
                                 }}
+                                errorFileIndexes={errorFileIndexes}
+                                setErrorFileIndexes={setErrorFileIndexes}
                             />
                         </div>
+                    )}
+                    {errors.files && (
+                        <p className="text-destructive font-semibold text-sm mt-2">{errors.files.message}</p>
                     )}
                 </TabsContent>
 
@@ -232,14 +263,14 @@ const UploadDialogTabs = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateA
 
                 <TabsContent value="share">
                     <div className="space-y-2">
-                        <Button type="submit" onClick={() => goToFirstErrorTab()} className="w-full">
+                        <Button type="submit" onClick={handleSubmit(data => handleUpload(data))} className="w-full">
                             <Upload className="mr-2 h-4 w-4" />
-                            Upload Files
+                            Upload {filesToUpload.length === 1 ? "File" : "Files"}
                         </Button>
-                        <Button onClick={handleShare} variant="outline" className="w-full">
+                        {filesToUpload.length === 1 && <Button onClick={handleSubmit(data => handleUpload(data, true))} variant="outline" className="w-full">
                             <Share2 className="mr-2 h-4 w-4" />
-                            Share Files
-                        </Button>
+                            Share File
+                        </Button>}
                     </div>
                 </TabsContent>
             </Tabs>

@@ -4,13 +4,16 @@ import { File, Share } from '@prisma/client';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { GeneralProps } from '@/types/general-props';
-import { useQuery } from '@tanstack/react-query';
+import { QueryObserverResult, useQuery } from '@tanstack/react-query';
 
 const FilesContext = createContext<{
     loading: boolean,
     fetching: boolean,
     refetching: boolean,
-    fetchFiles: () => void;
+    fetchFiles: () => Promise<QueryObserverResult<{
+        files: any;
+        shares: any;
+    }, Error>>;
 } & Pick<GeneralProps, "files" | "setFiles" | "shares" | "setShares" | "binFiles" | "setBinFiles"> | undefined>(undefined);
 
 export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -24,7 +27,10 @@ export const FilesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         queryKey: ["files"],
         enabled: true,
         queryFn: async () => {
-            if (session.status !== "authenticated") return;
+            if (session.status !== "authenticated") return {
+                files: [],
+                shares: []
+            };
             const fileResponse = await axios.get("/api/file");
             if (!fileResponse.data.success) {
                 toast.error(`Could not fetch user files: '${fileResponse.data.message}'`);

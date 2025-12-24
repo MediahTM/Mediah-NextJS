@@ -91,7 +91,7 @@ const UploadPathDialog = ({ setPath, title = "Select a path", description = "Cho
                     className="w-full rounded-lg border md:min-w-[450px] min-h-[40vh] max-h-[40vh]"
                 >
                     <ResizablePanel defaultSize={55} minSize={25}>
-                        <div className="w-full flex flex-col col-span-5 overflow-hidden p-2 min-h-full">
+                        <div className="w-full flex flex-col col-span-5 overflow-hidden p-2 min-h-full max-h-full">
                             <div className="flex justify-between mb-2">
                                 <h1 className='text-foreground/80 font-semibold text-sm'>Your Mediah Folders</h1>
                                 <NewFolder elements={elements} setElements={setElements} path={selectedPath} setSelectedPathId={setSelectedPathId} setSelectedPath={setSelectedPath} >
@@ -100,20 +100,16 @@ const UploadPathDialog = ({ setPath, title = "Select a path", description = "Cho
                                     </Button>
                                 </NewFolder>
                             </div>
-                            <ScrollArea className='w-full max-w-full overflow-auto h-full flex-1 flex flex-col' innerClassName='flex flex-col flex-1 [&>div]:!flex [&>div]:!flex-1 [&>div]:!flex-col h-full'>
-                                <div className='flex-1 min-h-full flex flex-col'>
-                                    <Tree
-                                        className="rounded-md bg-background py-2 w-full min-h-full flex-1 flex flex-col"
-                                        initialExpandedItems={["1"]}
-                                        initialSelectedId="1"
-                                        elements={elements}
-                                    >
-                                        {RenderTreeChildren(elements.filter(child => "isNewFolder" in child ? !child.isNewFolder : true))}
-                                    </Tree>
-                                </div>
-                                <ScrollBar orientation="horizontal" />
-                                <ScrollBar orientation="vertical" />
-                            </ScrollArea>
+                            <div className='flex-1 min-h-full flex flex-col'>
+                                <Tree
+                                    className="rounded-md bg-background py-2 w-full min-h-full flex-1 flex flex-col"
+                                    initialExpandedItems={["1"]}
+                                    initialSelectedId="1"
+                                    elements={elements}
+                                >
+                                    {RenderTreeChildren(elements.filter(child => "isNewFolder" in child ? !child.isNewFolder : true))}
+                                </Tree>
+                            </div>
                             <div className="flex flex-1 w-full justify-center items-center xl:hidden gap-4">
                                 <div className='w-full sm:flex flex-1 items-center justify-center gap-2 whitespace-nowrap hidden'>
                                     <p className='font-medium'>Selected Path:</p>

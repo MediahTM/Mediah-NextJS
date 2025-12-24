@@ -10,7 +10,7 @@ const RenameDialog = ({ open, setOpen, file, setFiles }: { open: boolean, setOpe
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Rename File</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className='truncate'>
                         Enter a new name for the file &apos;{file ? file.filename : 'File'}&apos;
                     </DialogDescription>
                 </DialogHeader>

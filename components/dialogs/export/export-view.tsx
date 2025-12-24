@@ -41,7 +41,7 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
             "userId",
             "parts"
         ];
-    
+
         const row = [
             data.id,
             data.filename,
@@ -56,7 +56,7 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
             data.userId,
             data.parts.map((part: any) => `${part.url} (${part.size})`).join(" | ")
         ];
-    
+
         return `${headers.join(",")}\n${row.map(value => `"${value}"`).join(",")}`;
     }
 

@@ -17,8 +17,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { shareItem } from '@/utils/api-actions';
 import { Folder } from '@/types/folder';
 import { isFolder } from '@/lib/helpers';
+import { ShareSuccessDialogProps } from '../share-success/share-success-dialog';
 
-const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; setOpen: (open: boolean) => void; item: File | Folder, shares: Share[], setShares: React.Dispatch<React.SetStateAction<Share[]>> }) => {
+const ShareForm = ({ open, setOpen, item, shares, setShares, setSuccessDialogProps }: { open: boolean; setOpen: React.Dispatch<React.SetStateAction<boolean>>; item: File | Folder, shares: Share[], setShares: React.Dispatch<React.SetStateAction<Share[]>>, setSuccessDialogProps: React.Dispatch<React.SetStateAction<ShareSuccessDialogProps>> }) => {
     const DynamicFormSchema = z.object({
         never_expire: z.boolean(),
         end_date: z.date().nullable().optional(),
@@ -68,6 +69,7 @@ const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; 
         if (response.success) {
             setShares((shares) => [...shares.filter((share) => !(share.key === existingShare?.key && share.type === existingShare?.type)), response.data]);
             toast.success(existingShare ? 'Updated share expiration successfully!' : 'Shared file successfully!');
+            if (!existingShare) setSuccessDialogProps({ open: true, share: response.data, name: isFolder(item) ? (item as Folder).name : (item as File).filename });
         }
         else {
             toast.error("Could not share file!");
@@ -157,7 +159,7 @@ const ShareForm = ({ open, setOpen, item, shares, setShares }: { open: boolean; 
                     )}
                 />
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-end">
                     <Button type="submit">
                         {!loading ? (
                             <>

@@ -17,18 +17,17 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Privacy badger fix | |
 | ✔ | Better webhook fetching | |
 | ✔ | Webhook validation | |
-| ❌ | Drag and drop files |`in progress`|
-| ❌ | Better empty dashboard |`in progress`|
+| ✔ | Drag and drop files | |
+| ✔ | Better empty dashboard | |
 | ✔ | Mobile friendly status bar | |
-| ❌ | Better UI for diferent screen sizes |`in progress`|
-| ✔ | Fix the New Folder button |`in progress`|
-| ❌ | Make the Share Files button actually do something |`in progress`|
+| ✔ | Better UI for diferent screen sizes | |
+| ✔ | Fix the New Folder button | |
+| ✔ | Make the Share Files button actually do something | |
 | ❌ | Folder renaming and moving |`in progress`|
 | ❌ | API rate limits |`in progress`|
 | ✔ | Efficient API calls for mass edits | |
 | ❌ | Variable storage limits (controlled in DB) |`in progress`|
-| ❌ | Referral account comparison page |`in progress`|
-| ❌ | Make the mobile UI look better |`in progress`|
+| ✔ | Make the mobile UI look better | |
 | ❌ | Folder downloading and zipping |`in progress`|
 | ❌ | Import files from JSON/CSV |`in progress`|
 | ❌ | Add some cool settings |`in progress`|

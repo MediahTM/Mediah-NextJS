@@ -4,7 +4,7 @@ import axios from 'axios';
 import { arrayBufferToBase64, formatBytes, sleep } from '@/lib/helpers';
 import { createJob } from '../status-bar-jobs';
 import { StatusBarProps } from '@/components/status-bar/status-bar';
-import { Upload } from 'lucide-react';
+import { UploadIcon } from 'lucide-react';
 import { File as MediahFile } from '@prisma/client';
 import { uploadFileToDatabase } from '../api-actions';
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
 
     for (const file of files) {
         if (file) {
-            await createJob(setStatusBar, file.name, Upload, async () => {
+            await createJob(setStatusBar, file.name, UploadIcon, async () => {
                 return new Promise(async (resolve) => {
                     const networkTest = await testNetwork(webhook);
                     if (networkTest) {
