@@ -4,6 +4,7 @@ import { JWT } from "next-auth/jwt";
 import db from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
+    secret: process.env.NEXTAUTH_SECRET,
     providers: [
         DiscordProvider({
             clientId: process.env.DISCORD_CLIENT_ID || '',
