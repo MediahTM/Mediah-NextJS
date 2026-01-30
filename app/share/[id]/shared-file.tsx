@@ -49,9 +49,9 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
                                 <DatabaseIcon className='stroke-muted-foreground' size={15} />
                                 <p className='text-muted-foreground text-sm'>{formatBytes(file.uploadedSize)}</p>
                             </div>
-                            <DownloadWrapper file={file} downloading={downloading} setDownloading={setDownloading} className='hidden md:inline-flex'>
+                            <DownloadWrapper file={file} downloading={downloading} setDownloading={setDownloading} className='hidden md:inline-flex overflow-hidden'>
                                 <div className='ml-2 relative'>
-                                    <div className={cn("absolute top-0 left-0 w-full h-full bg-black/50 invisible transition-all", statusBar.processing && statusBar.progress < 90 && "visible")} style={{ left: `${statusBar.progress}%` }} />
+                                    <div className={cn("absolute top-0 left-0 w-full h-full bg-background/50 invisible transition-all", statusBar.processing && statusBar.progress < 90 && "visible")} style={{ left: `${statusBar.progress}%` }} />
                                     <Button className='disabled:opacity-100' disabled={downloading}>
                                         <DownloadIcon />
                                         {formatBytes(file.uploadedSize)}

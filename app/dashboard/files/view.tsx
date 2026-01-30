@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import FileTable from '@/components/file-table/table';
 import { FileTableNavbar, FileTablePageNavigation, FileTableProvider } from '@/components/file-table';
 import { defaultOptions } from '@/components/file-dropdown/default-dropdown-options';
-import { FolderOpenIcon, TrashIcon, UploadIcon, UserRoundCogIcon, UserRoundPlusIcon } from 'lucide-react';
+import { ArrowLeftRightIcon, FolderOpenIcon, TrashIcon, UploadIcon, UserRoundCogIcon, UserRoundPlusIcon } from 'lucide-react';
 import { FileDropdownItem } from '@/components/file-dropdown/file-dropdown';
 import { useFiles } from '@/utils/files-context';
 import { File, Share } from '@prisma/client';
@@ -60,6 +60,15 @@ const FilesView = () => {
                     setSelectedShareItem(items[0]);
                     setShareDialogOpen(true);
                 }
+            }
+        },
+        {
+            key: "move",
+            label: () => "Move",
+            icon: () => <ArrowLeftRightIcon />,
+            enabled: ({ items }) => items.length > 0,
+            onClick: ({ setDropdown }) => {
+                setDropdown(menu => ({ ...menu, dialogs: { ...menu.dialogs, move: true } }));
             }
         },
         ...defaultOptions.slice(defaultOptions.findIndex(option => "key" in option && option.key === "export")),

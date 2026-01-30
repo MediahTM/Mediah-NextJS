@@ -10,3 +10,6 @@ export const DISCORD_ATTACHMENT_REGEX = /^https:\/\/cdn\.discordapp\.com\/attach
 export const DISCORD_ATTACHMENT_RENEW_API = "https://discord.com/api/v9/attachments/refresh-urls";
 
 export const DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+
+export const MAX_FOLDER_NAME_LENGTH = 255
+export const MAX_FILE_PATH = 1024

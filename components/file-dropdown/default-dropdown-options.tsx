@@ -2,7 +2,6 @@ import { DownloadIcon, InfoIcon, PencilIcon, TableIcon, UserRoundCogIcon, UserRo
 import { FileDropdownItem } from "./file-dropdown";
 import { downloadFiles } from "@/utils/file-store/download";
 import { File } from "@prisma/client";
-import { toast } from 'sonner';
 import { isFolder } from "@/lib/helpers";
 export const defaultOptions: FileDropdownItem[] = [
     {

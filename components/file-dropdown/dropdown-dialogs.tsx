@@ -4,6 +4,7 @@ import { Dropdown } from '@/types/dropdown';
 import { GeneralProps } from '@/types/general-props';
 import ExportDialog from '@/components/dialogs/export/export-dialog';
 import InfoDialog from '../dialogs/info/info-dialog';
+import MoveDialog from '../dialogs/move/move-dialog';
 
 export type DialogConfig = {
     key: keyof Dropdown["dialogs"];
@@ -11,12 +12,12 @@ export type DialogConfig = {
     extraProps: { [key: string]: any };
 }
 
-const DropdownDialogs = ({ dropdown, setDropdown, setFiles }: Pick<GeneralProps, "setFiles" | "dropdown" | "setDropdown">) => {
+const DropdownDialogs = ({ dropdown, setDropdown }: Pick<GeneralProps, "dropdown" | "setDropdown">) => {
     const dialogConfigs: DialogConfig[] = [
         {
             key: "rename",
             Component: RenameDialog,
-            extraProps: { setFiles },
+            extraProps: {},
         },
         {
             key: "export",
@@ -26,6 +27,11 @@ const DropdownDialogs = ({ dropdown, setDropdown, setFiles }: Pick<GeneralProps,
         {
             key: "info",
             Component: InfoDialog,
+            extraProps: { items: dropdown.items },
+        },
+        {
+            key: "move",
+            Component: MoveDialog,
             extraProps: { items: dropdown.items },
         }
     ];
@@ -46,7 +52,7 @@ const DropdownDialogs = ({ dropdown, setDropdown, setFiles }: Pick<GeneralProps,
                                 },
                             }));
                         }}
-                        file={dropdown.items[0]}
+                        item={dropdown.items[0]}
                         {...dialogConfig.extraProps}
                     />
                 );

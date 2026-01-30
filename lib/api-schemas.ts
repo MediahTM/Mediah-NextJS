@@ -1,5 +1,11 @@
 import z from "zod";
 import { containsIllegalCharacters, parsePath, replaceIllegalCharacters } from "./helpers";
+import { MAX_FILE_PATH } from "./constants";
+
+export const pathSchema = z.preprocess(
+    (val) => typeof val === 'string' ? val : parsePath(val as string),
+    z.string().min(1, 'File path is required.').refine((val) => !containsIllegalCharacters(val, "path"), 'File path contains illegal characters.').max(MAX_FILE_PATH, 'File path is too long.')
+)
 
 export const mongoIdSchema = z.string().length(24, 'Invalid ID. ID must be 24 characters long.');
 
@@ -9,10 +15,7 @@ export const uploadSchema = z.object({
         z.string({ message: "File name is required." }).min(1, 'File name is required.').max(255, 'File name is too long.')
     ),
     uploadedSize: z.number({ message: "File size is required." }).min(0, 'File size must be at least 0 bytes.'),
-    path: z.preprocess(
-        (val) => typeof val === 'string' ? val : parsePath(val as string),
-        z.string().min(1, 'File path is required.').refine((val) => !containsIllegalCharacters(val, "path"), 'File path contains illegal characters.')
-    ),
+    path: pathSchema,
     encryptedFilename: z.string({ message: "Encrypted file name is required." }).min(1, 'Encrypted file name is required.'),
     parts: z.array(z.string()).min(1, 'At least one part is required.'),
     channelID: z.string(),
@@ -70,3 +73,8 @@ export const fileManyDeleteSchema = z.object({
 export const fileManyPatchSchema = filePatchSchema.extend({
     ids: z.array(mongoIdSchema).min(1, 'At least one file ID is required!'),
 });
+
+export const editPathSchema = z.object({
+    old: pathSchema,
+    new: pathSchema
+})

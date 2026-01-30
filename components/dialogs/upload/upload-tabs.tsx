@@ -21,9 +21,9 @@ import RequestBlockedDialog from '../request-blocked/request-blocked-dialog';
 import UnknownWebhookDialog from '../unknown-webhook/unknown-webhook-dialog';
 import { useWebhooks } from '@/utils/webhooks-context';
 import { createJob } from '@/utils/status-bar-jobs';
-import { File as DBFile, Share } from '@prisma/client';
+import { File as DBFile } from '@prisma/client';
 import { shareItem } from '@/utils/api-actions';
-import ShareSuccessDialog, { ShareSuccessDialogProps } from '../share-success/share-success-dialog';
+import { ShareSuccessDialogProps } from '../share-success/share-success-dialog';
 
 const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { setOpen: React.Dispatch<React.SetStateAction<boolean>>, customFiles?: File[], setSuccessDialogProps: React.Dispatch<React.SetStateAction<ShareSuccessDialogProps>> }) => {
     const { files, setFiles, fetchFiles, setShares, shares } = useFiles();
@@ -51,7 +51,6 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
     const [blockedOpen, setBlockedOpen] = useState(false);
     const [unknownOpen, setUnknownOpen] = useState(false);
     const [errorFileIndexes, setErrorFileIndexes] = useState<number[]>([]);
-    const [shareSuccessOpen, setShareSuccessOpen] = useState(false);
 
     const { register, handleSubmit, control, setValue, watch, trigger, formState: { errors } } = useForm({
         resolver: zodResolver(schema),

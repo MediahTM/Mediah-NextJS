@@ -2,17 +2,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { File } from '@prisma/client';
 import ExportView from './export-view';
 
-const ExportDialog = ({ open, setOpen, file }: { open: boolean, setOpen: (open: boolean) => void, file?: File }) => {
+const ExportDialog = ({ open, setOpen, item }: { open: boolean, setOpen: (open: boolean) => void, item?: File }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Export &apos;{file ? file.filename : 'File'}&apos;</DialogTitle>
+                    <DialogTitle>Export &apos;{item ? item.filename : 'File'}&apos;</DialogTitle>
                     <DialogDescription>
                         Choose your export options. Click export when you&apos;re done.
                     </DialogDescription>
                 </DialogHeader>
-                {file && <ExportView file={file} setOpen={setOpen} />}
+                {item && <ExportView file={item} setOpen={setOpen} />}
             </DialogContent>
         </Dialog>
     )

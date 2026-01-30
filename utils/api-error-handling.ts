@@ -10,10 +10,14 @@ export function withErrorHandling(
             return await handler(req, context);
         } catch (error: any) {
             console.error('Route error:', error);
+            let errorMessage = error?.message || 'Internal Server Error';
+            try {
+                errorMessage = JSON.parse(error.message);
+            } catch { }
             return new NextResponse(
                 JSON.stringify({
                     success: false,
-                    message: error?.message || 'Internal Server Error',
+                    message: errorMessage,
                     data: null,
                 }),
                 {

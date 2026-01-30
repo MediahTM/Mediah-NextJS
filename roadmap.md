@@ -23,8 +23,8 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Better UI for diferent screen sizes | |
 | ✔ | Fix the New Folder button | |
 | ✔ | Make the Share Files button actually do something | |
-| ❌ | Folder renaming and moving |`in progress`|
-| ❌ | API rate limits |`in progress`|
+| ✔ | Folder renaming and moving | |
+| ✔ | API rate limits | |
 | ✔ | Efficient API calls for mass edits | |
 | ❌ | Variable storage limits (controlled in DB) |`in progress`|
 | ✔ | Make the mobile UI look better | |

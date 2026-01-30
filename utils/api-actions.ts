@@ -69,3 +69,8 @@ export async function uploadFileToDatabase(file: Omit<File, "parts" | "channelID
     });
     return response.data;
 }
+
+export async function editPath(oldPath: string, newPath: string, config?: AxiosRequestConfig) {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/edit-path`, { old: oldPath, new: newPath }, config);
+    return response.data;
+}

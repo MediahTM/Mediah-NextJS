@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { FolderTree, NewFolderType } from '@/types/folder';
 import { containsIllegalCharacters, parsePath } from '@/lib/helpers';
+import { MAX_FILE_PATH, MAX_FOLDER_NAME_LENGTH } from '@/lib/constants';
 
 const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelectedPath, children }: { elements: (FolderTree | NewFolderType)[], setElements: React.Dispatch<React.SetStateAction<(FolderTree | NewFolderType)[]>>, path: string, setSelectedPathId: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPath: React.Dispatch<React.SetStateAction<string>>, children: React.ReactNode }) => {
     const [open, setOpen] = useState(false);
@@ -18,9 +19,10 @@ const NewFolder = ({ elements, setElements, path, setSelectedPathId, setSelected
             .string()
             .trim()
             .min(1, "Folder name is required!")
-            .max(255, "Folder name is too long!")
+            .max(MAX_FOLDER_NAME_LENGTH, "Folder name is too long!")
             .refine((name) => !containsIllegalCharacters(name, "filename"), "Folder name cannot contain illegal characters")
-            .refine((name) => !elements.find(folder => folder.name === name && (("isNewFolder" in folder && folder.isNewFolder) ? folder.path : parsePath(folder.path + "/" + folder.name)) === path), "Folder already exists"),
+            .refine((name) => !elements.find(folder => folder.name === name && (("isNewFolder" in folder && folder.isNewFolder) ? folder.path : parsePath(folder.path + "/" + folder.name)) === path), "Folder already exists")
+            .refine((name) => !(parsePath(path + "/" + name).length > MAX_FILE_PATH), "Folder name exceeds maximum path length!"),
     })
 
     const form = useForm({

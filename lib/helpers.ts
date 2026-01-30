@@ -259,3 +259,7 @@ export const isFolder = (item: File | Folder): boolean => {
     if (!item) return false;
     return "isFolder" in item && item.isFolder;
 }
+
+export const getRelativeFolderPath = (folder: Folder) => {
+    return folder.path.substring(0, folder.path.length - folder.name.length)
+}

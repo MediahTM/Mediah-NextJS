@@ -142,7 +142,6 @@ const FileTable = ({ fileDropdownOptions, noRowsOverlay, colDefs }: { fileDropdo
                             : value
                     }));
                 }}
-                setFiles={setFiles}
             />
         </div>
         {tableInfo.dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: tableInfo.dropdown.position.y, left: tableInfo.dropdown.position.x }}>
