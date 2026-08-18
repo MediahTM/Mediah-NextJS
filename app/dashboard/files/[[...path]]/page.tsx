@@ -1,6 +1,5 @@
 import type { Metadata } from 'next/types'
-import React from 'react'
-import FilesView from './view'
+import FilesView from '../view'
 
 export const metadata: Metadata = {
     title: "Files"

@@ -78,7 +78,11 @@ export const uploadFiles = async (files: File[], webhook: string, location: stri
                                             chunkSize: CHUNK_SIZE,
                                             path: location
                                         }, { signal });
-                                        setFiles(prev => [...prev, response.data]);
+                                        if (response.success) {
+                                            setFiles(prev => [...prev, response.data]);
+                                        } else {
+                                            toast.error(response.message);
+                                        }
                                         resolve();
                                     }
                                     break;

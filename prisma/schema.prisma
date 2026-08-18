@@ -43,7 +43,8 @@ model User {
     discordId String?  @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    referral  Boolean  @default(false)
+    maxBytes  Int      @default(26843545600) // 25 * 1024 * 1024 * 1024 = 25 GB (26843545600)
+    maxFiles  Int      @default(2000)
 
     File    File[]
     Webhook Webhook? @relation(fields: [webhookId], references: [id])

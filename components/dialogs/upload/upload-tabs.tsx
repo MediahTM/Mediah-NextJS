@@ -6,7 +6,7 @@ import UploadPathDialog from '../select-path/select-path-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Share2, ShareIcon, Upload, XIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, FieldErrors, useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { parsePath } from '@/lib/helpers';
@@ -24,11 +24,13 @@ import { createJob } from '@/utils/status-bar-jobs';
 import { File as DBFile } from '@prisma/client';
 import { shareItem } from '@/utils/api-actions';
 import { ShareSuccessDialogProps } from '../share-success/share-success-dialog';
+import { useSession } from 'next-auth/react';
 
 const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { setOpen: React.Dispatch<React.SetStateAction<boolean>>, customFiles?: File[], setSuccessDialogProps: React.Dispatch<React.SetStateAction<ShareSuccessDialogProps>> }) => {
-    const { files, setFiles, fetchFiles, setShares, shares } = useFiles();
+    const { files, setFiles, fetchFiles, setShares } = useFiles();
     const { webhooks, loading } = useWebhooks();
     const { setStatusBar } = useStatusBar();
+    const { data: session } = useSession();
 
     type FormData = z.infer<typeof schema>
     const schema = z.object({
@@ -45,9 +47,19 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
     }, {
         path: ["files"],
         message: "Selected path already contains a file with this name!",
+    }).refine((data) => {
+        return !((data.files.length + files.length) > session!.user!.maxFiles);
+    }, {
+        path: ["files"],
+        message: "You have reached your file limit!",
+    }).refine((data) => {
+        return !((data.files.reduce((acc, file) => acc + file.size, 0) + files.reduce((acc, file) => acc + file.uploadedSize, 0)) > session!.user!.maxBytes);
+    }, {
+        path: ["files"],
+        message: "You have reached your storage limit!",
     })
 
-    const [activeTab, setActiveTab] = useState('upload');
+    const [activeTab, setActiveTab] = useState('files');
     const [blockedOpen, setBlockedOpen] = useState(false);
     const [unknownOpen, setUnknownOpen] = useState(false);
     const [errorFileIndexes, setErrorFileIndexes] = useState<number[]>([]);
@@ -84,24 +96,10 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
         }
     }
 
-    const goToFirstErrorTab = async () => {
-        const uploadErrors = await trigger(['files'])
-        if (!uploadErrors) {
-            setActiveTab('upload')
-            return
-        }
-
-        const infoErrors = await trigger(['location', 'webhook'])
-        if (!infoErrors) {
-            setActiveTab('info')
-        }
-    }
-
     const handleUpload = async (data: FormData, share: boolean = false) => {
         const isValid = await trigger()
 
         if (!isValid) {
-            goToFirstErrorTab()
             return
         }
 
@@ -147,6 +145,15 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
         setValue('files', []);
     }
 
+    const onError = (errs: typeof errors) => {
+        for (const key in errs) {
+            if (key === "webhook" || key === "location") {
+                setActiveTab('info');
+            }
+            setActiveTab(key);
+        }
+    }
+
     useEffect(() => {
         if (customFiles) {
             setValue('files', customFiles);
@@ -157,12 +164,12 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
         <form className='space-y-6'>
             <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
                 <TabsList className="md:grid w-full md:grid-cols-3 flex overflow-auto">
-                    <TabsTrigger value="upload">Select Files</TabsTrigger>
-                    <TabsTrigger value="info" disabled={filesToUpload.length <= 0 && activeTab === 'upload'}>Details</TabsTrigger>
-                    <TabsTrigger value="share" disabled={(filesToUpload.length <= 0 && activeTab === 'upload') || !watch("webhook") || !watch("location")}>{filesToUpload.length === 1 ? "Upload & Share" : "Upload"}</TabsTrigger>
+                    <TabsTrigger value="files">Select Files</TabsTrigger>
+                    <TabsTrigger value="info" disabled={filesToUpload.length <= 0 && activeTab === 'files'}>Details</TabsTrigger>
+                    <TabsTrigger value="share" disabled={(filesToUpload.length <= 0 && activeTab === 'files') || !watch("webhook") || !watch("location")}>{filesToUpload.length === 1 ? "Upload & Share" : "Upload"}</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="upload">
+                <TabsContent value="files">
                     <div
                         className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
                         onDragOver={handleDragOver}
@@ -262,11 +269,11 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
 
                 <TabsContent value="share">
                     <div className="space-y-2">
-                        <Button type="submit" onClick={handleSubmit(data => handleUpload(data))} className="w-full">
+                        <Button type="submit" onClick={handleSubmit(data => handleUpload(data), onError)} className="w-full">
                             <Upload className="mr-2 h-4 w-4" />
                             Upload {filesToUpload.length === 1 ? "File" : "Files"}
                         </Button>
-                        {filesToUpload.length === 1 && <Button onClick={handleSubmit(data => handleUpload(data, true))} variant="outline" className="w-full">
+                        {filesToUpload.length === 1 && <Button onClick={handleSubmit(data => handleUpload(data, true), onError)} variant="outline" className="w-full">
                             <Share2 className="mr-2 h-4 w-4" />
                             Share File
                         </Button>}
@@ -286,7 +293,7 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
                 </Button>
                 <Button
                     type="button"
-                    onClick={() => setActiveTab(activeTab === 'upload' ? 'info' : activeTab === 'info' ? 'share' : 'share')}
+                    onClick={() => setActiveTab(activeTab === 'files' ? 'info' : activeTab === 'info' ? 'share' : 'share')}
                     disabled={activeTab === 'share' || (filesToUpload.length <= 0 && activeTab === 'upload') || ((!watch("webhook") || !watch("location")) && activeTab === 'info')}
                 >
                     Next

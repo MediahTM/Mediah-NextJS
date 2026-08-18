@@ -26,7 +26,9 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Folder renaming and moving | |
 | ✔ | API rate limits | |
 | ✔ | Efficient API calls for mass edits | |
-| ❌ | Variable storage limits (controlled in DB) |`in progress`|
+| ✔ | Variable storage limits (controlled in DB) | |
+| ✔ | Enforce storage limits | |
+| ✔ | File path in URL | |
 | ✔ | Make the mobile UI look better | |
 | ❌ | Folder downloading and zipping |`in progress`|
 | ❌ | Import files from JSON/CSV |`in progress`|

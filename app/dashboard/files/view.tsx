@@ -1,7 +1,7 @@
 "use client";
 import Container from '@/components/ui/container';
 import PageTitle from '@/components/ui/page-title';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FileTable from '@/components/file-table/table';
 import { FileTableNavbar, FileTablePageNavigation, FileTableProvider } from '@/components/file-table';
 import { defaultOptions } from '@/components/file-dropdown/default-dropdown-options';
@@ -20,6 +20,8 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { Button } from '@/components/ui/button';
 import RefreshSpinner from '@/components/ui/refresh-spinner';
 import { getColumnDefs } from '@/components/file-table/column-defs';
+import { useParams } from "next/navigation";
+import { TableInfo, useFileTable } from '@/components/file-table/table-context';
 
 const FilesView = () => {
     const { setStatusBar } = useStatusBar();
@@ -29,6 +31,24 @@ const FilesView = () => {
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
     const [selectedShareItem, setSelectedShareItem] = useState<File | Folder | undefined>(undefined);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [path, setPath] = useState<string>("/");
+
+    const params = useParams();
+
+    useEffect(() => {
+        if (params.path) {
+            const path = decodeURIComponent("/" + (params.path as string[]).join("/"))
+            if (path) {
+                setPath(path);
+            }
+        }
+    }, [])
+
+    useEffect(() => {
+        const newURLPath = `${window.location.origin}/dashboard/files${path}`;
+        window.history.pushState(null, "", newURLPath);
+    }, [path])
+
 
     const fileDropdownOptions: FileDropdownItem[] = [
         ...defaultOptions.slice(0, defaultOptions.findIndex(option => "key" in option && option.key === "export")),
@@ -95,6 +115,7 @@ const FilesView = () => {
             <UploadDialog open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
             <div className="flex-1 flex flex-col h-full md:pb-0 pb-4">
                 <FileTableProvider>
+                    <PathSwitcher path={path} setPath={setPath} />
                     <FileTableNavbar />
                     <FileTable
                         fileDropdownOptions={fileDropdownOptions}
@@ -165,6 +186,23 @@ const ReloadButton = () => {
             Refresh
         </Button>
     )
+}
+
+const PathSwitcher = ({ path, setPath }: { path: string, setPath: React.Dispatch<React.SetStateAction<string>> }) => {
+    const { setTableInfo, tableInfo } = useFileTable();
+    useEffect(() => {
+        setTableInfo(pre => ({
+            ...pre,
+            viewingLocation: path
+        }))
+    }, [path]);
+
+    useEffect(() => {
+        if (tableInfo.viewingLocation !== path) {
+            setPath(tableInfo.viewingLocation);
+        }
+    }, [tableInfo.viewingLocation])
+    return <></>
 }
 
 export default FilesView

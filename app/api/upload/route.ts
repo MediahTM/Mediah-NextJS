@@ -22,6 +22,34 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         });
     }
 
+    const user = await db.user.findFirst({ where: { id: session.user.id } });
+    if (!user) {
+        return NextResponse.json({ success: false, message: 'User not found.', data: null });
+    }
+
+    const usedBytes = (await db.file.aggregate({
+        _sum: {
+            uploadedSize: true
+        },
+        where: {
+            userId: session.user.id
+        }
+    }))._sum.uploadedSize || 0;
+
+    const usedFiles = (await db.file.count({
+        where: {
+            userId: session.user.id
+        }
+    }));
+
+    if (data.uploadedSize + usedBytes > user.maxBytes) {
+        return NextResponse.json({ success: false, message: 'User storage limit exceeded.', data: null });
+    }
+
+    if (usedFiles >= user.maxFiles) {
+        return NextResponse.json({ success: false, message: 'User file limit exceeded.', data: null });
+    }
+
     const newFile = await db.file.create({
         data: {
             ...data,
@@ -31,6 +59,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             userId: session.user.id,
         }
     });
+
     return NextResponse.json({
         success: true, message: 'File uploaded successfully.', data: {
             ...newFile,

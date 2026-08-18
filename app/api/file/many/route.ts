@@ -29,6 +29,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest) => {
     const session = await getAuthenticatedSession();
     const body = await request.json();
     const json = fileManyDeleteSchema.parse(body);
+
     const files = await db.file.deleteMany({
         where: {
             id: {
@@ -37,5 +38,6 @@ export const DELETE = withErrorHandling(async (request: NextRequest) => {
             userId: session.user.id
         }
     })
+
     return NextResponse.json({ success: true, message: files.count + " files deleted successfully." });
 });

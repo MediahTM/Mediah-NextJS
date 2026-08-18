@@ -70,19 +70,20 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
                     title={"Total Files"}
                     description={"All files in your account"}
                     icon={<FileIcon className='size-5' />}
+                    progress={session?.user?.maxFiles ? ((totalFiles / session!.user!.maxFiles) * 100) : undefined}
                     loading={loading}
-                    value={String(totalFiles)}
-                    valueCallback={(percent: number) => `${Math.floor(percent * totalFiles / 100)}`}
+                    value={String(totalFiles) + (session?.user?.maxFiles ? ` / ${session!.user!.maxFiles}` : '')}
+                    valueCallback={(percent: number) => `${Math.floor(percent * totalFiles / 100)}${session?.user?.maxFiles ? ` / ${session!.user!.maxFiles}` : ''}`}
                 />
 
                 <StatisticsCard
                     title={"Total Storage"}
                     description={"The sum of all bytes stored in your account"}
                     icon={<HardDrive className='size-5' />}
-                    progress={session?.user?.isReferral ? undefined : ((totalStorage / (25 * 1024 * 1024 * 1024)) * 100)}
+                    progress={session?.user?.maxBytes ? ((totalStorage / session!.user!.maxBytes) * 100) : undefined}
                     loading={loading}
-                    value={formatBytes(totalStorage)}
-                    valueCallback={(percent: number) => loading ? `0` : `${formatBytes(Math.floor(percent * totalStorage / 100))}${session?.user?.isReferral ? '' : ' / 25 GB'}`}
+                    value={formatBytes(totalStorage) + (session?.user?.maxBytes ? ` / ${formatBytes(session!.user!.maxBytes)}` : '')}
+                    valueCallback={(percent: number) => loading ? `0` : `${formatBytes(Math.floor(percent * totalStorage / 100))}${session?.user?.maxBytes ? ` / ${formatBytes(session!.user!.maxBytes)}` : ''}`}
                 />
             </div>
             <div className='sm:grid xl:grid-cols-4 grid-cols-2 hidden gap-6'>

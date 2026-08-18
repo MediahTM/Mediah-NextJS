@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CloudUploadIcon } from 'lucide-react';
 import UploadDialog from './dialogs/upload/upload-dialog';
 

@@ -11,7 +11,7 @@ export const mongoIdSchema = z.string().length(24, 'Invalid ID. ID must be 24 ch
 
 export const uploadSchema = z.object({
     filename: z.preprocess(
-        (val) => typeof val === 'string' ? val : replaceIllegalCharacters(val as string, "filename"),
+        (val) => typeof val === 'string' ? val : replaceIllegalCharacters(val ? val as string : "", "filename"),
         z.string({ message: "File name is required." }).min(1, 'File name is required.').max(255, 'File name is too long.')
     ),
     uploadedSize: z.number({ message: "File size is required." }).min(0, 'File size must be at least 0 bytes.'),

@@ -48,7 +48,7 @@ export const downloadFiles = async (files: File[], setStatusBar: React.Dispatch<
                             let request: AxiosResponse<ArrayBuffer>;
                             try {
                                 let requestBytesDownloaded: number = 0;
-                                request = await axios.get("https://api.codetabs.com/v1/proxy/?quest=" + encodeURIComponent(link), {
+                                request = await axios.get(process.env.NEXT_PUBLIC_CORS_BYPASS + encodeURIComponent(link), {
                                     responseType: "arraybuffer", signal, onDownloadProgress: (progressEvent) => {
                                         totalBytesDownloaded += (((progressEvent.loaded * 3) / 4) - requestBytesDownloaded);
                                         requestBytesDownloaded = (progressEvent.loaded * 3) / 4;

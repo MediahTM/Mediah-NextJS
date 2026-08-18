@@ -60,7 +60,8 @@ export const authOptions: NextAuthOptions = {
                 token.name = dbUser.name;
                 token.image = dbUser.image;
                 token.discordId = dbUser.discordId;
-                token.referral = dbUser.referral ?? false;
+                token.maxBytes = dbUser.maxBytes;
+                token.maxFiles = dbUser.maxFiles;
                 token.createdAt = dbUser.createdAt;
                 token.fetchedAt = Date.now();
             }
@@ -75,7 +76,8 @@ export const authOptions: NextAuthOptions = {
                     token.name = dbUser.name;
                     token.image = dbUser.image;
                     token.discordId = dbUser.discordId;
-                    token.referral = dbUser.referral ?? false;
+                    token.maxBytes = dbUser.maxBytes;
+                    token.maxFiles = dbUser.maxFiles;
                     token.createdAt = dbUser.createdAt;
                     token.fetchedAt = Date.now();
                 }
@@ -90,8 +92,11 @@ export const authOptions: NextAuthOptions = {
                     name: token.name as string,
                     image: token.image as string,
                     id: token.id,
+                    usedBytes: token.usedBytes,
+                    maxBytes: token.maxBytes,
+                    usedFiles: token.usedFiles,
+                    maxFiles: token.maxFiles,
                     discordId: token.discordId,
-                    isReferral: token.referral ?? false,
                     createdAt: token.createdAt
                 };
             }

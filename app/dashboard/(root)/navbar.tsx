@@ -1,10 +1,11 @@
+"use client";
 import Container from '@/components/ui/container'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ModeToggle } from '@/components/ui/theme-toggler'
-import { ForwardRefComponent, HTMLMotionProps, motion } from 'motion/react'
-import { ActivityIcon, ImportIcon, ListIcon, UploadIcon, X } from 'lucide-react'
+import { HTMLMotionProps, motion } from 'motion/react'
+import { ActivityIcon, ListIcon, UploadIcon, X } from 'lucide-react'
 import UploadDialog from '@/components/dialogs/upload/upload-dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
 import RefreshSpinner from '@/components/ui/refresh-spinner'
@@ -25,7 +26,7 @@ const Navbar = () => {
                 <div className="flex items-center gap-2 w-full mr-4 max-w-[300px] h-full">
                     <SidebarTrigger />
                     <Separator orientation="vertical" className="mr-2 h-4" />
-                    <motion.div className='relative h-full flex items-center justify-center md:hidden' animate={{
+                    <motion.div className='relative h-full flex items-center justify-center md:hidden' style={{ flexBasis: statusBar.title ? "100%" : "0%" }} animate={{
                         flexGrow: statusBar.title ? 1 : 0,
                         flexBasis: statusBar.title ? "100%" : "0%"
                     }} transition={{ type: "tween", duration: statusBar.title ? 0.5 : 0.3 }}>
@@ -41,7 +42,7 @@ const Navbar = () => {
                 <div className="flex items-center gap-3">
                     <UploadButton open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
                     <UploadDialog open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
-                    <Button variant="outline" size="icon" onClick={fetchFiles} disabled={fetching} className='w-8 h-8 shrink-0 mr-[1px]'>
+                    <Button suppressHydrationWarning variant="outline" size="icon" onClick={fetchFiles} disabled={fetching} className='w-8 h-8 shrink-0 mr-[1px]'>
                         <RefreshSpinner loading={loading} refetching={refetching} />
                     </Button>
                     <ModeToggle />

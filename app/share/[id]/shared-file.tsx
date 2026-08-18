@@ -31,17 +31,17 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
             <TooltipProvider>
                 <Card className='max-w-sm sm:max-w-md md:max-w-lg xl:max-w-xl'>
                     <CardHeader>
-                        <CardTitle className='flex gap-1 items-center'>
+                        <CardTitle className='flex gap-1 items-center text-muted-foreground'>
                             <AvatarBlock account={user} textClassName='text-primary text-base' />
                             has shared a file with you
                         </CardTitle>
                     </CardHeader>
                     <CardContent className='flex flex-col gap-4'>
                         <div className='flex items-center justify-center w-full text-nowrap overflow-hidden flex-col md:flex-row md:gap-2'>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 overflow-hidden max-w-full">
                                 <FileIcon filename={file.filename} className='aspect-square w-6 shrink-0' />
                                 <div className="flex max-w-full overflow-hidden">
-                                    <span className="truncate">{getFileName(file.filename)}</span>
+                                    <span className="flex-1 max-w-full truncate">{getFileName(file.filename)}</span>
                                     <span className="shrink-0 max-w-full truncate">.{getFileExtension(file.filename)}</span>
                                 </div>
                             </div>
@@ -49,7 +49,7 @@ const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserPro
                                 <DatabaseIcon className='stroke-muted-foreground' size={15} />
                                 <p className='text-muted-foreground text-sm'>{formatBytes(file.uploadedSize)}</p>
                             </div>
-                            <DownloadWrapper file={file} downloading={downloading} setDownloading={setDownloading} className='hidden md:inline-flex overflow-hidden'>
+                            <DownloadWrapper file={file} downloading={downloading} setDownloading={setDownloading} className='hidden md:inline-flex overflow-hidden shrink-0'>
                                 <div className='ml-2 relative'>
                                     <div className={cn("absolute top-0 left-0 w-full h-full bg-background/50 invisible transition-all", statusBar.processing && statusBar.progress < 90 && "visible")} style={{ left: `${statusBar.progress}%` }} />
                                     <Button className='disabled:opacity-100' disabled={downloading}>

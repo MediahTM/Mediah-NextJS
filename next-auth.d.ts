@@ -8,7 +8,10 @@ declare module 'next-auth' {
     interface Session {
         user?: {
             id: string;
-            isReferral: boolean,
+            maxBytes: number;
+            maxFiles: number;
+            usedBytes: number;
+            usedFiles: number;
             discordId: string,
             createdAt: string
         } & DefaultSession['user'];

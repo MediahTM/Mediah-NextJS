@@ -38,7 +38,7 @@ const limiters = ratelimits.map(policy => ({
     }),
 }));
 
-export default async function middleware(req: NextRequestWithAuth, event: NextFetchEvent) {
+export default async function proxy(req: NextRequestWithAuth, event: NextFetchEvent) {
     const { pathname } = req.nextUrl;
     const headers = Object.fromEntries(req.headers.entries());
     const ip = getClientIp({ headers }) ?? "unknown";
@@ -54,9 +54,11 @@ export default async function middleware(req: NextRequestWithAuth, event: NextFe
         }
     }
 
-    if (noAuthApiRoutes.includes(pathname)) {
-        // Authentication is not required for these endpoints.
-        return NextResponse.next()
+    for (const route of noAuthApiRoutes) {
+        if (pathname.startsWith(route)) {
+            // Authentication is not required for these endpoints.
+            return NextResponse.next()
+        }
     }
 
     return withAuth(req, event);

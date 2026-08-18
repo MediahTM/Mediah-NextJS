@@ -113,7 +113,7 @@ const StatusBar = () => {
                                     size="icon"
                                     className="size-6"
                                     tabIndex={-1}
-                                    disabled={!statusBar.processing}
+                                    disabled={Boolean(!statusBar.processing)}
                                     onClick={statusBar.onCancel}
                                 >
                                     <X className="w- h-4" />
