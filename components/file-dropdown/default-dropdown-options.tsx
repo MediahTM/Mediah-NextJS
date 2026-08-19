@@ -1,16 +1,18 @@
 import { DownloadIcon, InfoIcon, PencilIcon, TableIcon, UserRoundCogIcon, UserRoundPlusIcon } from "lucide-react";
 import { FileDropdownItem } from "./file-dropdown";
-import { downloadFiles } from "@/utils/file-store/download";
+import { saveItems } from "@/utils/file-store/download";
 import { File } from "@prisma/client";
 import { isFolder } from "@/lib/helpers";
+import { Folder } from "@/types/folder";
 export const defaultOptions: FileDropdownItem[] = [
     {
         key: "download",
-        label: () => "Download",
+        label: ({ items }) => items.every(f => isFolder(f)) ? "Download ZIP" : "Download",
         icon: () => <DownloadIcon />,
-        enabled: ({ items }) => !items.some(f => isFolder(f)),
-        onClick: async ({ items, setStatusBar, gridRef }) => {
-            await downloadFiles(items as File[], setStatusBar)
+        // enabled: ({ items }) => !items.some(f => isFolder(f)),
+        enabled: () => true,
+        onClick: async ({ items, setStatusBar, gridRef, files }) => {
+            await saveItems(items, files, setStatusBar);
             gridRef?.current?.api.deselectAll();
         }
     },

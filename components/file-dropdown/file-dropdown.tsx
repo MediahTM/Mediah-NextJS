@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { defaultOptions } from './default-dropdown-options';
 import { GeneralProps } from '@/types/general-props';
 
-export type FileDropdownProps = Pick<GeneralProps, "items" | "setFiles" | "setStatusBar" | "dropdown" | "setDropdown"> & {
+export type FileDropdownProps = Pick<GeneralProps, "items" | "files" | "setFiles" | "setStatusBar" | "dropdown" | "setDropdown"> & {
     open?: boolean,
     onOpenChange?: (open: boolean) => void,
     gridRef?: React.RefObject<AgGridReact | null>,
@@ -12,15 +12,15 @@ export type FileDropdownProps = Pick<GeneralProps, "items" | "setFiles" | "setSt
     customOptions?: FileDropdownItem[]
 }
 
-export type FileDropdownItemFunctionInput = Pick<GeneralProps, "items" | "setFiles" | "setStatusBar" | "dropdown" | "setDropdown"> & {
+export type FileDropdownItemFunctionInput = Pick<GeneralProps, "items" | "files" | "setFiles" | "setStatusBar" | "dropdown" | "setDropdown"> & {
     gridRef?: React.RefObject<AgGridReact | null>
 }
 
 export type FileDropdownItem = {
     separator?: false,
     key: string,
-    label: (props?: FileDropdownItemFunctionInput) => string,
-    icon: (props?: FileDropdownItemFunctionInput) => React.ReactNode,
+    label: (props: FileDropdownItemFunctionInput) => string,
+    icon: (props: FileDropdownItemFunctionInput) => React.ReactNode,
     enabled: (props: FileDropdownItemFunctionInput) => boolean,
     onClick: (props: FileDropdownItemFunctionInput) => void | Promise<void>
 } | {
@@ -28,9 +28,9 @@ export type FileDropdownItem = {
     dependencies: string[]
 }
 
-const FileDropdown = ({ open, onOpenChange, setStatusBar, setFiles, gridRef, children, items, dropdown, setDropdown, customOptions }: FileDropdownProps) => {
+const FileDropdown = ({ open, onOpenChange, setStatusBar, files, setFiles, gridRef, children, items, dropdown, setDropdown, customOptions }: FileDropdownProps) => {
     const options = customOptions ?? defaultOptions
-    const props = { items, setFiles, setStatusBar, gridRef, dropdown, setDropdown }
+    const props = { items, files, setFiles, setStatusBar, gridRef, dropdown, setDropdown }
     return (
         <DropdownMenu open={open ?? undefined} onOpenChange={onOpenChange ?? undefined}>
             <DropdownMenuTrigger asChild={Boolean(children)}>

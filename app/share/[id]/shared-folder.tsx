@@ -5,13 +5,16 @@ import { FileTable, FileTableNavbar, FileTablePageNavigation, FileTableProvider 
 import { defaultOptions } from '@/components/file-dropdown/default-dropdown-options'
 import { isFolder, parsePath } from '@/lib/helpers'
 import SaveDialog from '@/components/dialogs/save/save-files-dialog'
-import { SaveIcon, UserRoundPlusIcon } from 'lucide-react'
+import { FolderDownIcon, SaveIcon, UserRoundPlusIcon } from 'lucide-react'
 import { FileDropdownItem } from '@/components/file-dropdown/file-dropdown'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import SaveFolderDialog from '@/components/dialogs/save/save-folder-dialog'
 import { Folder } from '@/types/folder'
 import AvatarBlock from '@/app/(referrals)/r/[discordId]/[accountId]/avatar-block'
+import { Button } from '@/components/ui/button'
+import { saveFolder } from '@/utils/file-store/download'
+import { useStatusBar } from '@/utils/status-bar-context'
 
 const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, path: string }) => {
     const router = useRouter();
@@ -21,6 +24,7 @@ const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, p
     const [selectedFolderInfo, setSelectedFolderInfo] = useState<Folder | null>(null);
     const [selectedItems, setSelectedItems] = useState<File[] | null>(null);
     const [tableFiles, setTableFiles] = useState(files.map(file => ({ ...file, path: parsePath(file.path.replace(path, "/")) })));
+    const { setStatusBar } = useStatusBar();
 
     const fileDropdownOptions: FileDropdownItem[] = [
         ...defaultOptions.filter(option => !("key" in option && ["rename"].includes(option.key))),
@@ -46,13 +50,28 @@ const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, p
         }
     ]
     return (
-        <div className="flex-1 flex flex-col h-full max-w-[1500px] w-full py-8">
+        <div className="flex-1 flex flex-col h-full max-w-[1500px] w-full py-8 px-4">
             <FileTableProvider customFilesProps={{
                 files: tableFiles,
                 setFiles: setTableFiles,
                 loading: false
             }}>
-                <FileTableNavbar homeName={path.split("/").pop()} />
+                <FileTableNavbar homeName={path.split("/").pop()}>
+                    <Button onClick={() => {
+                        // 'updatedAt' is redundant here, so it's set to a dummy value
+                        const folder: Folder = {
+                            path: "/",
+                            name: path.split("/").pop()!,
+                            isFolder: true,
+                            updatedAt: new Date().toString(),
+                            uploadedSize: tableFiles.reduce((acc, file) => acc + file.uploadedSize, 0)
+                        }
+                        saveFolder(folder, tableFiles, setStatusBar);
+                    }}>
+                        <span className='hidden md:block'>Download as ZIP</span>
+                        <FolderDownIcon />
+                    </Button>
+                </FileTableNavbar>
                 <FileTable fileDropdownOptions={fileDropdownOptions} />
                 <FileTablePageNavigation />
                 <SaveDialog open={saveDialogOpen} setOpen={setSaveDialogOpen} filesToSave={selectedItems ?? undefined} />

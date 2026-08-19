@@ -11,7 +11,7 @@ import { useStatusBar } from '@/utils/status-bar-context';
 import { formatBytes } from '@/lib/helpers';
 import { cn } from '@/lib/utils';
 import SaveDialog from '@/components/dialogs/save/save-files-dialog';
-import { downloadFiles } from '@/utils/file-store/download';
+import { saveFile } from '@/utils/file-store/download';
 import { File } from '@prisma/client';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -124,7 +124,7 @@ const DownloadWrapper = ({ file, downloading, setDownloading, children, ...props
         <div {...props} onClick={() => {
             if (!downloading) {
                 setDownloading(true);
-                downloadFiles([file as any as File], setStatusBar, {
+                saveFile(file as any as File, setStatusBar, {
                     onCancel: () => {
                         setDownloading(false);
                     },

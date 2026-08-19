@@ -117,6 +117,7 @@ const StatisticsView = ({ session }: { session: Session | null }) => {
             <DropdownDialogs dropdown={dropdown} setDropdown={setDropdown} />
             {dropdown.open && <div className='flex items-center z-[-1] justify-center fixed' style={{ top: dropdown.position.y, left: dropdown.position.x }}>
                 <FileDropdown
+                    files={files}
                     open={dropdown.open}
                     onOpenChange={() => setDropdown(menu => ({ ...menu, open: false }))}
                     setStatusBar={setStatusBar}

@@ -4,7 +4,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from 
 import { useFileTable } from './table-context';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 
-const FileTableNavbar = ({ homeName = "Home" }: { homeName?: string }) => {
+const FileTableNavbar = ({ homeName = "Home", children }: { homeName?: string } & React.PropsWithChildren) => {
     // Location state is created and updated from grid API rather than directly reading from tableInfo to prevent the navbar from updating before the table
     const { tableInfo, setTableInfo } = useFileTable();
 
@@ -17,8 +17,8 @@ const FileTableNavbar = ({ homeName = "Home" }: { homeName?: string }) => {
     }, [tableInfo.gridReady, tableInfo.gridRef, tableInfo.viewingLocation])
 
     return (
-        <div className='max-h-full'>
-            <ScrollArea className='flex md:pb-3 pb-2 mb-1'>
+        <div className='max-h-full flex gap-4'>
+            <ScrollArea className='flex-1 flex md:pb-3 pb-2 mb-1'>
                 <Breadcrumb>
                     <BreadcrumbList className='flex-nowrap'>
                         <BreadcrumbItem onClick={() => setTableInfo(pre => ({ ...pre, viewingLocation: "/" }))} className='hover:cursor-pointer hover:text-primary transition-all'>
@@ -36,6 +36,7 @@ const FileTableNavbar = ({ homeName = "Home" }: { homeName?: string }) => {
                 </Breadcrumb>
                 <ScrollBar orientation='horizontal' />
             </ScrollArea>
+            {children}
         </div>
     )
 }

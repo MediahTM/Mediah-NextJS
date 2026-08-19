@@ -30,7 +30,7 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Enforce storage limits | |
 | ✔ | File path in URL | |
 | ✔ | Make the mobile UI look better | |
-| ❌ | Folder downloading and zipping |`in progress`|
+| ✔ | Folder downloading and zipping | |
 | ❌ | Import files from JSON/CSV |`in progress`|
 | ❌ | Add some cool settings |`in progress`|
 | ❌ | Lander |`in progress`|

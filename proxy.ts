@@ -22,7 +22,7 @@ const ratelimits: RatelimitPolicy[] = [
     { matcher: "/api/file/:id*", requests: 200, window: "1 m", prefix: "general" },
     { matcher: "/api/get-user/:id*", requests: 200, window: "1 m", prefix: "general" },
     { matcher: "/api/upload", requests: 200, window: "1 m", prefix: "general" },
-    { matcher: "/api/renew", requests: 30, window: "1 m", prefix: "renew" },
+    { matcher: "/api/renew", requests: 300, window: "1 m", prefix: "renew" },
     { matcher: "/api/webhooks", requests: 200, window: "1 m", prefix: "general" },
     { matcher: "/api/edit-path", requests: 10, window: "1 m", prefix: "edit-path" },
 ]

@@ -9,7 +9,7 @@ import { Expandable, ExpandableCard, ExpandableCardContent, ExpandableCardFooter
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { downloadFiles } from '@/utils/file-store/download';
+import { saveFile } from '@/utils/file-store/download';
 import { useStatusBar } from '@/utils/status-bar-context';
 import { motion } from 'motion/react';
 import { useFiles } from '@/utils/files-context';
@@ -75,7 +75,7 @@ const ExpandableFile = ({ index, latestFiles }: { index: number, latestFiles: Fi
                                 </ExpandableContent>}
                             </div>
                             <ExpandableContent preset="blur-md" stagger staggerChildren={0.2}>
-                                <Button onClick={() => downloadFiles(latestFiles.slice(index, index + 1), setStatusBar)} className='z-[99999]'>
+                                <Button onClick={() => saveFile(latestFiles[index], setStatusBar)} className='z-[99999]'>
                                     <DownloadIcon className="h-4 w-4 mr-2" />
                                     <span>Download</span>
                                 </Button>

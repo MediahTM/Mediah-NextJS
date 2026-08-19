@@ -30,7 +30,7 @@ const Navbar = () => {
                         flexGrow: statusBar.title ? 1 : 0,
                         flexBasis: statusBar.title ? "100%" : "0%"
                     }} transition={{ type: "tween", duration: statusBar.title ? 0.5 : 0.3 }}>
-                        {statusBar.description && <span className='text-xs text-muted-foreground w-full text-center flex items-center justify-center absolute bottom-0'>{statusBar.description}</span>}
+                        {statusBar.description && <span className='text-xs text-muted-foreground w-full text-center items-center justify-center absolute bottom-0 text-nowrap truncate max-w-full'>{statusBar.description}</span>}
                         <Button variant="outline" onClick={() => setQueueDialogOpen(true)} className={cn('h-8 w-full shrink-0 px-2')}>
                             <div className={cn(statusBar.title ? "animate-pulse" : "w-full flex justify-start")}>
                                 {statusBar.title ? statusBar.icon ? <statusBar.icon /> : <ActivityIcon /> : <ListIcon />}

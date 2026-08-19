@@ -1,3 +1,3 @@
 export default function parseCorsProxyBody(body: string) {
-    return body;
+    return JSON.parse(body).body;
 }
