@@ -11,7 +11,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import SaveFolderDialog from '@/components/dialogs/save/save-folder-dialog'
 import { Folder } from '@/types/folder'
-import AvatarBlock from '@/app/(referrals)/r/[discordId]/[accountId]/avatar-block'
+import AvatarBlock from '@/components/avatar-block'
 import { Button } from '@/components/ui/button'
 import { saveFolder } from '@/utils/file-store/download'
 import { useStatusBar } from '@/utils/status-bar-context'
@@ -79,7 +79,7 @@ const SharedFolder = ({ files, user, path }: { files: File[], user: UserProps, p
             </FileTableProvider>
             <div className='font-semibold text-muted-foreground flex gap-2 w-full items-center justify-center'>
                 <p>Shared by</p>
-                <AvatarBlock account={user} className="rounded-[3px] text-primary" />
+                <AvatarBlock account={user} className="rounded-[3px] text-primary" imageClassName="w-[30px] h-[30px]" />
             </div>
         </div>
     )

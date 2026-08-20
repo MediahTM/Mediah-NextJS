@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dock, DockIcon } from '@/components/magicui/dock';
 import { useRouter } from 'next/navigation';
-import AvatarBlock from '@/app/(referrals)/r/[discordId]/[accountId]/avatar-block';
+import AvatarBlock from '@/components/avatar-block'
 
 const SharedFile = ({ file, user, id }: { file: FileWithShareInfo, user: UserProps, id: string }) => {
     const router = useRouter();

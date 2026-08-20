@@ -55,7 +55,7 @@ const FileTable = ({ fileDropdownOptions, noRowsOverlay, colDefs }: { fileDropdo
     useEffect(() => {
         if (!loading) {
             const filesToRender = getFilesInPath(tableInfo.viewingLocation, files);
-            setRenderedResults([...filesToRender.filesInPath, ...filesToRender.foldersInPath]);
+            setRenderedResults([...filesToRender.foldersInPath, ...filesToRender.filesInPath]);
         }
     }, [files, tableInfo.viewingLocation, loading]);
 

@@ -19,51 +19,11 @@ export const SidebarLinks = [
                 icon: TrashIcon,
                 url: "/bin",
             },
-        ],
-    },
-    {
-        title: "Plugins",
-        items: [
             {
-                title: "Marketplace",
-                icon: ShoppingCart,
-                url: "/plugins",
-            },
-            {
-                title: "Installed",
-                icon: PlugIcon,
-                url: "/plugins/installed",
-            },
-        ],
-    },
-    {
-        title: "Discord",
-        items: [
-            {
-                title: "Webhooks",
+                title: "Manage Webhooks",
                 icon: WebhookIcon,
                 url: "/webhooks",
             },
-        ],
-    },
-    {
-        title: "Other",
-        items: [
-            {
-                title: "Settings",
-                icon: SettingsIcon,
-                url: "/settings",
-            },
-            {
-                title: "Authorization",
-                icon: KeyIcon,
-                url: "/auth",
-            },
-            {
-                title: "Referrals",
-                icon: UsersIcon,
-                url: "/referrals",
-            }
         ],
     }
 ]

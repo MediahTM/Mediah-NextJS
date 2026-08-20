@@ -12,15 +12,15 @@ const Hero = () => {
                     <div className="flex flex-col gap-6">
                         <header className="sm:text-left text-center">
                             <h1 className="lg:leading-tighter text-3xl font-bold mb-1 tracking-tighter sm:text-4xl md:text-5xl xl:text-[3.4rem] 2xl:text-[3.75rem]">
-                                Discord based file Uploader and Sharer
+                                Mediah - Free Cloud Storage Forever
                             </h1>
                             <p className="mx-auto mt-2 max-w-[700px] text-muted-foreground md:text-xl">
-                                Our web app offers completely free file sharing with end-to-end encryption, keeping your data safe and secure.
+                                Get started by logging in with Discord and take advantage of <span className="text-primary">500GB</span> of completely free cloud storage!
                             </p>
                         </header>
                         <div className="flex sm:justify-start justify-center items-center gap-4">
                             <motion.a
-                                href={'/login'}
+                                href={'/sign-in'}
                                 className={`${buttonVariants({ variant: "default", size: "lg" })} flex items-center gap-1.5`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.9 }}

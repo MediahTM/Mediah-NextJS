@@ -38,14 +38,6 @@ const AvatarDropdown = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem
-                        onClick={() => router.push(process.env.BASEPATH + "/settings")}
-                        className='flex items-center gap-2'
-                    >
-                        <SettingsIcon className='size-4' />
-                        Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
                         onClick={() => signOut({ redirect: true })}
                         className='flex items-center gap-2'
                     >

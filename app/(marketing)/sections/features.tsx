@@ -11,20 +11,20 @@ const Features = () => {
                             <CheckIcon width={20} height={20} />
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Protect Your Files with Ease</h2>
-                        <p className="max-w-[900px] text-muted-foreground">What we have to offer for free, why free? well we needed this our-selves so enjoy lol.</p>
+                        <p className="max-w-[900px] text-muted-foreground">What we have to offer for free, why free? well we needed this ourselves so enjoy lol.</p>
                     </div>
                     <div className="mx-auto text-center grid items-start gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3">
                         <div className="grid gap-1">
                             <h3 className="text-xl font-bold">100% Free</h3>
-                            <p className="text-base text-muted-foreground">We don&apos;t price this solution its just to actually help, we made this to not have to pay for google cloud lol cause F tracking &amp; telemetry!</p>
+                            <p className="text-base text-muted-foreground">No telemetry, no ads, no tracking. You literally just get free storage because it isn't ours in the first place.</p>
                         </div>
                         <div className="grid gap-1">
-                            <h3 className="text-xl font-bold">End-To-End Encryption</h3>
-                            <p className="text-base text-muted-foreground">Your files are stored using base64 and a personal choice if needed, however its unlikely for data to be intercepted!</p>
+                            <h3 className="text-xl font-bold">Share with Ease</h3>
+                            <p className="text-base text-muted-foreground">Folders and files can be shared with the click of a button, and you choose when the links expire.</p>
                         </div>
                         <div className="grid gap-1">
-                            <h3 className="text-xl font-bold">Easy to Use</h3>
-                            <p className="text-base text-muted-foreground">Meh we&apos;d say its easy enough to use, check the dashboard etc, if not drop us a GitHub issue or message our Discord.</p>
+                            <h3 className="text-xl font-bold">500GB Storage</h3>
+                            <p className="text-base text-muted-foreground">To prevent abuse, we have placed a 500GB storage limit on accounts by default. If you store more than that, you're genuinely insane, but drop me a message and I'll be happy to upgrade your account.</p>
                         </div>
                     </div>
                 </div>
