@@ -78,3 +78,32 @@ export const editPathSchema = z.object({
     old: pathSchema,
     new: pathSchema
 })
+
+export const importFileSchema = z.object({
+    filename: z.string(),
+    uploadedSize: z.preprocess(
+        (value) => {
+            if (typeof value === 'string' && value.trim() !== '') {
+                return Number(value);
+            }
+
+            return value;
+        },
+        z.number()
+    ),
+    parts: z.array(z.string()),
+    encryptedFilename: z.string(),
+    channelID: z.string(),
+    chunkSize: z.preprocess(
+        (value) => {
+            if (typeof value === 'string' && value.trim() !== '') {
+                return Number(value);
+            }
+
+            return value;
+        },
+        z.number()
+    ),
+    uploadedAt: z.string(),
+    updatedAt: z.string(),
+});

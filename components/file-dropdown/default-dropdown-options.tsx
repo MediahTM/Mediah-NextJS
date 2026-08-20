@@ -9,7 +9,6 @@ export const defaultOptions: FileDropdownItem[] = [
         key: "download",
         label: ({ items }) => items.every(f => isFolder(f)) ? "Download ZIP" : "Download",
         icon: () => <DownloadIcon />,
-        // enabled: ({ items }) => !items.some(f => isFolder(f)),
         enabled: () => true,
         onClick: async ({ items, setStatusBar, gridRef, files }) => {
             await saveItems(items, files, setStatusBar);
@@ -33,7 +32,7 @@ export const defaultOptions: FileDropdownItem[] = [
         key: "export",
         label: () => "Export",
         icon: () => <TableIcon />,
-        enabled: ({ items }) => !items.some(f => isFolder(f)),
+        enabled: ({ items }) => !items.some(f => isFolder(f)) && items.length == 1,
         onClick: ({ setDropdown }) => {
             setDropdown(menu => ({ ...menu, dialogs: { ...menu.dialogs, export: true } }));
         }
@@ -42,7 +41,7 @@ export const defaultOptions: FileDropdownItem[] = [
         key: "rename",
         label: () => "Rename",
         icon: () => <PencilIcon />,
-        enabled: () => true,
+        enabled: ({ items }) => items.length == 1,
         onClick: ({ setDropdown }) => {
             setDropdown(menu => ({ ...menu, dialogs: { ...menu.dialogs, rename: true } }));
         }

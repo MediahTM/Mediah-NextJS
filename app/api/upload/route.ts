@@ -13,7 +13,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         where: {
             filename: data.filename,
             path: data.path,
-            userId: session.user.id
+            userId: session.user.id,
+            isActive: true
         }
     });
     if (existingFile) {

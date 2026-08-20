@@ -7,7 +7,7 @@ import { formatBytes, getFilesInPath, getFoldersMap, parsePath } from '@/lib/hel
 import { useFiles } from '@/utils/files-context';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileIcon } from '@/utils/file-types';
 import { Input } from '@/components/ui/input';
 import NewFolder from '../new-folder/new-folder';
@@ -139,8 +139,8 @@ const UploadPathDialog = ({ setPath, title = "Select a path", description = "Cho
                         </div>
                     </ResizablePanel>
                     <ResizableHandle />
-                    <ResizablePanel defaultSize={45} minSize={30}>
-                        <div className="w-full col-span-7 h-full max-h-full overflow-hidden gap-3 xl:flex hidden py-2">
+                    <ResizablePanel defaultSize={45} minSize={30} className="hidden xl:flex">
+                        <div className="w-full col-span-7 h-full max-h-full overflow-hidden gap-3 flex py-2">
                             <Separator orientation='vertical' />
                             <div className='flex flex-col w-full justify-between max-h-full overflow-hidden'>
                                 <h1 className='text-foreground/80 font-semibold text-sm'>Folder contents</h1>

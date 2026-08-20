@@ -5,7 +5,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import React, { useEffect, useState } from 'react'
 import { ModeToggle } from '@/components/ui/theme-toggler'
 import { HTMLMotionProps, motion } from 'motion/react'
-import { ActivityIcon, ListIcon, UploadIcon, X } from 'lucide-react'
+import { ActivityIcon, FolderInputIcon, ListIcon, UploadIcon, X } from 'lucide-react'
 import UploadDialog from '@/components/dialogs/upload/upload-dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
 import RefreshSpinner from '@/components/ui/refresh-spinner'
@@ -14,12 +14,14 @@ import QueueDialog from '@/components/status-bar/queue-dialog'
 import { useStatusBar } from '@/utils/status-bar-context'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
+import ImportDialog from '@/components/dialogs/import/import-dialog';
 
 const Navbar = () => {
     const { fetchFiles, fetching, loading, refetching } = useFiles();
     const { statusBar } = useStatusBar();
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [queueDialogOpen, setQueueDialogOpen] = useState(false);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
     return (
         <div className="border-b px-6">
             <Container className="flex h-[4.5rem] shrink-0 items-center gap-2 justify-between">
@@ -42,6 +44,11 @@ const Navbar = () => {
                 <div className="flex items-center gap-3">
                     <UploadButton open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
                     <UploadDialog open={uploadDialogOpen} setOpen={setUploadDialogOpen} />
+                    <ImportDialog open={importDialogOpen} setOpen={setImportDialogOpen} />
+                    <Button variant="outline" className='w-8 md:w-max h-8 shrink-0 mr-[1px] text-xs' onClick={() => setImportDialogOpen(true)}>
+                        <span className="hidden md:block">Import</span>
+                        <FolderInputIcon />
+                    </Button>
                     <Button suppressHydrationWarning variant="outline" size="icon" onClick={fetchFiles} disabled={fetching} className='w-8 h-8 shrink-0 mr-[1px]'>
                         <RefreshSpinner loading={loading} refetching={refetching} />
                     </Button>

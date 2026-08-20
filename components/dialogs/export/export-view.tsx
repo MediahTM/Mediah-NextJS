@@ -4,18 +4,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { File } from '@prisma/client'
-import React, { FormEvent, useState } from 'react'
+import { SubmitEvent, useState } from 'react'
 import { Button } from "@/components/ui/button";
+import saveAs from "file-saver";
 
 const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) => void }) => {
     const [fileName, setFileName] = useState(file.filename)
     const [fileFormat, setFileFormat] = useState("json")
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (fileFormat === "json") {
-            const jsonData = JSON.stringify(file, null, 4);
+            const fieldsToDelete: (keyof File)[] = ["id", "userId", "expiresAt", "isActive", "path"]
+            let newFile = file;
+            for (const field of fieldsToDelete) {
+                delete newFile[field];
+            }
+            const jsonData = JSON.stringify(newFile, null, 4);
             exportFile(jsonData, `${fileName}.json`, "application/json");
         }
         else if (fileFormat === "csv") {
@@ -26,35 +32,27 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
         setOpen(false);
     }
 
-    const objectCSV = (data: any): string => {
+    const objectCSV = (data: File): string => {
         const headers = [
-            "id",
             "filename",
             "uploadedSize",
             "uploadedAt",
             "updatedAt",
-            "isActive",
-            "shareDate",
-            "path",
-            "endDate",
-            "neverExpire",
-            "userId",
+            "encryptedFilename",
+            "channelID",
+            "chunkSize",
             "parts"
         ];
 
         const row = [
-            data.id,
             data.filename,
             data.uploadedSize,
             data.uploadedAt,
             data.updatedAt,
-            data.isActive,
-            data.shareDate ?? "",
-            data.path,
-            data.endDate ?? "",
-            data.neverExpire,
-            data.userId,
-            data.parts.map((part: any) => `${part.url} (${part.size})`).join(" | ")
+            data.encryptedFilename,
+            data.channelID,
+            data.chunkSize,
+            data.parts.join(";")
         ];
 
         return `${headers.join(",")}\n${row.map(value => `"${value}"`).join(",")}`;
@@ -62,12 +60,7 @@ const ExportView = ({ file, setOpen }: { file: File, setOpen: (open: boolean) =>
 
     const exportFile = (data: string, filename: string, type: string) => {
         const blob = new Blob([data], { type });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
-        link.remove();
+        saveAs(blob, filename);
     };
 
     return (

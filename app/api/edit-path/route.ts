@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
     const data = editPathSchema.parse(await request.json());
-    console.log(data)
 
     const files = await db.$runCommandRaw({
         update: "File",
@@ -30,7 +29,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             }
         ]
     })
-    console.log(files)
 
     const shares = await db.$runCommandRaw({
         update: "Share",

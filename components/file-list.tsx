@@ -7,7 +7,7 @@ import { Input } from './ui/input';
 import { replaceIllegalCharacters } from '@/lib/helpers';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
-const FileList = ({ filenames, onNameChange, onRemove, errorFileIndexes, setErrorFileIndexes }: { filenames: string[], onNameChange: (oldName: string, newName: string) => void, onRemove: (name: string) => void, errorFileIndexes?: number[], setErrorFileIndexes?: React.Dispatch<React.SetStateAction<number[]>> }) => {
+const FileList = ({ filenames, writable = true, onNameChange, onRemove, errorFileIndexes, setErrorFileIndexes }: { filenames: string[], writable?: boolean, onNameChange?: (oldName: string, newName: string) => void, onRemove: (name: string) => void, errorFileIndexes?: number[], setErrorFileIndexes?: React.Dispatch<React.SetStateAction<number[]>> }) => {
     const [editedNames, setEditedNames] = useState<string[]>(filenames);
     useEffect(() => {
         setEditedNames(filenames);
@@ -21,9 +21,10 @@ const FileList = ({ filenames, onNameChange, onRemove, errorFileIndexes, setErro
                             <div className="flex items-center gap-2 overflow-hidden w-full">
                                 <FileIcon filename={filename} className='size-5 shrink-0 aspect-square' />
                                 <Input
-                                    className={cn("bg-transparent border-none outline-none select-none focus-visible:ring-0 w-full underline underline-offset-2 decoration-[0.05rem] decoration-primary/50", errorFileIndexes?.includes(index) && 'text-destructive')}
+                                    className={cn("bg-transparent border-none outline-none select-none focus-visible:ring-0 w-full underline underline-offset-2 decoration-[0.05rem] decoration-primary/50 disabled:opacity-100 disabled:cursor-default", errorFileIndexes?.includes(index) && 'text-destructive')}
                                     value={editedNames[index] ?? filename}
                                     placeholder={filename}
+                                    disabled={!writable}
                                     onFocus={(event) => {
                                         event.currentTarget.setSelectionRange(0, event.currentTarget.value.lastIndexOf('.'));
                                     }}
@@ -35,7 +36,7 @@ const FileList = ({ filenames, onNameChange, onRemove, errorFileIndexes, setErro
                                         setErrorFileIndexes && setErrorFileIndexes(prev => prev.filter(i => i !== index));
                                         const newName = replaceIllegalCharacters(event.target.value.trim() as string, "filename")
                                         setEditedNames(prev => [...prev.slice(0, index), newName, ...prev.slice(index + 1)]);
-                                        onNameChange(filename, newName);
+                                        onNameChange?.(filename, newName);
                                         const currentPlace = event.target.selectionStart as number;
                                         event.target.setSelectionRange(currentPlace, currentPlace);
                                     }}

@@ -31,24 +31,24 @@ export const saveFile = async (file: File, setStatusBar: React.Dispatch<React.Se
                 const blob = await downloadFile(file, setStatusBar, { onCancel: downloadOptions.onCancel }, totalBytes);
                 if (blob) {
                     saveAs(blob, file.filename);
-                    resolve();
                 }
+                resolve();
                 if (downloadOptions.onJobComplete) downloadOptions.onJobComplete();
             })
         })
     }
 }
 
-
 export const saveFolder = async (folder: Folder, userFiles: File[], setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, downloadOptions: DownloadOptions = {}) => {
     if (folder) {
-        return new Promise(async (resolve) => {
-            await createJob(setStatusBar, "Download " + folder.name, FolderDownIcon, async () => {
+        await createJob(setStatusBar, folder.name, FolderDownIcon, async () => {
+            return new Promise(async (resolve) => {
                 setStatusBar(prev => ({ ...prev, title: "Downloading '" + folder.name + "' to ZIP file", progress: 0 }));
                 const folderData = await downloadFolder(folder, userFiles, setStatusBar, { onCancel: downloadOptions.onCancel });
                 setStatusBar(prev => ({ ...prev, title: "Zipping " + folder.name, progress: 0 }));
                 if (folderData) saveAs(new Blob([zipSync(folderData, { level: 0 })]), folder.name + ".zip");
                 if (downloadOptions.onJobComplete) downloadOptions.onJobComplete();
+                resolve();
             })
         })
     }
@@ -57,19 +57,34 @@ export const saveFolder = async (folder: Folder, userFiles: File[], setStatusBar
 export const downloadFolder = async (folder: Folder, userFiles: File[], setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, downloadOptions: DownloadOptions = {}, totalBytes: number = folder.uploadedSize) => {
     if (folder) {
         let folderData: Zippable = {};
+        let cancelled = false;
         const { filesInPath, foldersInPath } = getFilesInPath(folder.path, userFiles);
         for (const file of filesInPath) {
+            if (cancelled) return false;
             setStatusBar(prev => ({ ...prev, description: "Downloading " + file.filename }));
-            const downloadedFile = await downloadFile(file, setStatusBar, { onCancel: downloadOptions.onCancel, progressOnly: true }, totalBytes);
+            const downloadedFile = await downloadFile(file, setStatusBar, {
+                onCancel: () => {
+                    cancelled = true;
+                    downloadOptions.onCancel?.();
+                },
+                progressOnly: true
+            }, totalBytes);
             if (downloadedFile) {
                 folderData[file.filename] = [new Uint8Array(await downloadedFile!.arrayBuffer()), { mtime: new Date(file.updatedAt) }];
             } else return;
         }
         for (const folder of foldersInPath) {
-            const downloadedFolder = await downloadFolder(folder, userFiles, setStatusBar, { onCancel: downloadOptions.onCancel }, totalBytes);
+            if (cancelled) return false;
+            const downloadedFolder = await downloadFolder(folder, userFiles, setStatusBar, {
+                onCancel: () => {
+                    cancelled = true;
+                    downloadOptions.onCancel
+                }
+            }, totalBytes);
+            if (downloadedFolder == false) return false;
             if (downloadedFolder) folderData[folder.name] = downloadedFolder;
         }
-        return folderData;
+        if (!cancelled) return folderData;
     }
 }
 

@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import RefreshSpinner from '@/components/ui/refresh-spinner';
 import { getColumnDefs } from '@/components/file-table/column-defs';
 import { useParams } from "next/navigation";
-import { TableInfo, useFileTable } from '@/components/file-table/table-context';
+import { useFileTable } from '@/components/file-table/table-context';
 
 const FilesView = () => {
     const { setStatusBar } = useStatusBar();

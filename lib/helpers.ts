@@ -1,5 +1,8 @@
-import { File } from '@prisma/client';
+import { File as MediahFile } from '@prisma/client';
 import { Folder, FolderTree } from '@/types/folder';
+import Papa from "papaparse";
+import z from 'zod';
+import { importFileSchema } from './api-schemas';
 
 export const getInitials = (text: string): string => {
     if (!text) return "";
@@ -141,9 +144,9 @@ export const parsePath = (path: string): string => {
     return path;
 }
 
-export function getFilesInPath(path: string = "/", files: File[]): { filesInPath: File[], foldersInPath: Folder[] } {
+export function getFilesInPath(path: string = "/", files: MediahFile[]): { filesInPath: MediahFile[], foldersInPath: Folder[] } {
     path = parsePath(path);
-    const filesInPath: File[] = [];
+    const filesInPath: MediahFile[] = [];
     const folderMap: Map<string, Folder> = new Map();
 
     for (const file of files) {
@@ -173,7 +176,7 @@ export function getFilesInPath(path: string = "/", files: File[]): { filesInPath
     return { filesInPath, foldersInPath: Array.from(folderMap.values()) };
 }
 
-export function getFoldersMap(files: File[]): FolderTree[] {
+export function getFoldersMap(files: MediahFile[]): FolderTree[] {
     let totalID = 1;
     const foldersArray: FolderTree[] = [
         {
@@ -242,11 +245,11 @@ export const getSiteLogo = (size: number = 400) => {
     return `https://avatars.githubusercontent.com/u/165603488?s=${size}&v=4`
 }
 
-export const convertToFileList = (items: (File | Folder)[], files: File[]): File[] => {
-    let filesToReturn: File[] = [];
+export const convertToFileList = (items: (MediahFile | Folder)[], files: MediahFile[]): MediahFile[] => {
+    let filesToReturn: MediahFile[] = [];
     for (const item of items) {
         if (isFolder(item)) filesToReturn = [...filesToReturn, ...files.filter(f => f.path.startsWith((item as Folder).path))];
-        else filesToReturn.push(item as File);
+        else filesToReturn.push(item as MediahFile);
     }
     return filesToReturn;
 }
@@ -255,11 +258,40 @@ export const escapeRegex = (input: string) => {
     return input.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-export const isFolder = (item: File | Folder): boolean => {
+export const isFolder = (item: MediahFile | Folder): boolean => {
     if (!item) return false;
     return "isFolder" in item && item.isFolder;
 }
 
 export const getRelativeFolderPath = (folder: Folder) => {
     return folder.path.substring(0, folder.path.length - folder.name.length)
+}
+
+export const parseCSV = (fileText: string): Promise<object> => {
+    return new Promise((resolve, reject) => {
+        Papa.parse(fileText, {
+            header: true,
+            complete: (results) => resolve(results.data[0]!),
+            error: (error: any) => reject(error)
+        });
+    });
+}
+
+export const getMediahFileFromIndexFile = async (indexFile: File) => {
+    const fileText = await indexFile.text();
+    let result: object = {};
+    if (indexFile.name.endsWith(".json")) {
+        result = JSON.parse(fileText);
+    } else if (indexFile.name.endsWith(".csv")) {
+        result = await parseCSV(fileText);
+        if ("parts" in result) {
+            result.parts = (result.parts as string).split(";");
+        }
+    } else {
+        return null;
+    }
+
+    const parsedFile = importFileSchema.safeParse(result);
+    if (!parsedFile.success) return null;
+    return parsedFile.data;
 }

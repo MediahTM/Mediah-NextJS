@@ -229,6 +229,11 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
                                 <Input
                                     id="location"
                                     placeholder="Enter save location"
+                                    onKeyDown={(e) => {
+                                        if (e.key == "Enter") {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                     value={watch('location') as FormData['location']}
                                     className='w-full'
                                     {...register('location')}
@@ -285,8 +290,8 @@ const UploadDialogTabs = ({ setOpen, customFiles, setSuccessDialogProps }: { set
                 <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setActiveTab(activeTab === 'upload' ? 'upload' : activeTab === 'info' ? 'upload' : 'info')}
-                    disabled={activeTab === 'upload'}
+                    onClick={() => setActiveTab(activeTab === 'files' ? 'files' : activeTab === 'info' ? 'files' : 'info')}
+                    disabled={activeTab === 'files'}
                 >
                     <ChevronLeft />
                     Previous
