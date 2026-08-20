@@ -83,6 +83,8 @@ const ImportView = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
                         const response = await uploadFileToDatabase({ ...file, path: data.path }, { signal });
                         if (response.success) {
                             setFiles((prev) => [...prev, response.data]);
+                        } else {
+                            toast.error(`Could not import ${file.filename}: ${response.message}`);
                         }
                     } catch {
                         resolve();

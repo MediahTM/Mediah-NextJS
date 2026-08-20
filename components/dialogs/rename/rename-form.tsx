@@ -62,7 +62,7 @@ const RenameForm = ({ item, setOpen }: { item: File | Folder, setOpen: (open: bo
                 setOpen(false);
             }
             else {
-                toast.success("Could not update the path!")
+                toast.success("Could not update path: " + response.message)
             }
         } else {
             if (!values.fileName) return;

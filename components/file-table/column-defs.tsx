@@ -88,6 +88,11 @@ export const getColumnDefs = (setTableInfo: React.Dispatch<React.SetStateAction<
                 <p>{updatedAt[0].toUpperCase() + updatedAt.slice(1)}</p>
             )
         },
+        comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
+            const a = new Date(nodeA.data.updatedAt).getTime();
+            const b = new Date(nodeB.data.updatedAt).getTime();
+            return a === b ? 0 : a > b ? 1 : -1;
+        },
     },
     {
         headerName: " ",

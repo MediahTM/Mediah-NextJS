@@ -1,7 +1,6 @@
 import { File as MediahFile } from '@prisma/client';
 import { Folder, FolderTree } from '@/types/folder';
 import Papa from "papaparse";
-import z from 'zod';
 import { importFileSchema } from './api-schemas';
 
 export const getInitials = (text: string): string => {
@@ -294,4 +293,10 @@ export const getMediahFileFromIndexFile = async (indexFile: File) => {
     const parsedFile = importFileSchema.safeParse(result);
     if (!parsedFile.success) return null;
     return parsedFile.data;
+}
+
+export function loadValueFromSetStateAction<T>(setValue: React.Dispatch<React.SetStateAction<T>>): Promise<T> {
+    return new Promise((resolve) => {
+        setValue((prev) => (resolve(prev), prev))
+    });
 }

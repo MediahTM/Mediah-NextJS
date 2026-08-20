@@ -1,21 +1,16 @@
 import { StatusBarProps } from "@/components/status-bar/status-bar";
+import { loadValueFromSetStateAction } from "@/lib/helpers";
 import { LucideIcon } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 
 let jobs = [] as { ready: () => Promise<void>, UUID: string }[]
-
-export function loadStatusBarValue(setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>): Promise<StatusBarProps> {
-    return new Promise((resolve) => {
-        setStatusBar((prev) => (resolve(prev), prev))
-    });
-}
 
 export async function createJob(setStatusBar: React.Dispatch<React.SetStateAction<StatusBarProps>>, QueueTitle: string, QueueIcon: LucideIcon, ready: () => Promise<void>) {
     let running;
     const UUID = uuidv4();
     const job = { ready, UUID };
     const updateJob = async () => {
-        const statusBar: StatusBarProps = await loadStatusBarValue(setStatusBar);
+        const statusBar: StatusBarProps = await loadValueFromSetStateAction(setStatusBar);
         if (statusBar!.processing) {
             setStatusBar(prev => ({
                 ...prev, queue: [...(prev.queue || []), {

@@ -2,6 +2,7 @@ import { uploadSchema } from '@/lib/api-schemas';
 import db from '@/lib/prisma';
 import { withErrorHandling } from '@/utils/api-error-handling';
 import { getAuthenticatedSession } from '@/utils/api-session-auth';
+import { fileExists } from '@/utils/server-file-conflicts';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -9,15 +10,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     const data = uploadSchema.parse(await request.json());
 
-    const existingFile = await db.file.findFirst({
-        where: {
-            filename: data.filename,
-            path: data.path,
-            userId: session.user.id,
-            isActive: true
-        }
-    });
-    if (existingFile) {
+    if (await fileExists(session.user.id, [data.filename], data.path, true)) {
         return NextResponse.json({
             success: false, message: 'File with the same path and name already exists.', data: null
         });

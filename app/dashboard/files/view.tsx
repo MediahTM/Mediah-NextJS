@@ -1,7 +1,7 @@
 "use client";
 import Container from '@/components/ui/container';
 import PageTitle from '@/components/ui/page-title';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FileTable from '@/components/file-table/table';
 import { FileTableNavbar, FileTablePageNavigation, FileTableProvider } from '@/components/file-table';
 import { defaultOptions } from '@/components/file-dropdown/default-dropdown-options';
@@ -13,7 +13,7 @@ import DeleteDialog from '@/components/dialogs/delete-file/delete-dialog';
 import ShareDialog from '@/components/dialogs/share/share-dialog';
 import { Folder } from '@/types/folder';
 import ShareCell from './share-cell';
-import { convertToFileList, isFolder } from '@/lib/helpers';
+import { convertToFileList, isFolder, loadValueFromSetStateAction } from '@/lib/helpers';
 import { useStatusBar } from '@/utils/status-bar-context';
 import UploadDialog from '@/components/dialogs/upload/upload-dialog';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
@@ -34,6 +34,11 @@ const FilesView = () => {
     const [path, setPath] = useState<string>("/");
 
     const params = useParams();
+
+    const sharesRef = useRef(shares);
+    useEffect(() => {
+        sharesRef.current = shares;
+    }, [shares]);
 
     useEffect(() => {
         if (params.path) {
@@ -131,6 +136,7 @@ const FilesView = () => {
                                     width: 100,
                                     cellRenderer: ShareCell,
                                     comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
+                                        const shares = sharesRef.current;
                                         const aChecked = Boolean(
                                             shares.some((share) => isFolder(nodeA.data) ? share.key === (nodeA.data as Folder).path && share.type === "folder" : share.key === (nodeA.data as File).id && share.type === "file")
                                         );

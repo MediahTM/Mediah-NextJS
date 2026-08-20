@@ -32,7 +32,8 @@ This document describes the current status and the upcoming milestones of Mediah
 | ✔ | Make the mobile UI look better | |
 | ✔ | Folder downloading and zipping | |
 | ✔ | Import files from JSON/CSV | |
-| ❌ | Enforce no duplicate files |`in progress`|
+| ✔ | Fix sorting by updatedAt field | |
+| ✔ | Enforce no duplicate files | |
 | ❌ | Add some cool settings |`in progress`|
 | ❌ | Lander |`in progress`|
 | ❌ | Tutorial |`in progress`|
